@@ -42,6 +42,7 @@
 
 namespace PSkel{
 
+#ifdef PSKEL_CUDA
 //********************************************************************************************
 // Kernels CUDA. Chama o kernel implementado pelo usuario
 //********************************************************************************************
@@ -89,6 +90,7 @@ __global__ void mapCU3D(Array3D<T1> input,Array3D<T1> output,Args args){
 		mapKernel(input, output, args, h, w,d);
 	}
 }
+#endif
 
 //*******************************************************************************************
 // Stencil Base
@@ -109,6 +111,7 @@ void MapBase<Arrays, Args>::runCPU(size_t numThreads){
 	#endif
 }
 
+#ifdef PSKEL_CUDA
 template<class Arrays, class Args>
 void MapBase<Arrays, Args>::runGPU(size_t blockSize){
 	if(blockSize==0){
@@ -126,6 +129,8 @@ void MapBase<Arrays, Args>::runGPU(size_t blockSize){
 	input.deviceFree();
 	output.deviceFree();
 }
+#endif
+
 /*
 template<class Arrays, class Args>
 void MapBase<Arrays, Args>::runHybrid(float GPUPartition, size_t GPUBlockSize, size_t numThreads){
@@ -174,6 +179,7 @@ void MapBase<Arrays, Args>::runHybrid(float GPUPartition, size_t GPUBlockSize, s
 	}
 }
 */
+
 template<class Arrays, class Args>
 void MapBase<Arrays, Args>::runIterativeSequential(size_t iterations){
 	Arrays inputCopy;
@@ -210,6 +216,7 @@ void MapBase<Arrays, Args>::runIterativeCPU(size_t iterations, size_t numThreads
 	inputCopy.hostFree();
 }
 
+#ifdef PSKEL_CUDA
 template<class Arrays, class Args>
 void MapBase<Arrays, Args>::runIterativeGPU(size_t iterations, size_t blockSize){
 	if(blockSize==0){
@@ -233,6 +240,8 @@ void MapBase<Arrays, Args>::runIterativeGPU(size_t iterations, size_t blockSize)
 	input.deviceFree();
 	output.deviceFree();
 }
+#endif
+
 /*
 template<class Arrays, class Args>
 void MapBase<Arrays, Args>::runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads){
@@ -312,8 +321,9 @@ Map3D<Arrays,Args>::Map3D(Arrays input, Arrays output, Args args){
 	this->args = args;
 }
 
+#ifdef PSKEL_CUDA
 template<class Arrays, class Args>
-void Map3D<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
+void Map3D<Arrays,Args>::runCUDA(Arrays in, Arrays out, size_t blockSize){
 	dim3 DimBlock(blockSize, blockSize, 1);
 	dim3 DimGrid((in.getWidth() - 1)/blockSize + 1, ((in.getHeight()) - 1)/blockSize + 1, in.getDepth());
 			
@@ -321,6 +331,7 @@ void Map3D<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }
+#endif
 
 template<class Arrays, class Args>
 void Map3D<Arrays,Args>::runSeq(Arrays in, Arrays out){
@@ -332,13 +343,13 @@ void Map3D<Arrays,Args>::runSeq(Arrays in, Arrays out){
 }
 
 template<class Arrays, class Args>
-void Map3D<Arrays,Args>::runOpenMP(size_t numThreads){
+void Map3D<Arrays,Args>::runOpenMP(Arrays in, Arrays out, size_t numThreads){
 	omp_set_num_threads(numThreads);
 	#pragma omp parallel for
-	for(int h = 0; h<this->input.getHeight(); ++h){
-	for(int w = 0; w<this->input.getWidth(); ++w){
-	for(int d = 0; d<this->input.getDepth(); ++d){
-		mapKernel(this->input, this->output, this->args, h, w,d);
+	for(int h = 0; h<in.getHeight(); ++h){
+	for(int w = 0; w<in.getWidth(); ++w){
+	for(int d = 0; d<in.getDepth(); ++d){
+		mapKernel(in, out, this->args, h, w,d);
 	}}}
 }
 
@@ -384,8 +395,9 @@ Map2D<Arrays,Args>::Map2D(Arrays input, Arrays output, Args args){
 	this->args = args;
 }
 
+#ifdef PSKEL_CUDA
 template<class Arrays, class Args>
-void Map2D<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
+void Map2D<Arrays,Args>::runCUDA(Arrays in, Arrays out, size_t blockSize){
 	dim3 DimBlock(blockSize, blockSize, 1);
 	dim3 DimGrid((in.getWidth() - 1)/blockSize + 1, (in.getHeight() - 1)/blockSize + 1, 1);
 			
@@ -394,7 +406,8 @@ void Map2D<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
 	gpuErrchk( cudaDeviceSynchronize() );	
 	//gpuErrchk( cudaGetLastError() );	
 }
-	
+#endif
+
 template<class Arrays, class Args>
 void Map2D<Arrays,Args>::runSeq(Arrays in, Arrays out){
 	for (int h = 0; h < in.getHeight(); h++){
@@ -404,12 +417,12 @@ void Map2D<Arrays,Args>::runSeq(Arrays in, Arrays out){
 }
 
 template<class Arrays, class Args>
-void Map2D<Arrays,Args>::runOpenMP(size_t numThreads){
+void Map2D<Arrays,Args>::runOpenMP(Arrays in, Arrays out, size_t numThreads){
 	omp_set_num_threads(numThreads);
 	#pragma omp parallel for
-	for (int h = 0; h < this->input.getHeight(); h++){
-	for (int w = 0; w < this->input.getWidth(); w++){
-		mapKernel(this->input, this->output, this->args,h,w);
+	for (int h = 0; h < in.getHeight(); h++){
+	for (int w = 0; w < in.getWidth(); w++){
+		mapKernel(in, out, this->args,h,w);
 	}}
 }
 
@@ -455,8 +468,9 @@ Map<Arrays,Args>::Map(Arrays input, Arrays output, Args args){
 	this->args = args;
 }
 
+#ifdef PSKEL_CUDA
 template<class Arrays, class Args>
-void Map<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
+void Map<Arrays,Args>::runCUDA(Arrays in, Arrays out, size_t blockSize){
 	dim3 DimBlock(blockSize, 1, 1);
 	dim3 DimGrid((in.getWidth() - 1)/blockSize + 1,1,1);
 			
@@ -464,6 +478,7 @@ void Map<Arrays,Args>::runCUDA(Arrays in, Arrays out, int blockSize){
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );		
 }
+#endif
 
 template<class Arrays, class Args>
 void Map<Arrays,Args>::runSeq(Arrays in, Arrays out){
@@ -473,11 +488,11 @@ void Map<Arrays,Args>::runSeq(Arrays in, Arrays out){
 }
 
 template<class Arrays, class Args>
-void Map<Arrays,Args>::runOpenMP(size_t numThreads){
+void Map<Arrays,Args>::runOpenMP(Arrays in, Arrays out, size_t numThreads){
 	omp_set_num_threads(numThreads);
 	#pragma omp parallel for
-	for (int i = 0; i < this->input.getWidth(); i++){
-		mapKernel(this->input, this->output, this->args, i);
+	for (int i = 0; i < in.getWidth(); i++){
+		mapKernel(in, out, this->args, i);
 	}
 }
 

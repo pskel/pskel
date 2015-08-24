@@ -1,5 +1,7 @@
+#ifdef PSKEL_CUDA
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#endif
 #include <gtest/gtest.h>
 
 #include "../include/PSkelArray.h"
@@ -35,6 +37,7 @@ TEST(Array, Assignment){
 	arr.hostFree();
 }
 
+#ifdef PSKEL_CUDA
 TEST(Array, HostDeviceCopy){
 	int n = TESTS_WIDTH;
 	Array<int> arr(n);
@@ -57,6 +60,7 @@ TEST(Array, HostDeviceCopy){
 	arr.deviceFree();
 	arr.hostFree();
 }
+#endif
 
 TEST(Array, Clone){
 	int n = TESTS_WIDTH;
@@ -117,20 +121,31 @@ TEST(Array, Slice){
 			EXPECT_EQ(arr(i), 2*i);
 		else EXPECT_EQ(arr(i), i);
 	}
+	
+	#ifdef PSKEL_CUDA
 	arrSlice.deviceAlloc();
 	arrSlice.copyToDevice();
+	#endif
 	for(int i=0;i<arrSlice.getWidth();i++){
 		EXPECT_EQ(0, arrSlice(i)=0);
 	}
 	for(int i=0;i<arrSlice.getWidth();i++){
 		EXPECT_EQ(0, arrSlice(i));
 	}
+	for(int i=0;i<arr.getWidth();i++){
+		if(i>=(n/2-n/4) && i<((n/2-n/4)+n/2))
+			EXPECT_EQ(arr(i), 0);
+		else EXPECT_EQ(arr(i), i);
+	}
+
+	#ifdef PSKEL_CUDA
 	arrSlice.copyToHost();
 	for(int i=0;i<arr.getWidth();i++){
 		if(i>=(n/2-n/4) && i<((n/2-n/4)+n/2))
 			EXPECT_EQ(arr(i), 2*i);
 		else EXPECT_EQ(arr(i), i);
 	}
+
 	for(int i=0;i<arrSlice.getWidth();i++){
 		EXPECT_EQ(arrSlice(i), arr((n/2-n/4)+i));
 	}
@@ -140,6 +155,7 @@ TEST(Array, Slice){
 			EXPECT_EQ(arr(i), 2*i);
 		else EXPECT_EQ(arr(i), i);
 	}
+	#endif
 	arr.hostFree();
 }
 
@@ -174,6 +190,7 @@ TEST(Array2D, Assignment){
 	arr.hostFree();
 }
 
+#ifdef PSKEL_CUDA
 TEST(Array2D, HostDeviceCopy){
 	size_t width = TESTS_WIDTH;
 	size_t height = TESTS_HEIGHT;
@@ -205,6 +222,8 @@ TEST(Array2D, HostDeviceCopy){
 	}}
 	arr.hostFree();
 }
+#endif
+
 TEST(Array2D, Clone){
 	size_t width = TESTS_WIDTH;
 	size_t height = TESTS_HEIGHT;
@@ -273,8 +292,11 @@ TEST(Array2D, Slice){
 			EXPECT_EQ(arr(h,w), 2*(h*arr.getWidth()+w));
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+
+	#ifdef PSKEL_CUDA
 	arrSlice.deviceAlloc();
 	arrSlice.copyToDevice();
+	#endif
 	for(int h=0;h<arrSlice.getHeight();h++){
 	for(int w=0;w<arrSlice.getWidth();w++){
 		EXPECT_EQ(0, arrSlice(h,w)=0);
@@ -289,6 +311,8 @@ TEST(Array2D, Slice){
 			EXPECT_EQ(arr(h,w), 0);
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+	
+	#ifdef PSKEL_CUDA
 	arrSlice.copyToHost();
 	for(int h=0;h<arr.getHeight();h++){
 	for(int w=0;w<arr.getWidth();w++){
@@ -301,6 +325,7 @@ TEST(Array2D, Slice){
 		EXPECT_EQ(arrSlice(h,w), arr(height/2-height/4+h, width/2-width/4+w));
 	}}
 	arrSlice.deviceFree();
+	#endif
 	arr.hostFree();
 }
 
@@ -339,8 +364,10 @@ TEST(Array2D, HorizontalSlice){
 			EXPECT_EQ(arr(h,w), 2*(h*arr.getWidth()+w));
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+	#ifdef PSKEL_CUDA
 	arrSlice.deviceAlloc();
 	arrSlice.copyToDevice();
+	#endif
 	for(int h=0;h<arrSlice.getHeight();h++){
 	for(int w=0;w<arrSlice.getWidth();w++){
 		EXPECT_EQ(0, arrSlice(h,w)=0);
@@ -355,6 +382,7 @@ TEST(Array2D, HorizontalSlice){
 			EXPECT_EQ(arr(h,w), 0);
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+	#ifdef PSKEL_CUDA
 	arrSlice.copyToHost();
 	for(int h=0;h<arr.getHeight();h++){
 	for(int w=0;w<arr.getWidth();w++){
@@ -367,6 +395,7 @@ TEST(Array2D, HorizontalSlice){
 		EXPECT_EQ(arrSlice(h,w), arr(height/2-height/4+h, w));
 	}}
 	arrSlice.deviceFree();
+	#endif
 	arr.hostFree();
 }
 
@@ -405,8 +434,10 @@ TEST(Array2D, VerticalSlice){
 			EXPECT_EQ(arr(h,w), 2*(h*arr.getWidth()+w));
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+	#ifdef PSKEL_CUDA
 	arrSlice.deviceAlloc();
 	arrSlice.copyToDevice();
+	#endif
 	for(int h=0;h<arrSlice.getHeight();h++){
 	for(int w=0;w<arrSlice.getWidth();w++){
 		EXPECT_EQ(0, arrSlice(h,w)=0);
@@ -421,6 +452,7 @@ TEST(Array2D, VerticalSlice){
 			EXPECT_EQ(arr(h,w), 0);
 		}else EXPECT_EQ(arr(h,w), (h*arr.getWidth()+w));
 	}}
+	#ifdef PSKEL_CUDA
 	arrSlice.copyToHost();
 	for(int h=0;h<arr.getHeight();h++){
 	for(int w=0;w<arr.getWidth();w++){
@@ -433,6 +465,7 @@ TEST(Array2D, VerticalSlice){
 		EXPECT_EQ(arrSlice(h,w), arr(h, width/2-width/4+w));
 	}}
 	arrSlice.deviceFree();
+	#endif
 	arr.hostFree();
 }
 

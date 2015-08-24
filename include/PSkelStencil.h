@@ -44,7 +44,9 @@
 #include "PSkelDefs.h"
 #include "PSkelArray.h"
 #include "PSkelMask.h"
-#include "PSkelStencilTiling.h"
+#ifdef PSKEL_CUDA
+  #include "PSkelStencilTiling.h"
+#endif
 
 namespace PSkel{
 
@@ -115,8 +117,10 @@ protected:
 	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
 	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	#ifdef PSKEL_CUDA
 	void runCUDA(Array,Array,int);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSize);
+	#endif
 public:
 	/**
 	 * Executes sequentially in CPU a single iteration of the stencil computation. 
@@ -130,6 +134,7 @@ public:
 	 **/
 	void runCPU(size_t numThreads=0);
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU a single iteration of the stencil computation.
 	 * This function does not handle data larger than the memory available in the GPU (see runAutoGPU.)
@@ -137,7 +142,9 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runGPU(size_t GPUBlockSize=0);
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU a single iteration of the stencil computation, tiling the input data.
 	 * This function is useful for processing data larger than the memory available in the GPU (see runAutoGPU.)
@@ -148,7 +155,9 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runTilingGPU(size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t GPUBlockSize=0);
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU a single iteration of the stencil computation.
 	 * If the data is larger than the memory available in the GPU, this function automatically
@@ -157,6 +166,7 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runAutoGPU(size_t GPUBlockSize=0);
+	#endif
 
 	//void runHybrid(float GPUPartition, size_t GPUBlockSize, size_t numThreads);
 
@@ -176,6 +186,7 @@ public:
 	 **/
 	void runIterativeCPU(size_t iterations, size_t numThreads=0);
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU multiple iterations of the stencil computation.
 	 * At each given iteration, except the first, the previous output is used as input.
@@ -185,7 +196,9 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runIterativeGPU(size_t iterations, size_t GPUBlockSize=0);
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU multiple iterations of the stencil computation, tiling the input data.
 	 * At each given iteration, except the first, the previous output is used as input.
@@ -200,7 +213,9 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runIterativeTilingGPU(size_t iterations, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t innerIterations=1, size_t GPUBlockSize=0);
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Executes in GPU multiple iterations of the stencil computation.
 	 * At each given iteration, except the first, the previous output is used as input.
@@ -212,6 +227,7 @@ public:
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
 	void runIterativeAutoGPU(size_t iterations, size_t GPUBlockSize=0);
+	#endif
 
 	//void runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads);
 };

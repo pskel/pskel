@@ -31,7 +31,10 @@
 #ifndef PSKEL_MAP_H
 #define PSKEL_MAP_H
 
-#include <cuda.h>
+#ifdef PSKEL_CUDA
+  #include <cuda.h>
+#endif
+
 #ifdef PSKEL_TBB
   #include <tbb/blocked_range.h>
 #endif
@@ -68,20 +71,26 @@ protected:
 	Args args;
 	
 	virtual void runSeq(Arrays in, Arrays out) = 0;
-	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	virtual void runOpenMP(Arrays in, Arrays out, size_t numThreads) = 0;
 	#ifdef PSKEL_TBB
 	virtual void runTBB(Arrays in, Arrays out, size_t numThreads) = 0;
 	#endif
+	#ifdef PSKEL_CUDA
 	virtual void runCUDA(Arrays input, Arrays output, size_t blockSize) = 0;
+	#endif
 public:
 	void runSequential();
 	void runCPU(size_t numThreads=0);
+	#ifdef PSKEL_CUDA
 	void runGPU(size_t blockSize=0);
+	#endif
 	//void runHybrid(float GPUPartition, size_t GPUBlockSize, size_t numThreads);
 
 	void runIterativeSequential(size_t iterations);
 	void runIterativeCPU(size_t iterations, size_t numThreads=0);
+	#ifdef PSKEL_CUDA
 	void runIterativeGPU(size_t iterations, size_t blockSize=0);
+	#endif
 	//void runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads);
 };
 
@@ -94,11 +103,13 @@ template<class Arrays, class Args>
 class Map3D : public MapBase<Arrays, Args>{
 protected:
 	void runSeq(Arrays in, Arrays out);
-	void runOpenMP(size_t numThreads);
+	void runOpenMP(Arrays in, Arrays out, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Arrays in, Arrays out, size_t numThreads);
 	#endif
-	void runCUDA(Arrays in, Arrays out, int blockSize);
+	#ifdef PSKEL_CUDA
+	void runCUDA(Arrays in, Arrays out, size_t blockSize);
+	#endif
 public:
 	Map3D();
 	Map3D(Arrays input, Arrays output, Args args);
@@ -112,11 +123,13 @@ template<class Arrays, class Args>
 class Map2D : public MapBase<Arrays, Args>{
 protected:
 	void runSeq(Arrays in, Arrays out);
-	void runOpenMP(size_t numThreads);
+	void runOpenMP(Arrays in, Arrays out, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Arrays in, Arrays out, size_t numThreads);
 	#endif
-	void runCUDA(Arrays in, Arrays out, int blockSize);
+	#ifdef PSKEL_CUDA
+	void runCUDA(Arrays in, Arrays out, size_t blockSize);
+	#endif
 public:
 	Map2D();
 	Map2D(Arrays input, Arrays output, Args args);
@@ -131,11 +144,13 @@ template<class Arrays, class Args>
 class Map: public MapBase<Arrays, Args>{
 protected:
 	void runSeq(Arrays in, Arrays out);
-	void runOpenMP(size_t numThreads);
+	void runOpenMP(Arrays in, Arrays out, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Arrays in, Arrays out, size_t numThreads);
 	#endif
-	void runCUDA(Arrays in, Arrays out, int blockSize);
+	#ifdef PSKEL_CUDA
+	void runCUDA(Arrays in, Arrays out, size_t blockSize);
+	#endif
 public:
 	Map();
 	Map(Arrays input, Arrays output, Args args);

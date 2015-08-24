@@ -1,14 +1,15 @@
 #include <cmath>
-
 #include <omp.h>
 
-#include <cuda.h>
-#include <cuda_runtime_api.h>
+#ifdef PSKEL_CUDA
+ #include <cuda.h>
+ #include <cuda_runtime_api.h>
+#endif
 
 #include <gtest/gtest.h>
 
-#include "../include/PSkelArray.h"
 #include "../include/PSkelMap.h"
+#include "../include/PSkelArray.h"
 
 #include "conf.h"
 
@@ -16,15 +17,17 @@ using namespace std;
 using namespace PSkel;
 
 namespace PSkel {
-	__parallel__ void mapKernel(Array<int> input, Array<int> output, int null, int i){
+	__parallel__ void mapKernel(Array<int> input, Array<int> output, int null, size_t i){
 		output(i) = input(i)*2;
 	}
 
-	__parallel__ void mapKernel(Array2D<int> input, Array2D<int> output, int null, int h, int w){
+	__parallel__ void mapKernel(Array2D<int> input, Array2D<int> output, int null, size_t h, size_t w){
 		output(h,w) = input(h,w)*2;
 	}
 }
 
+
+#ifdef PSKEL_CUDA
 TEST(Map, GPU){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -45,7 +48,9 @@ TEST(Map, GPU){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, GPUEvenIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -67,7 +72,9 @@ TEST(Map, GPUEvenIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, GPUOddIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -89,7 +96,9 @@ TEST(Map, GPUOddIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, GPUSlice){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -121,7 +130,9 @@ TEST(Map, GPUSlice){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, GPUSliceEvenIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -154,7 +165,9 @@ TEST(Map, GPUSliceEvenIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, GPUSliceOddIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -187,6 +200,7 @@ TEST(Map, GPUSliceOddIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
 TEST(Map, Seq){
 	int n = TESTS_WIDTH;
@@ -442,6 +456,8 @@ TEST(Map, TBBSlice){
 	outputGrid.hostFree();
 }
 
+/*
+#ifdef PSKEL_CUDA
 TEST(Map, Hybrid){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -464,7 +480,9 @@ TEST(Map, Hybrid){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, HybridZeroGPUPortion){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -487,7 +505,9 @@ TEST(Map, HybridZeroGPUPortion){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, HybridFullGPUPortion){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -510,7 +530,9 @@ TEST(Map, HybridFullGPUPortion){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, HybridEvenIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -534,7 +556,9 @@ TEST(Map, HybridEvenIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map, HybridOddIterations){
 	int n = TESTS_WIDTH;
 	int GPUBlockSize = TESTS_GPUBlockSize;
@@ -558,11 +582,14 @@ TEST(Map, HybridOddIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
+*/
 
 ///
 // Map2D Tests
 //
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPU){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -587,7 +614,9 @@ TEST(Map2D, GPU){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPUEvenIterations){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -613,7 +642,9 @@ TEST(Map2D, GPUEvenIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPUOddIterations){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -639,7 +670,9 @@ TEST(Map2D, GPUOddIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPUSlice){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -677,7 +710,9 @@ TEST(Map2D, GPUSlice){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPUHorizontalSlice){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -715,7 +750,9 @@ TEST(Map2D, GPUHorizontalSlice){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, GPUVerticalSlice){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -753,6 +790,7 @@ TEST(Map2D, GPUVerticalSlice){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
 TEST(Map2D, Seq){
 	int width = TESTS_WIDTH;
@@ -1206,6 +1244,8 @@ TEST(Map2D, TBBVerticalSlice){
 	outputGrid.hostFree();
 }
 
+/*
+#ifdef PSKEL_CUDA
 TEST(Map2D,  Hybrid){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -1232,7 +1272,9 @@ TEST(Map2D,  Hybrid){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, HybridEvenIterations){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -1260,7 +1302,9 @@ TEST(Map2D, HybridEvenIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 TEST(Map2D, HybridOddIterations){
 	int width = TESTS_WIDTH;
 	int height = TESTS_HEIGHT;
@@ -1288,7 +1332,8 @@ TEST(Map2D, HybridOddIterations){
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }
-
+#endif
+*/
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

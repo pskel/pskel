@@ -46,9 +46,15 @@ namespace PSkel{
 template<typename T>
 class MaskBase{
 protected:
-	int *hostMask, *deviceMask;
+	int *hostMask;
+	#ifdef PSKEL_CUDA
+	int *deviceMask;
+	#endif
 	//size_t maskRadius;
-	T *hostWeight, *deviceWeight;
+	T *hostWeight;
+	#ifdef PSKEL_CUDA
+	T *deviceWeight;
+	#endif
 	T haloValue;
 	
 	/**
@@ -65,6 +71,7 @@ public:
 	size_t size, dimension;
 	size_t range;
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Allocates the mask in device memory, including both the indexes and the weights.
 	 **/
@@ -74,6 +81,7 @@ public:
 	 * Frees the allocated device memory.
 	 **/
 	void deviceFree();
+	#endif
 	
 	/**
 	 * Allocates the mask in host (main) memory, including both the indexes and the weights.

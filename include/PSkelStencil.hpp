@@ -38,11 +38,14 @@
 #include <iostream>
 using namespace std;
 
-#include <ga/ga.h>
-#include <ga/std_stream.h>
+#ifdef PSKEL_CUDA
+  #include <ga/ga.h>
+  #include <ga/std_stream.h>
+#endif
 
 namespace PSkel{
 
+#ifdef PSKEL_CUDA
 //********************************************************************************************
 // Kernels CUDA. Chama o kernel implementado pelo usuario
 //********************************************************************************************
@@ -109,6 +112,7 @@ __global__ void stencilTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> 
 		stencilKernel(input, output, mask, args, h, w, d);
 	}
 }
+#endif
 
 //*******************************************************************************************
 // Stencil Base
@@ -129,6 +133,7 @@ void StencilBase<Array, Mask,Args>::runCPU(size_t numThreads){
 	#endif
 }
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runGPU(size_t GPUBlockSize){
 	if(GPUBlockSize==0){
@@ -162,7 +167,9 @@ void StencilBase<Array, Mask,Args>::runGPU(size_t GPUBlockSize){
 	output.deviceFree();
 	mask.deviceFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runTilingGPU(size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t GPUBlockSize){
 	if(GPUBlockSize==0){
@@ -223,7 +230,9 @@ void StencilBase<Array, Mask,Args>::runTilingGPU(size_t tilingWidth, size_t tili
 	mask.deviceFree();
 	cudaDeviceSynchronize();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runAutoGPU(size_t GPUBlockSize){
 	size_t gpuMemFree, gpuMemTotal;
@@ -257,7 +266,7 @@ void StencilBase<Array, Mask,Args>::runAutoGPU(size_t GPUBlockSize){
 		}
 	}
 }
-
+#endif
 
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeSequential(size_t iterations){
@@ -296,6 +305,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	inputCopy.hostFree();
 }
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GPUBlockSize){
 	if(GPUBlockSize==0){
@@ -336,7 +346,9 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 	output.deviceFree();
 	//this->getGPUOutputData();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t innerIterations, size_t GPUBlockSize){
 	if(GPUBlockSize==0){
@@ -435,7 +447,9 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 	if((outterIterations%2)==0) tiling.output.hostMemCopy(tiling.input);
 	inputCopy.hostFree();
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, int GPUBlockSize){
 	dim3 DimBlock(GPUBlockSize, GPUBlockSize, 1);
@@ -449,7 +463,9 @@ void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, int GPUBlockSiz
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array, Mask> tiling, size_t GPUBlockSize){
 	dim3 DimBlock(GPUBlockSize,GPUBlockSize, 1);
@@ -517,8 +533,9 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, 
 		gpuErrchk( cudaDeviceSynchronize() );
 	}
 }
+#endif
 
-
+#ifdef PSKEL_CUDA
 struct TilingGPUGeneticEvaluationFunction{
     size_t iterations;
     size_t height;
@@ -730,6 +747,7 @@ void StencilBase<Array, Mask,Args>::runIterativeAutoGPU(size_t iterations, size_
 		}
 	}
 }
+#endif
 
 //*******************************************************************************************
 // Stencil 3D

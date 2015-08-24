@@ -48,10 +48,13 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->heightOffset = 0;
 	this->depthOffset = 0;
 	this->hostArray = 0;
+	#ifdef PSKEL_CUDA
 	this->deviceArray = 0;
+	#endif
 	if(size()>0) this->hostAlloc();
 }
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::deviceAlloc(){
 	if(this->deviceArray==NULL){
@@ -59,7 +62,9 @@ void ArrayBase<T>::deviceAlloc(){
 		cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::deviceFree(){
 	//if(this->deviceArray!=NULL){
@@ -67,6 +72,7 @@ void ArrayBase<T>::deviceFree(){
 		this->deviceArray = NULL;
 	//}
 }
+#endif
 
 template<typename T>
 void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
@@ -80,7 +86,9 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 	this->heightOffset = 0;
 	this->depthOffset = 0;
 	this->hostArray = NULL;
+	#ifdef PSKEL_CUDA
 	this->deviceArray = NULL;
+	#endif
 
 	this->hostAlloc();
 }
@@ -133,10 +141,12 @@ size_t ArrayBase<T>::realSize() const{
 	return realHeight*realWidth*realDepth;
 }
 
+#ifdef PSKEL_CUDA
 template<typename T>
 __device__ __forceinline__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_t d) const {
 	return this->deviceArray[(h*width+w)*depth+d];
 }
+#endif
 
 template<typename T>
 T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
@@ -146,12 +156,14 @@ T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t width, size_t height, size_t depth){
 	//maintain previous allocated area
+	#ifdef PSKEL_CUDA
 	if(this->deviceArray!=NULL){
 		if(this->size()!=(width*height*depth)){
 			this->deviceFree();
 			this->deviceArray = NULL;
 		}
 	}
+	#endif
 	//Copy dimensions
 	this->width = width;
 	this->height = height;
@@ -199,6 +211,7 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 	}
 }
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::copyToDevice(){
 	if(size()==realSize()){
@@ -224,7 +237,9 @@ void ArrayBase<T>::copyToDevice(){
 		cudaFreeHost(copyPtr);
 	}
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::copyFromDevice(Arrays array){
 	if(array.size()==realSize()){
@@ -250,7 +265,9 @@ void ArrayBase<T>::copyFromDevice(Arrays array){
 		cudaFreeHost(copyPtr);
 	}
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::copyToHost(){
 	if(size()==realSize()){
@@ -276,6 +293,7 @@ void ArrayBase<T>::copyToHost(){
 		cudaFreeHost(copyPtr);
 	}
 }
+#endif
 
 template<typename T>
 ArrayBase<T>::operator bool() const {

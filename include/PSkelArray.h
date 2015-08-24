@@ -35,7 +35,10 @@
 #ifndef PSKEL_ARRAY_H
 #define PSKEL_ARRAY_H
 
+#ifdef PSKEL_CUDA
 #include <cuda.h>
+#endif
+
 #include "PSkelDefs.h"
 
 namespace PSkel{
@@ -56,8 +59,12 @@ private:
 	//offsets for the sliced array.
 	size_t widthOffset, heightOffset, depthOffset;
 	//host and device (GPU memory) pointers
-	T *hostArray, *deviceArray;
+	T *hostArray;
+	#ifdef PSKEL_CUDA
+	T *deviceArray;
+	#endif
 protected:
+	#ifdef PSKEL_CUDA
 	/**
          * Access a specific element of the array allocated in the device memory.
          * This function is accessible only during the execution in the device environment.
@@ -67,6 +74,7 @@ protected:
          * \return the reference of the element specified via parameters.
          **/
 	__device__ __forceinline__ T & deviceGet(size_t h,size_t w,size_t d) const ;
+	#endif
 
 	/**
          * Access a specific element of the array allocated in the host memory.
@@ -87,15 +95,19 @@ protected:
          **/
 	ArrayBase(size_t width, size_t height, size_t depth);
 public:	
+	#ifdef PSKEL_CUDA
 	/**
 	 * Allocates the "virtual" array in device memory.
 	 **/
 	void deviceAlloc();
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * Frees the allocated device memory.
 	 **/
 	void deviceFree();
+	#endif
 
 	void hostAlloc(size_t width, size_t height, size_t depth);
 
@@ -174,13 +186,16 @@ public:
 	template<typename Arrays>
 	void hostMemCopy(Arrays array);
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * The array is copied from the host allocated memory to the device allocated memory.
 	 * The data is efficiently transferred from host to device.
 	 * Both the host and device memory must be allocated before the data is transferred.
 	 **/
 	void copyToDevice();
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * The array given as argument is copied from the device allocated memory to the host allocated memory of this array.
 	 * The data is efficiently transferred from device to host.
@@ -188,14 +203,17 @@ public:
 	 **/
 	template<typename Arrays>
 	void copyFromDevice(Arrays array);
+	#endif
 
+	#ifdef PSKEL_CUDA
 	/**
 	 * The array is copied from the device allocated memory to the host allocated memory.
 	 * The data is efficiently transferred from device to host.
 	 * Both the host and device memory must be allocated before the data is transferred.
 	 **/
 	void copyToHost();
-
+	#endif
+	
 	/**
 	 * Verifies if there is memory allocated for the array data structure.
 	 * This function can be called both from device and host environment,

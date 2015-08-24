@@ -41,7 +41,10 @@ namespace PSkel{
 template<typename T>
 class Args{
 public:
-	T *hostArray, *deviceArray;
+	T *hostArray;
+	#ifdef PSKEL_CUDA
+	T *deviceArray;
+	#endif
 	int width;
 	
 	Args();
@@ -66,8 +69,11 @@ public:
 template<typename T>
 class Args2D{
 public:
-	T *hostArray, *deviceArray;
-	int width,height;
+	T *hostArray;
+	#ifdef PSKEL_CUDA
+	T *deviceArray;
+	#endif
+	int width, height;
 	
 	Args2D();
 	
@@ -93,7 +99,10 @@ public:
 template<typename T>
 class Args3D{
 public:
-	T *hostArray, *deviceArray;
+	T *hostArray;
+	#ifdef PSKEL_CUDA
+	T *deviceArray;
+	#endif
 	int width,height,depth;
 	
 	Args3D();

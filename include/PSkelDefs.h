@@ -36,16 +36,24 @@
 #define PSKEL_DEFS_H
 
 #include <stdio.h>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 
-#define __parallel__ __device__ __host__ __attribute__((always_inline)) __forceinline__
-
-#define gpuErrchk(ans) { gpuAssert(((cudaError_t)ans), __FILE__, __LINE__,true); }
-inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=false){
+#ifdef PSKEL_CUDA
+ #include <cuda.h>
+ #include <cuda_runtime_api.h>
+ #define __parallel__ __device__ __host__ __attribute__((always_inline)) __forceinline__
+ #define gpuErrchk(ans) { gpuAssert(((cudaError_t)ans), __FILE__, __LINE__,true); }
+ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=false){
 	if(code!=cudaSuccess){
 		fprintf(stderr,(const char*)"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
 		if(abort) exit(code);
 	}
-}
+ }
+#else
+ #define __device__
+ #define __host__
+ #define __parallel__ inline
+
+ #define __forceinline__ inline
+#endif
+
 #endif

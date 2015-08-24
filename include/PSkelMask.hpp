@@ -47,8 +47,10 @@ MaskBase<T>::MaskBase(size_t size, size_t dimension, T haloVal, size_t range){
 	this->haloValue = haloVal;
 	this->hostMask = NULL;
 	this->hostWeight = NULL;
+	#ifdef PSKEL_CUDA
 	this->deviceMask = NULL;
 	this->deviceWeight = NULL;
+	#endif
 	if(size>0) this->hostAlloc();
 }
 	
@@ -57,11 +59,13 @@ size_t MaskBase<T>::memSize() const{
 	return (dimension*size*sizeof(int)+size*sizeof(T));
 }
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void MaskBase<T>::deviceAlloc(){
 	gpuErrchk( cudaMalloc((void **) &deviceMask, dimension * size * sizeof (int)) );
 	gpuErrchk( cudaMalloc((void **) &deviceWeight, size * sizeof (T)) );
 }
+#endif
 
 template<typename T>
 void MaskBase<T>::hostAlloc(){
@@ -80,12 +84,15 @@ void MaskBase<T>::hostFree(){
 	hostWeight = NULL;
 }
 	
+#ifdef PSKEL_CUDA
 template<typename T>
 void MaskBase<T>::copyToDevice(){
 	gpuErrchk ( cudaMemcpy(deviceMask, hostMask, dimension * size * sizeof(int),cudaMemcpyHostToDevice) );
 	gpuErrchk ( cudaMemcpy(deviceWeight, hostWeight, size * sizeof(T),cudaMemcpyHostToDevice) );
 }
+#endif
 
+#ifdef PSKEL_CUDA
 template<typename T>
 void MaskBase<T>::deviceFree(){
 	//if(deviceMask!=NULL && deviceWeight!=NULL){
@@ -95,6 +102,8 @@ void MaskBase<T>::deviceFree(){
 		this->deviceWeight = NULL;
 	//}
 }
+#endif
+
 /*
 template<typename T>
 __host__ __device__ size_t MaskBase<T>::size() const{
