@@ -1,5 +1,7 @@
 //-------------------------------------------------------------------------------
-// Copyright (c) 2015, ICEI - PUC Minas
+// Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
+//					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
+//					   
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without

@@ -1,5 +1,6 @@
 //-------------------------------------------------------------------------------
-// Copyright (c) 2015, ICEI - PUC Minas
+// Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
+//					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -96,7 +97,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 }
 
 template<typename T1, typename T2, class Args>
-__global__ void stencilTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> mask,Args args, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
+__global__ void stencillTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> mask,Args args, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
 	size_t d = blockIdx.z*blockDim.z+threadIdx.z;
