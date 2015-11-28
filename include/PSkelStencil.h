@@ -231,6 +231,25 @@ public:
 	#endif
 
 	//void runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads);
+	
+	#ifdef PSKEL_MPPA
+	/**
+	 * Spawn the slaves in MPPA.
+	 * \param[in] slave_bin_name the name of the slave bynary code.
+	 * \param[in] nb_clusters the number of clusters to be spawn.
+	 * \param[in] nb_threads the number of threads per cluster.
+	 **/
+	void spawn_slaves(const char slave_bin_name[], size_t nb_clusters, size_t nb_threads);
+	#endif
+	
+	#ifdef PSKEL_MPPA
+	/**
+	* \param[in] slave_bin_name the name of the slave bynary code.
+	* \param[in] nb_clusters the number of clusters to be spawn.
+	* \param[in] nb_threads the number of threads per cluster.
+	**/
+	void runMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads)
+	#endif
 };
 
 //*******************************************************************************************
@@ -289,5 +308,6 @@ public:
 }
 
 #include "PSkelStencil.hpp"
+#include "PSkelStencilMPPA.hpp"
 
 #endif
