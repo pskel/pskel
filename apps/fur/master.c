@@ -4,6 +4,8 @@
 #include <sched.h>
 #include <unistd.h>
 
+#define PSKEL_MPPA
+
 #include "../include/PSkel.h"
 
 int CalcSize(int level){

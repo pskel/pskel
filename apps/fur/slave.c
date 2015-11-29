@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "common.h"
-#include "interface_mppa.h"
+#define PSKEL_MPPA
+
+//#include "common.h"
+//#include "interface_mppa.h"
 #include "../../include/PSkel.h"
 
 namespace PSkel{
