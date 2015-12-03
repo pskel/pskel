@@ -6,6 +6,10 @@
 /**Problema com o omp.h**/
 #include "../../include/PSkel.h"
 
+#define PSKEL_MPPA
+
+#include "../include/PSkel.h"
+
 int CalcSize(int level){
 	if (level == 1) {
 		return 3;

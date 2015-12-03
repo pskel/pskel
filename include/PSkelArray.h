@@ -40,6 +40,11 @@
 #include <cuda.h>
 #endif
 
+#ifdef PSKEL_MPPA
+#include "common.h"
+#include "interface_mppa.h"
+#endif
+
 #include "PSkelDefs.h"
 
 namespace PSkel{
@@ -71,6 +76,12 @@ private:
  	portal_t *write_portal;
  	portal_t *read_portal;
 	#endif
+	//communication portal for MPPA
+	#ifdef PSKEL_MPPA
+	portal_t *read_portal;
+	portal_t *write_portal;
+	#endif
+	
 protected:
 	#ifdef PSKEL_CUDA
 	/**
