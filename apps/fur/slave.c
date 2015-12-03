@@ -54,15 +54,15 @@ int main(int argc,char **argv) {
   assert(comm_buffer != NULL);
   
   /** Alyson: necessario?**/
-  for(i = 0; i < MAX_BUFFER_SIZE; i++)
-    comm_buffer[i] = 0;
+  /** Emmanuel: Nao é necessario inicializar**/
+  //  for(i = 0; i < MAX_BUFFER_SIZE; i++)
+  //  comm_buffer[i] = 0;
   
   // Set initial parameters
   /** Alyson: o mais indicado seria tirar do argv mesmo? **/
   int nb_clusters = atoi(argv[0]);
   int nb_threads  = atoi(argv[1]);
   int cluster_id  = atoi(argv[2]);
-  2
   // Initialize global barrier
   /** Alyson: aonde colocar esta barreira? Variavel global na classe Stencil? **/
   barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);

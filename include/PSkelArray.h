@@ -64,6 +64,13 @@ private:
 	#ifdef PSKEL_CUDA
 	T *deviceArray;
 	#endif
+	#ifdef PSKEL_MPPA
+	//** Emmanuel: Falta escrever os métodos adicionados no .hpp*/
+	T *mppaIOarray;
+	T *mppaClusterArray;
+ 	portal_t *write_portal;
+ 	portal_t *read_portal;
+	#endif
 protected:
 	#ifdef PSKEL_CUDA
 	/**

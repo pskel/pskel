@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <sched.h>
 #include <unistd.h>
-
-#include "../include/PSkel.h"
+/**Problema com o omp.h**/
+#include "../../include/PSkel.h"
 
 int CalcSize(int level){
 	if (level == 1) {
@@ -73,10 +73,16 @@ int main(int argc, char **argv){
 	
 	/** Alyson: talves mudar para stencil.scheduleMPPA() para o codigo
 	* do master e stencil.runMPPA() para o codigo do slave?
+	* Emmanuel: Faz sentido, fica melhor organizado.
 	*/
-	stencil.runMPPA("slave",nb_clusters,nb_slaves);
 	
-	/** Alyson: necessario? **/
+	stencil.scheduleMPPA("slave",nb_clusters,nb_slaves);
+	/**
+	* Emmanuel: Aqui deveria ter um waitPid, pois o run(schedule)MPPA irá spawnar os slaves.
+	* No mestre ou no PSkel?
+	**/
+	/** Alyson: necessario? 
+	**/
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 }

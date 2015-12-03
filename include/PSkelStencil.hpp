@@ -124,6 +124,48 @@ void StencilBase<Array, Mask,Args>::runSequential(){
 	this->runSeq(this->input, this->output);
 }
 
+//*******************************************************************************************
+// MPPA
+//*******************************************************************************************
+
+#ifdef PSKEL_MPPA
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_clusters, int nb_slaves){
+	  int i;
+	  int cluster_id;
+	  int pid;
+	  // Prepare arguments to send to slaves
+	  char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
+	  for (i = 0; i < ARGC_SLAVE - 1; i++)
+	    argv_slave[i] = (char*) malloc (sizeof (char) * 10);
+	  
+	  sprintf(argv_slave[0], "%d", nb_clusters);
+	  sprintf(argv_slave[1], "%d", nb_slaves);
+	  argv_slave[3] = NULL;
+	  
+	  // Spawn slave processes
+	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
+	    sprintf(argv_slave[2], "%d", cluster_id);
+	    pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
+	    assert(pid >= 0);
+	  }
+	  /**Emmanuel: Aqui será feito a separação do array para pequenos arrays2D*/
+	  // Free arguments
+	  for (i = 0; i < ARGC_SLAVE; i++)
+	    free(argv_slave[i]);
+	  free(argv_slave);
+}
+#endif
+
+// #ifdef PSKEL_MPPA
+// template<class Array, class Mask, class Args>
+// void StencilBase<Array, Mask,Args>::runMPPA(){
+
+// }
+// #endif
+//*******************************************************************************************
+//*******************************************************************************************
+
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runCPU(size_t numThreads){
 	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
