@@ -81,10 +81,6 @@ int main(int argc, char **argv){
 	*/
 	
 	stencil.scheduleMPPA("slave",nb_clusters,nb_slaves);
-	/**
-	* Emmanuel: Aqui deveria ter um waitPid, pois o run(schedule)MPPA irá spawnar os slaves.
-	* No mestre ou no PSkel?
-	**/
 	/** Alyson: necessario? 
 	**/
 	inputGrid.hostFree();

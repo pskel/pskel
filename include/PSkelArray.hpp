@@ -53,8 +53,8 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->deviceArray = 0;
 	#endif
 	#ifdef PSKEL_MPPA
-	this->mppaIOarray = 0;
-	this->mppaClusterArray = 0;
+	//**Emmanuel: Como fazer a alocação do mppaArray?
+	this->mppaArray = 0;
 	this->write_portal = 0;
 	this->read_portal = 0;
 	#endif
@@ -205,14 +205,14 @@ void ArrayBase<T>::hostClone(Arrays array){
 }
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyToMPPA() const{
-	mppa_async_write_portal(this->write_portal, this->mppaIOarray, this->memSize(), 0);
+void ArrayBase<T>::copyTo() const{
+	mppa_async_write_portal(this->write_portal, this->mppaArray, this->memSize(), 0);
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyFromMPPA() const{
+void ArrayBase<T>::copyFrom() const{
 	mppa_async_read_wait_portal(this->read_portal);
 }
 #endif
@@ -220,8 +220,7 @@ void ArrayBase<T>::copyFromMPPA() const{
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::portalReadAlloc(char path[], int trigger) const{
-	/**Emmanuel: Possível modificação do path para considerar as DMAs? */
-    this->read_portal = mppa_create_read_portal(path, this->mppaIOarray, this->memSize(), trigger, NULL);
+    this->read_portal = mppa_create_read_portal(path, this->mppaArray, this->memSize(), trigger, NULL);
 }
 #endif
 
@@ -229,9 +228,17 @@ void ArrayBase<T>::portalReadAlloc(char path[], int trigger) const{
 template<typename T>
 void ArrayBase<T>::portalWriteAlloc(char path[], int nb_cluster) const{
 	/**Emmanuel: Considerar mais de um cluster, número do cluster vindo como arg?*/
-    this->write_portal = mppa_create_write_portal(path, this->mppaIOarray, this->memSize(), nb_cluster);
+    this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), nb_cluster);
 }
 #endif
+#ifdef PSKEL_MPPA
+template<typename T>
+void ArrayBase<T>::closePortals() const{
+	mppa_close_portal(this->read_portal);
+	mppa_close_portal(this->write_portal);
+}
+#endif
+
 
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostMemCopy(Arrays array){

@@ -70,9 +70,7 @@ private:
 	T *deviceArray;
 	#endif
 	#ifdef PSKEL_MPPA
-	//** Emmanuel: Falta escrever os métodos adicionados no .hpp*/
-	T *mppaIOarray;
-	T *mppaClusterArray;
+	T *mppaArray;
  	portal_t *write_portal;
  	portal_t *read_portal;
 	#endif
@@ -126,6 +124,15 @@ public:
 	 * Frees the allocated device memory.
 	 **/
 	void deviceFree();
+	#endif
+
+
+	#ifdef PSKEL_MPPA
+	void portalReadAlloc(char path[], int trigger);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void portalWriteAlloc(char path[], int nb_cluster);
 	#endif
 
 	void hostAlloc(size_t width, size_t height, size_t depth);
@@ -223,6 +230,17 @@ public:
 	template<typename Arrays>
 	void copyFromDevice(Arrays array);
 	#endif
+
+
+	#ifdef PSKEL_CUDA
+	void copyTo();
+	#endif
+
+	#ifdef PSKEL_CUDA
+	void copyFrom();
+	#endif
+
+
 
 	#ifdef PSKEL_CUDA
 	/**

@@ -50,10 +50,10 @@ int main(int argc,char **argv) {
   
   // Global data
   /** Alyson: necessario?**/
-  char path[25]; //Alyson: embutir?
-  int i;
-  char *comm_buffer = (char *) malloc(MAX_BUFFER_SIZE);
-  assert(comm_buffer != NULL);
+  //char path[25]; //Alyson: embutir?
+  //int i;
+  //char *comm_buffer = (char *) malloc(MAX_BUFFER_SIZE);
+  //assert(comm_buffer != NULL);
   
   /** Alyson: necessario?**/
   /** Emmanuel: Nao é necessario inicializar**/
@@ -62,12 +62,12 @@ int main(int argc,char **argv) {
   
   // Set initial parameters
   /** Alyson: o mais indicado seria tirar do argv mesmo? **/
-  int nb_clusters = atoi(argv[0]);
-  int nb_threads  = atoi(argv[1]);
-  int cluster_id  = atoi(argv[2]);
+  //--int nb_clusters = atoi(argv[0]);
+  //--int nb_threads  = atoi(argv[1]);
+  //--int cluster_id  = atoi(argv[2]);
   // Initialize global barrier
   /** Alyson: aonde colocar esta barreira? Variavel global na classe Stencil? **/
-  barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
+  //--barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
   
   /** Alyson: pensei em definir arrays vazios para cada variavel e 
    * fazer a leitura dos valores do master na inicialização/construtor da classe Stencil
@@ -77,18 +77,26 @@ int main(int argc,char **argv) {
    *	 Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
    * Verificar se existem macros de compilacao para diferenciar codigo master de slave
    */
+   Array2D<float> input;
+   Array2D<float> output;
+   Mask2D<float> mask;
+   input.copyFrom();
+   mask.copyFrom();
+   /**Emmaunel: Arg também precisa de um porta? */
+   //Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
+   output.copyTo();
   // Initialize communication portals
-  sprintf(path, "/mppa/portal/%d:3", 128 + (cluster_id % 4));
-  portal_t *write_portal = mppa_create_write_portal(path, comm_buffer, MAX_BUFFER_SIZE, 128 + (cluster_id % 4));
+  //--sprintf(path, "/mppa/portal/%d:3", 128 + (cluster_id % 4));
+  //--portal_t *write_portal = mppa_create_write_portal(path, comm_buffer, MAX_BUFFER_SIZE, 128 + (cluster_id % 4));
   
   // Initialize communication portal to receive messages from IO-node
-  sprintf(path, "/mppa/portal/%d:%d", cluster_id, 4 + cluster_id);
-  portal_t *read_portal = mppa_create_read_portal(path, comm_buffer, MAX_BUFFER_SIZE, 1, NULL);
+  //--sprintf(path, "/mppa/portal/%d:%d", cluster_id, 4 + cluster_id);
+  //--portal_t *read_portal = mppa_create_read_portal(path, comm_buffer, MAX_BUFFER_SIZE, 1, NULL);
 
-  mppa_barrier_wait(global_barrier);
+  //--mppa_barrier_wait(global_barrier);
   
   
-  LOG("Slave %d started\n", cluster_id);
+  //--LOG("Slave %d started\n", cluster_id);
   
   /** Alyson: pensei em aqui fazer apenas a chamada do run da classe Stencil
    * e o metodo run se encarrega da leitura e chamar o metodo stencilKernel.
