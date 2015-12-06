@@ -248,7 +248,10 @@ public:
 	* \param[in] nb_clusters the number of clusters to be spawn.
 	* \param[in] nb_threads the number of threads per cluster.
 	**/
-	void runMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads)
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads);
+	#endif
+	#ifdef PSKEL_MPPA
+	void runMPPA(int nb_threads);
 	#endif
 };
 

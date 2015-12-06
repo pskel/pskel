@@ -128,11 +128,11 @@ public:
 
 
 	#ifdef PSKEL_MPPA
-	void portalReadAlloc(char path[], int trigger);
+	void portalReadAlloc(int trigger);
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void portalWriteAlloc(char path[], int nb_cluster);
+	void portalWriteAlloc(int nb_cluster);
 	#endif
 
 	void hostAlloc(size_t width, size_t height, size_t depth);

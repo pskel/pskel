@@ -149,11 +149,19 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_c
 	    pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
 	  }
 	  /**Emmanuel: Aqui será feito a separação do array para pequenos arrays2D
-	  Por motivos de teste, farei agora para apenas um cluster, com uma matriz pequena*/
+	  Por motivos de teste, farei para apenas um cluster, com uma matriz pequena*/
+	  //this->input.portalReadAlloc(1);
+	  //this->mask.portalReadAlloc(1);
+	  this->input.portalWriteAlloc();
+	  this->mask.portalWriteAlloc();
+	  this->output.portalReadAlloc(1);
 	  this->input.copyTo();
+	  this->output.copyTo();
 	  this->mask.copyTo();
-	  this->output.waitWrite(); /**Emmanuel: ainda para ser implementado*/
+	  this->input.waitWrite();
+	  this->mask.waitWrite();
 	  this->output.copyFrom();
+	  this->output.waitRead();
 	  /**Emmanuel: Neste ponto o output, teoricamente, está com a matriz final.*/
 
 	  for (pid = 0; pid < nb_clusters; pid++) {
@@ -169,16 +177,10 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_c
 
  #ifdef PSKEL_MPPA
  template<class Array, class Mask, class Args>
- void StencilBase<Array, Mask,Args>::runMPPA(Array in, Array out, size_t numThreads){
- 		omp_set_num_threads(numThreads);
-		#pragma omp parallel for
-		for (int h = 0; h < in.getHeight(); h++){
-		for (int w = 0; w < in.getWidth(); w++){
-		for (int d = 0; d < in.getDepth(); d++){
-			stencilKernel(in,out,this->mask,this->args,h,w,d);
-		}}}
+ void StencilBase<Array, Mask,Args>::runMPPA(size_t numThreads){
+ 		this->runOpenMP(this->input, this->output, numThreads);
  }
-// #endif
+ #endif
 //*******************************************************************************************
 //*******************************************************************************************
 

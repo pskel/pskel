@@ -80,10 +80,16 @@ int main(int argc,char **argv) {
    Array2D<float> input;
    Array2D<float> output;
    Mask2D<float> mask;
+   input.portalReadAlloc(1);
    input.copyFrom();
+   input.waitRead();
+   mask.portalReadAlloc(1);
    mask.copyFrom();
-   /**Emmaunel: Arg também precisa de um porta? */
-   //Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
+   mask.waitRead();
+
+   /**Emmaunel: Arg também precisa de um portal? */
+   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
+   stencil.runMPPA();
    output.copyTo();
   // Initialize communication portals
   //--sprintf(path, "/mppa/portal/%d:3", 128 + (cluster_id % 4));
