@@ -37,6 +37,7 @@
 #define PSKEL_MASK_H
 
 #include "PSkelArray.h"
+#include "interface_mppa.h"
 
 namespace PSkel{
 
@@ -83,7 +84,7 @@ public:
 	 **/
 	void deviceFree();
 	#endif
-	
+
 	/**
 	 * Allocates the mask in host (main) memory, including both the indexes and the weights.
 	 **/

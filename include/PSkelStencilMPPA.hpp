@@ -42,24 +42,23 @@ namespace PSkel{
 
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], int nb_clusters, int nb_threads){
-	int pid;
-	//int i,cluster_id;
-	// Prepare arguments to send to slaves
-	char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
-	for (int i = 0; i < ARGC_SLAVE - 1; i++)
-		argv_slave[i] = (char*) malloc (sizeof (char) * 10);
-
-	sprintf(argv_slave[0], "%d", nb_clusters);
-	sprintf(argv_slave[1], "%d", nb_threads);
-	argv_slave[3] = NULL;
-
-	// Spawn slave processes
-	for (int cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
-		sprintf(argv_slave[2], "%d", cluster_id);
-		LOG("Master is spawning cluster %d.\n", cluster_id + 1);
-		pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
-		assert(pid >= 0);
-	}
+	int i;
+    int cluster_id;
+    int pid;
+    // Prepare arguments to send to slaves
+    char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
+    for (i = 0; i < ARGC_SLAVE - 1; i++)
+      argv_slave[i] = (char*) malloc (sizeof (char) * 10);
+  
+    sprintf(argv_slave[0], "%d", nb_clusters);
+    sprintf(argv_slave[1], "%d", nb_slaves);
+    argv_slave[3] = NULL;
+  
+    // Spawn slave processes
+    for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
+      sprintf(argv_slave[2], "%d", cluster_id);
+      pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
+    }
 
 	// Free arguments
 	for (int i = 0; i < ARGC_SLAVE; i++)
@@ -126,10 +125,10 @@ void StencilBase<Array, Mask,Args>::runMPPA(const char slave_bin_name[], int nb_
 	 * 
 	 */
 	// Initialize communication portal to receive messages from clusters
-	int num_msg = 1;
-	portal_t **read_portals = (portal_t **) malloc (sizeof(portal_t *) * num_msg);
+	//int num_msg = 1;
+	//portal_t **read_portals = (portal_t **) malloc (sizeof(portal_t *) * num_msg);
 	//verificar se aceitará ler input e o tamanho
-	read_portals[0] = mppa_create_read_portal("/mppa/portal/128:170", this->input,sizeof(Array)*nb_clusters, nb_clusters, NULL);
+	//read_portals[0] = mppa_create_read_portal("/mppa/portal/128:170", this->input,sizeof(Array)*nb_clusters, nb_clusters, NULL);
 	
 	
     /* noc-latency original
@@ -148,14 +147,14 @@ void StencilBase<Array, Mask,Args>::runMPPA(const char slave_bin_name[], int nb_
 	 * 
 	 */
 	// Initialize communication portals to send messages to clusters (one portal per cluster)
-	num_msgs = 1;
-	portal_t **write_portals = (portal_t **) malloc (sizeof(portal_t *) * nb_clusters);
-	for (i = 0; i < nb_clusters; i++) {
-		sprintf(path, "/mppa/portal/%d:%d", i, nb_clusters + i); //verificar valores 
-		write_portals[i] = mppa_create_write_portal(path, i);
-	}
+	// num_msgs = 1;
+	// portal_t **write_portals = (portal_t **) malloc (sizeof(portal_t *) * nb_clusters);
+	// for (i = 0; i < nb_clusters; i++) {
+	// 	sprintf(path, "/mppa/portal/%d:%d", i, nb_clusters + i); //verificar valores 
+	// 	write_portals[i] = mppa_create_write_portal(path, i);
+	// }
 	
-	mppa_barrier_wait(global_barrier);
+	// mppa_barrier_wait(global_barrier);
 	
 	/** Begin processing **/
 	
@@ -203,34 +202,34 @@ void StencilBase<Array, Mask,Args>::runMPPA(const char slave_bin_name[], int nb_
 	 * 
 	 */
 	// post asynchronous writes
-	for (j = 0; j < nb_clusters; j++)
-	    mppa_async_write_portal(write_portals[j], this->input, sizeof(Array), 0);
+	// for (j = 0; j < nb_clusters; j++)
+	//     mppa_async_write_portal(write_portals[j], this->input, sizeof(Array), 0);
 	
-	// block until all asynchronous writes have finished   
-	for (j = 0; j < nb_clusters; j++)
-		mppa_async_write_wait_portal(write_portals[j]);
+	// // block until all asynchronous writes have finished   
+	// for (j = 0; j < nb_clusters; j++)
+	// 	mppa_async_write_wait_portal(write_portals[j]);
 				
-	// Block until receive the asynchronous write FROM ALL CLUSTERS and prepare for next asynchronous writes
-	for (j = 0; j < num_msg; j++)
-		mppa_async_read_wait_portal(read_portals[j]);		
+	// // Block until receive the asynchronous write FROM ALL CLUSTERS and prepare for next asynchronous writes
+	// for (j = 0; j < num_msg; j++)
+	// 	mppa_async_read_wait_portal(read_portals[j]);		
 	
-	mppa_barrier_wait(global_barrier);
+	// mppa_barrier_wait(global_barrier);
 	
-	LOG("MASTER: waiting clusters to finish\n");
+	// LOG("MASTER: waiting clusters to finish\n");
   
-	// Wait for all slave processes to finish
-	for (pid = 0; pid < nb_clusters; pid++) {
-		status = 0;
-		if ((status = mppa_waitpid(pid, &status, 0)) < 0) {
-			printf("[I/O] Waitpid on cluster %d failed.\n", pid);
-			mppa_exit(status);
-		}
-	}
+	// // Wait for all slave processes to finish
+	// for (pid = 0; pid < nb_clusters; pid++) {
+	// 	status = 0;
+	// 	if ((status = mppa_waitpid(pid, &status, 0)) < 0) {
+	// 		printf("[I/O] Waitpid on cluster %d failed.\n", pid);
+	// 		mppa_exit(status);
+	// 	}
+	// }
 	
 	/////////////////////////////////////////////////////////////////////////
 	//	Free barrier and Portals
 	////////////////////////////////////////////////////////////////////////
-	mppa_close_barrier(global_barrier);	
+	//mppa_close_barrier(global_barrier);	
 	//	mppa_close_portal(read_portal);
 
 
@@ -238,13 +237,13 @@ void StencilBase<Array, Mask,Args>::runMPPA(const char slave_bin_name[], int nb_
 	 * e criar/chamar os metodos Array que fazem free de input, output, mask  e args 
 	 * 
 	 */
-	for (j = 0; j < nb_clusters; j++)
-		mppa_close_portal(write_portals[j]);
+	// for (j = 0; j < nb_clusters; j++)
+	// 	mppa_close_portal(write_portals[j]);
 
-	for(i = 0; i < nb_clusters; i++)
-		mppa_close_portal(read_portals[i]);
+	// for(i = 0; i < nb_clusters; i++)
+	// 	mppa_close_portal(read_portals[i]);
 		
-	mppa_exit(0);
+	// mppa_exit(0);
 }
 	
 } //end namespace

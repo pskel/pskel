@@ -33,6 +33,7 @@
 #define PSKEL_MASK_HPP
 
 #include <cstring>
+#include <stdlib.h>
 
 #include "PSkelDefs.h"
 

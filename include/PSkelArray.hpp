@@ -31,10 +31,13 @@
 
 #ifndef PSKEL_ARRAY_HPP
 #define PSKEL_ARRAY_HPP
-
 #include <cstring>
-#include <omp.h>
 
+#ifndef MPPA_MASTER
+#include <omp.h>
+#endif
+
+// Maximum size of the cluster
 #define KB 1024
 #define MB 1024 * KB
 // maximum size of a message
@@ -57,14 +60,20 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
 	this->deviceArray = 0;
-	if(size()>0) this->hostAlloc();
 	#endif
 	#ifdef PSKEL_MPPA
-	//**Emmanuel: Como fazer a alocação do mppaArray?
+	#ifdef MPPA_MASTER
+	printf("ConstrutorMaster\n");
+	#else
+	printf("ConstrutorSlave\n");
+	#endif
 	this->mppaArray = 0;
+	/**Emmanuel: Alocar diretamente s portais no construtor.*/
 	this->write_portal = 0;
 	this->read_portal = 0;
 	if(size()>0) this->mppaAlloc();
+	#else
+	if(size()>0) this->hostAlloc();
 	#endif
 }
 
@@ -111,10 +120,13 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaAlloc(){
 	#ifdef MPPA_MASTER
+	printf("Alocou para o mestre!\n");
 	if(this->mppaArray==NULL){
 		this->mppaArray = (T*) calloc(size(), sizeof(T));
 	}
+	#endif
 	#ifdef MPPA_SLAVE
+	printf("Alocou para o escravo!\n");
 	if(this->mppaArray==NULL){
 		this->mppaArray = (T*) calloc(size(), MAX_CLUSTER_SIZE);
 	}
@@ -146,9 +158,9 @@ void ArrayBase<T>::hostAlloc(){
 template<typename T>
 void ArrayBase<T>::hostFree(){
 	//if(this->hostArray!=NULL){
-		free(this->hostArray);
-		//cudaFreeHost(this->hostArray);
-		this->hostArray = NULL;
+	free(this->hostArray);
+	//cudaFreeHost(this->hostArray);
+	this->hostArray = NULL;
 	//}
 }
 
@@ -193,6 +205,13 @@ template<typename T>
 T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 	return this->hostArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
 }
+
+#ifdef PSKEL_MPPA
+template<typename T>
+T& ArrayBase<T>::mppaGet(size_t h, size_t w, size_t d) const {
+	return this->mppaArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
+}
+#endif
 
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t width, size_t height, size_t depth){
@@ -239,72 +258,79 @@ void ArrayBase<T>::hostClone(Arrays array){
 }
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo() const{
+void ArrayBase<T>::copyTo(){
 	mppa_async_write_portal(this->write_portal, this->mppaArray, this->memSize(), 0);
+	printf("Copied To MPPA\n");
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyFrom() const{
+void ArrayBase<T>::copyFrom(){
 	mppa_async_read_wait_portal(this->read_portal);
+	printf("Copied From MPPA\n");
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::portalReadAlloc(int trigger) const{
+void ArrayBase<T>::portalReadAlloc(int trigger){
 	#ifdef MPPA_MASTER
-	    sprintf(path, "/mppa/portal/%d:3", 128);
-		this->read_portal = mppa_create_read_portal(path, this->mppaArray, this->memSize(), trigger, NULL);
+		char pathMaster[256];
+		printf("PortalReadAllocMaster\n");
+	    sprintf(pathMaster, "/mppa/portal/%d:5", 128);
+		this->read_portal = mppa_create_read_portal(pathMaster, this->mppaArray, this->memSize(), trigger, NULL);
 	#endif
 	#ifdef MPPA_SLAVE
 	/**Emmanuel: posteriormente, modificar para mais de um cluster*/
-	sprintf(path, "/mppa/portal/%d:%d", 0, 4);
-    this->read_portal = mppa_create_read_portal(path, this->mppaArray, this->memSize(), trigger, NULL);
+	char pathSlave[25];
+	printf("PortalReadAllocSlave\n");
+	sprintf(pathSlave, "/mppa/portal/%d:%d", 0, 4);
+    this->read_portal = mppa_create_read_portal(pathSlave, this->mppaArray, this->memSize(), trigger, NULL);
 	#endif
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::portalWriteAlloc(char path[], int nb_cluster) const{
+void ArrayBase<T>::portalWriteAlloc(int nb_cluster){
+	char path[256];
 	#ifdef MPPA_MASTER
 		/**Emmanuel: posteriormente, modificar para mais de um cluster*/
 		sprintf(path, "/mppa/portal/%d:%d", 0, 4);
-    	this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), 128);
+    	this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), 0);
 	#endif
-    #ifdef MPPA_SLAV
-	/**Emmanuel: Considerar mais de um cluster, número do cluster vindo como arg?*/
-	sprintf(path, "/mppa/portal/%d:3", 128);
-    this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), nb_cluster);
+    #ifdef MPPA_SLAVE
+		/**Emmanuel: Considerar mais de um cluster, número do cluster vindo como arg?*/
+		sprintf(path, "/mppa/portal/%d:5", 128);
+    	this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), 128);
     #endif
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::waitRead() const{
+void ArrayBase<T>::waitRead(){
 	mppa_async_read_wait_portal(this->read_portal);
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::waitWrite() const{
+void ArrayBase<T>::waitWrite(){
 	mppa_async_write_wait_portal(this->write_portal);
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::closePortals() const{
-	mppa_close_portal(this->read_portal);
-	mppa_close_portal(this->write_portal);
+void ArrayBase<T>::closePortals(){
+	//mppa_close_portal(this->read_portal);
+	//mppa_close_portal(this->write_portal);
 }
 #endif
 
-
+#ifndef MPPA_MASTER
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostMemCopy(Arrays array){
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
@@ -318,6 +344,7 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 		}}}
 	}
 }
+#endif
 
 #ifdef PSKEL_CUDA
 template<typename T>
@@ -452,6 +479,9 @@ template<typename T>
 T & Array2D<T>::operator()(size_t h, size_t w) const {
 	#ifdef __CUDA_ARCH__
 		return this->deviceGet(h,w,0);
+	#endif
+	#ifdef PSKEL_MPPA
+		return this->mppaGet(h,w,0);
 	#else
 		return this->hostGet(h,w,0);
 	#endif

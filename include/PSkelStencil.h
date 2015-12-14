@@ -41,7 +41,6 @@
   #include <tbb/parallel_for.h>
   #include <tbb/task_scheduler_init.h>
 #endif
-
 #include "PSkelDefs.h"
 #include "PSkelArray.h"
 #include "PSkelMask.h"
@@ -113,11 +112,18 @@ protected:
 	Args args;
 	Mask mask;
 
+	#ifndef MPPA_MASTER
 	virtual void runSeq(Array in, Array out) = 0;
+	#endif
+
 	#ifdef PSKEL_TBB
 	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
+
+	#ifndef MPPA_MASTER
 	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	#endif
+
 	#ifdef PSKEL_CUDA
 	void runCUDA(Array,Array,int);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSize);
@@ -126,14 +132,18 @@ public:
 	/**
 	 * Executes sequentially in CPU a single iteration of the stencil computation. 
 	 **/
+	#ifndef MPPA_MASTER
 	void runSequential();
+	#endif
 
 	/**
 	 * Executes in CPU, using multithreads, a single iteration of the stencil computation. 
 	 * \param[in] numThreads the number of threads used for processing the stencil kernel.
 	 * if numThreads is 0, the number of threads is automatically chosen.
 	 **/
+	#ifndef MPPA_MASTER
 	void runCPU(size_t numThreads=0);
+	#endif
 
 	#ifdef PSKEL_CUDA
 	/**
@@ -176,8 +186,9 @@ public:
 	 * At each given iteration, except the first, the previous output is used as input.
 	 * \param[in] iterations the number of iterations to be computed.
 	 **/
+	#ifndef MPPA_MASTER
 	void runIterativeSequential(size_t iterations);
-
+	#endif
 	/**
 	 * Executes in CPU, using multithreads, multiple iterations of the stencil computation. 
 	 * At each given iteration, except the first, the previous output is used as input.
@@ -185,7 +196,9 @@ public:
 	 * \param[in] numThreads the number of threads used for processing the stencil kernel.
 	 * if numThreads is 0, the number of threads is automatically chosen.
 	 **/
+	#ifndef MPPA_MASTER
 	void runIterativeCPU(size_t iterations, size_t numThreads=0);
+	#endif
 
 	#ifdef PSKEL_CUDA
 	/**
@@ -262,8 +275,14 @@ public:
 template<class Array, class Mask, class Args>
 class Stencil3D : public StencilBase<Array, Mask, Args>{
 protected:
+	#ifndef MPPA_MASTER
 	void runSeq(Array in, Array out);
+	#endif
+
+	#ifndef MPPA_MASTER
 	void runOpenMP(Array in, Array out, size_t numThreads);
+	#endif
+
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -279,8 +298,15 @@ public:
 template<class Array, class Mask, class Args>
 class Stencil2D : public StencilBase<Array, Mask, Args>{
 protected:
+
+	#ifndef MPPA_MASTER
 	void runSeq(Array in, Array out);
+	#endif
+
+	#ifndef MPPA_MASTER
 	void runOpenMP(Array in, Array out, size_t numThreads);
+	#endif
+
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -298,8 +324,15 @@ public:
 template<class Array, class Mask, class Args>
 class Stencil: public StencilBase<Array, Mask, Args>{
 protected:
+
+	#ifndef MPPA_MASTER
 	void runSeq(Array in, Array out);
+	#endif
+
+	#ifndef MPPA_MASTER
 	void runOpenMP(Array in, Array out, size_t numThreads);
+	#endif
+
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -311,6 +344,6 @@ public:
 }
 
 #include "PSkelStencil.hpp"
-#include "PSkelStencilMPPA.hpp"
+//#include "PSkelStencilMPPA.hpp"
 
 #endif

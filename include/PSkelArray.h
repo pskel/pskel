@@ -42,7 +42,7 @@
 
 #ifdef PSKEL_MPPA
 #include "common.h"
-#include "interface_mppa.h"
+//#include "interface_mppa.h"
 #endif
 
 #include "PSkelDefs.h"
@@ -73,11 +73,6 @@ private:
 	T *mppaArray;
  	portal_t *write_portal;
  	portal_t *read_portal;
-	#endif
-	//communication portal for MPPA
-	#ifdef PSKEL_MPPA
-	portal_t *read_portal;
-	portal_t *write_portal;
 	#endif
 	
 protected:
@@ -231,16 +226,37 @@ public:
 	void copyFromDevice(Arrays array);
 	#endif
 
+	#ifdef PSKEL_MPPA
+	void mppaAlloc();
+	#endif
 
-	#ifdef PSKEL_CUDA
+	#ifdef PSKEL_MPPA
+	void mppaFree();
+	#endif
+
+	#ifdef PSKEL_MPPA
 	void copyTo();
 	#endif
 
-	#ifdef PSKEL_CUDA
+	#ifdef PSKEL_MPPA
 	void copyFrom();
 	#endif
 
+	#ifdef PSKEL_MPPA
+	void waitRead();
+	#endif
 
+	#ifdef PSKEL_MPPA
+	void waitWrite();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void closePortals();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	__host__ __forceinline__ T & mppaGet(size_t h,size_t w,size_t d) const ;
+	#endif
 
 	#ifdef PSKEL_CUDA
 	/**

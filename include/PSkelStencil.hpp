@@ -38,11 +38,12 @@
 
 #include <iostream>
 using namespace std;
-
 #ifdef PSKEL_CUDA
   #include <ga/ga.h>
   #include <ga/std_stream.h>
 #endif
+
+#define ARGC_SLAVE 4
 
 namespace PSkel{
 
@@ -118,11 +119,12 @@ __global__ void stencilTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> 
 //*******************************************************************************************
 // Stencil Base
 //*******************************************************************************************
-
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runSequential(){
 	this->runSeq(this->input, this->output);
 }
+#endif
 
 //*******************************************************************************************
 // MPPA
@@ -130,7 +132,7 @@ void StencilBase<Array, Mask,Args>::runSequential(){
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_clusters, int nb_slaves){
+void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads){
 	  int i;
 	  int cluster_id;
 	  int pid;
@@ -140,32 +142,37 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_c
 	    argv_slave[i] = (char*) malloc (sizeof (char) * 10);
 	  
 	  sprintf(argv_slave[0], "%d", nb_clusters);
-	  sprintf(argv_slave[1], "%d", nb_slaves);
+	  sprintf(argv_slave[1], "%d", nb_threads);
 	  argv_slave[3] = NULL;
 	  
 	  // Spawn slave processes
 	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
 	    sprintf(argv_slave[2], "%d", cluster_id);
-	    pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
+	  	printf("Hello!\n");
+	    pid = mppa_spawn(cluster_id, NULL, "slave", (const char **)argv_slave, NULL);
+	    assert(pid >= 0);
 	  }
 	  /**Emmanuel: Aqui será feito a separação do array para pequenos arrays2D
 	  Por motivos de teste, farei para apenas um cluster, com uma matriz pequena*/
-	  //this->input.portalReadAlloc(1);
-	  //this->mask.portalReadAlloc(1);
-	  this->input.portalWriteAlloc();
-	  this->mask.portalWriteAlloc();
-	  this->output.portalReadAlloc(1);
+
+	  //this->mask.mppaAlloc();
+	  printf("Begin to create portal input!\n");
+	  this->input.portalWriteAlloc(0);
+	  printf("Endend the creation of protal input!\n");
+	  //this->output.portalReadAlloc(1);
+
 	  this->input.copyTo();
-	  this->output.copyTo();
-	  this->mask.copyTo();
-	  this->input.waitWrite();
-	  this->mask.waitWrite();
-	  this->output.copyFrom();
-	  this->output.waitRead();
+	  //mppa_async_write_wait_portal(write_portals[j]);
+	  //this->output.copyFrom();
+	  //this->mask.copyTo();
+	//  this->input.waitWrite();
+	  //this->mask.waitWrite();
+	 // this->output.copyFrom();
+	 // this->output.waitRead();
 	  /**Emmanuel: Neste ponto o output, teoricamente, está com a matriz final.*/
 
 	  for (pid = 0; pid < nb_clusters; pid++) {
-     	mppa_waitpid(pid, &status, 0)) < 0);
+     	mppa_waitpid(pid, NULL, 0);
 	  }
 	  for (i = 0; i < ARGC_SLAVE; i++)
 	    free(argv_slave[i]);
@@ -177,13 +184,13 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(char slave_bin_name[], int nb_c
 
  #ifdef PSKEL_MPPA
  template<class Array, class Mask, class Args>
- void StencilBase<Array, Mask,Args>::runMPPA(size_t numThreads){
- 		this->runOpenMP(this->input, this->output, numThreads);
+ void StencilBase<Array, Mask,Args>::runMPPA(int nb_threads){
+ 		this->runOpenMP(this->input, this->output, nb_threads);
  }
  #endif
 //*******************************************************************************************
 //*******************************************************************************************
-
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runCPU(size_t numThreads){
 	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
@@ -193,6 +200,7 @@ void StencilBase<Array, Mask,Args>::runCPU(size_t numThreads){
 		this->runOpenMP(this->input, this->output, numThreads);
 	#endif
 }
+#endif
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
@@ -329,6 +337,7 @@ void StencilBase<Array, Mask,Args>::runAutoGPU(size_t GPUBlockSize){
 }
 #endif
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeSequential(size_t iterations){
 	Array inputCopy;
@@ -340,7 +349,9 @@ void StencilBase<Array, Mask,Args>::runIterativeSequential(size_t iterations){
 	if((iterations%2)==0) output.hostMemCopy(inputCopy);
 	inputCopy.hostFree();
 }
+#endif
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t numThreads){
 	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
@@ -365,6 +376,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	if((iterations%2)==0) output.hostMemCopy(inputCopy);
 	inputCopy.hostFree();
 }
+#endif
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
@@ -826,6 +838,7 @@ Stencil3D<Array,Mask,Args>::Stencil3D(Array _input, Array _output, Mask _mask, A
 	this->mask = _mask;
 }
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out){
 	for (int h = 0; h < in.getHeight(); h++){
@@ -834,7 +847,9 @@ void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out){
 		stencilKernel(in,out,this->mask,this->args,h,w,d);
 	}}}
 }
+#endif
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil3D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads){
 	omp_set_num_threads(numThreads);
@@ -845,6 +860,7 @@ void Stencil3D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThread
 		stencilKernel(in,out,this->mask,this->args,h,w,d);
 	}}}
 }
+#endif
 
 #ifdef PSKEL_TBB
 template<class Array, class Mask, class Args>
@@ -897,7 +913,7 @@ Stencil2D<Array,Mask,Args>::~Stencil2D(){
 	this->cpuMemFree();
 }
 */
-
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
 	for (int h = 0; h < in.getHeight(); h++){
@@ -905,7 +921,9 @@ void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
+#endif
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads){
 	omp_set_num_threads(numThreads);
@@ -915,6 +933,7 @@ void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThread
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
+#endif
 
 #ifdef PSKEL_TBB
 template<class Array, class Mask, class Args>
@@ -961,13 +980,16 @@ Stencil<Array,Mask,Args>::Stencil(Array _input, Array _output, Mask _mask, Args 
 	this->mask = _mask;
 }
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil<Array,Mask,Args>::runSeq(Array in, Array out){
 	for (int i = 0; i < in.getWidth(); i++){
 		stencilKernel(in,out,this->mask, this->args,i);
 	}
 }
+#endif
 
+#ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads){
 	omp_set_num_threads(numThreads);
@@ -976,6 +998,7 @@ void Stencil<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads)
 		stencilKernel(in,out,this->mask, this->args,i);
 	}
 }
+#endif
 
 #ifdef PSKEL_TBB
 template<class Array, class Mask, class Args>
