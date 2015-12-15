@@ -77,7 +77,7 @@ int main(int argc, char **argv){
 	int pid;
   
 	power = 2;
-	width = 512; height=512; iterations=1;
+	width = 3; height= 3; iterations=1;
   
 	internCircle = 2;//pow(CalcSize(level), 2) - 1;
 	externCircle = 2;//pow(CalcSize(2*level), 2) - 1 - internCircle;
@@ -85,26 +85,7 @@ int main(int argc, char **argv){
 	
 	//Mask configuration
 	Mask2D<int> mask(size);
-	int count = 0;
-	for (int x = (level-2*level); x <= level; x++) {
-		for (int y = (level-2*level); y <= level; y++) {
-			if (x != 0 || y != 0) {
-					mask.set(count, x, y);
-					count++;
-			}
-		}
-	}
 
-	for (int x = (2*level-4*level); x <= 2*level; x++) {
-		for (int y = (2*level-4*level); y <= 2*level; y++) {
-			if (x != 0 || y != 0) {
-				if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
-					mask.set(count, x, y);
-					count++;
-				}
-			}
-		}
-	}
 	Array2D<int> inputGrid(width,height);
 	printf("Criou Array Input\n");
 	Array2D<int> outputGrid(width,height);

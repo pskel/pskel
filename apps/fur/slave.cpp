@@ -27,18 +27,24 @@ namespace PSkel{
     for (int z = 0; z < mask.size; z++) {
       if(z < arg.internCircle) {
         numberA += mask.get(z, input, h, w);
+        //printf("A: %d\n", numberA);
 
       } else {
         numberI += mask.get(z, input, h, w);
+        //printf("I: %d\n", numberI);
       }
     }
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
+    //printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {
       output(h,w) = 0; //without color and inhibitor
+      //printf("Zero\n");
     } else if(numberA - totalPowerI > 0) {
       output(h,w) = 1;//with color and active
+      //printf("One\n");
     } else {
       output(h,w) = input(h,w);//doesn't change
+      //printf("K\n");
     }
   }
 }
@@ -129,16 +135,18 @@ int main(int argc,char **argv) {
    #else
    printf("Sou o Mestre\n");
    #endif
-   Array2D<int> input(512,512);
-   Array2D<int> output(512,512);
-   //barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
-   //mppa_barrier_wait(global_barrier);
+   Array2D<int> input(3,3);
+   Array2D<int> output(3,3);
+   barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
+   mppa_barrier_wait(global_barrier);
    //input.mppaAlloc();
    //output.mppaAlloc();
    printf("Arrived at slave!\n");
    input.portalReadAlloc(1);
    //output.portalWriteAlloc(0);
+   printf("Copy now\n");
    input.copyFrom();
+   printf("Copy end\n");
    //input.waitRead();
    //mask.portalReadAlloc(1);
    //mask.copyFrom();
@@ -146,9 +154,11 @@ int main(int argc,char **argv) {
 
 
    /**Emmaunel: Arg também precisa de um portal? */
-   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
-   stencil.runMPPA(16);
    printf("Hello!");
+   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
+   printf("Begin runMPPA\n");
+   stencil.runMPPA(16);
+   printf("End runMPPA\n");
    //output.copyTo();
   // Initialize communication portals
   //--sprintf(path, "/mppa/portal/%d:3", 128 + (cluster_id % 4));
@@ -193,13 +203,14 @@ int main(int argc,char **argv) {
   */
   
   /** Alyson: embutir isso no final método run? **/
-  //mppa_close_barrier(global_barrier);
+  mppa_close_barrier(global_barrier);
   input.closePortals();
   //mppa_close_portal(write_portal);
   //mppa_close_portal(read_portal);
   
   //LOG("Slave %d finished\n", cluster_id);
   
+  printf("Over\n");
   mppa_exit(0);
   
   return 0;

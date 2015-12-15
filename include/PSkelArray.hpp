@@ -128,7 +128,7 @@ void ArrayBase<T>::mppaAlloc(){
 	#ifdef MPPA_SLAVE
 	printf("Alocou para o escravo!\n");
 	if(this->mppaArray==NULL){
-		this->mppaArray = (T*) calloc(size(), MAX_CLUSTER_SIZE);
+		this->mppaArray = (T*) calloc(size(), sizeof(T));
 	}
 	#endif
 }

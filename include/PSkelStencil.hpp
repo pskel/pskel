@@ -31,6 +31,8 @@
 
 #ifndef PSKEL_STENCIL_HPP
 #define PSKEL_STENCIL_HPP
+#define BARRIER_SYNC_MASTER "/mppa/sync/128:1"
+#define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
 
 #include <cmath>
 #include <algorithm>
@@ -154,13 +156,14 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	  }
 	  /**Emmanuel: Aqui será feito a separação do array para pequenos arrays2D
 	  Por motivos de teste, farei para apenas um cluster, com uma matriz pequena*/
-
+	  barrier_t *global_barrier = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, 1);
 	  //this->mask.mppaAlloc();
 	  printf("Begin to create portal input!\n");
 	  this->input.portalWriteAlloc(0);
 	  printf("Endend the creation of protal input!\n");
 	  //this->output.portalReadAlloc(1);
 
+	  mppa_barrier_wait(global_barrier);
 	  this->input.copyTo();
 	  //mppa_async_write_wait_portal(write_portals[j]);
 	  //this->output.copyFrom();
@@ -172,7 +175,7 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	  /**Emmanuel: Neste ponto o output, teoricamente, está com a matriz final.*/
 
 	  for (pid = 0; pid < nb_clusters; pid++) {
-     	mppa_waitpid(pid, NULL, 0);
+      	mppa_waitpid(pid, NULL, 0);
 	  }
 	  for (i = 0; i < ARGC_SLAVE; i++)
 	    free(argv_slave[i]);
@@ -853,6 +856,7 @@ void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out){
 template<class Array, class Mask, class Args>
 void Stencil3D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads){
 	omp_set_num_threads(numThreads);
+	printf("Arrived at runOpenMP\n");
 	#pragma omp parallel for
 	for (int h = 0; h < in.getHeight(); h++){
 	for (int w = 0; w < in.getWidth(); w++){
