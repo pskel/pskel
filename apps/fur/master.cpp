@@ -40,33 +40,6 @@ int CalcSize(int level){
 	return 0;
 }
 
-void spawn_slaves(const char slave_bin_name[], int nb_clusters, int nb_threads) 
-{
- 	  int i;
-	  int cluster_id;
-	  int pid;
-	  // Prepare arguments to send to slaves
-	  char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
-	  for (i = 0; i < ARGC_SLAVE - 1; i++)
-	    argv_slave[i] = (char*) malloc (sizeof (char) * 10);
-	  
-	  sprintf(argv_slave[0], "%d", nb_clusters);
-	  sprintf(argv_slave[1], "%d", nb_threads);
-	  argv_slave[3] = NULL;
-	  
-	  // Spawn slave processes
-	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
-	    sprintf(argv_slave[2], "%d", cluster_id);
-	  	printf("Hello!\n");
-	    pid = mppa_spawn(cluster_id, NULL, "slave", (const char **)argv_slave, NULL);
-	    assert(pid >= 0);
-	  }
-  
-  // Free arguments
-  for (i = 0; i < ARGC_SLAVE; i++)
-    free(argv_slave[i]);
-  free(argv_slave);
-}
 
 int main(int argc, char **argv){ 
 	int width,height,iterations; //stencil size
@@ -75,21 +48,20 @@ int main(int argc, char **argv){
 	double power;
 	int nb_clusters=1, nb_threads=1;
 	int pid;
-  
+  	
+  	level = 1;
 	power = 2;
-	width = 3; height= 3; iterations=1;
+	width = 4; height= 4; iterations=1;
   
-	internCircle = 2;//pow(CalcSize(level), 2) - 1;
-	externCircle = 2;//pow(CalcSize(2*level), 2) - 1 - internCircle;
+	internCircle = pow(CalcSize(level), 2) - 1;
+	externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
 	size = internCircle + externCircle;
 	
 	//Mask configuration
 	Mask2D<int> mask(size);
 
 	Array2D<int> inputGrid(width,height);
-	printf("Criou Array Input\n");
 	Array2D<int> outputGrid(width,height);
-	printf("Criou Array Input\n");
 
 	Arguments arg;
 	arg.power = power;
@@ -100,30 +72,19 @@ int main(int argc, char **argv){
 	for(int h=0;h<height;h++) {
 		for(int w=0;w<width;w++) {
 			inputGrid(h,w) = rand()%2;
-			//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
 		}
 	}
 
-	printf("Stencil\n");
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
-	printf("EndStencil\n");
-	
-	/** Alyson: talves mudar para stencil.scheduleMPPA() para o codigo
+
+     /** Alyson: talves mudar para stencil.scheduleMPPA() para o codigo
 	* do master e stencil.runMPPA() para o codigo do slave?
 	* Emmanuel: Faz sentido, fica melhor organizado.
 	*/
 	
-	printf("Begin inputGrid\n");
-	//spawn_slaves("slave", nb_clusters, nb_threads);
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads);
 
-	//for (pid = 0; pid < nb_clusters; pid++) {
-    // 	mppa_waitpid(pid, NULL, 0);
-	//}
-	printf("End inputGrid\n");
-	//spawn_slaves("slave", nb_clusters, nb_threads);
-	/** Alyson: necessario? 
-	**/
+
 	inputGrid.mppaFree();
 	outputGrid.mppaFree();
 }

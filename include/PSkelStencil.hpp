@@ -150,7 +150,6 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	  // Spawn slave processes
 	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
 	    sprintf(argv_slave[2], "%d", cluster_id);
-	  	printf("Hello!\n");
 	    pid = mppa_spawn(cluster_id, NULL, "slave", (const char **)argv_slave, NULL);
 	    assert(pid >= 0);
 	  }
@@ -158,20 +157,17 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	  Por motivos de teste, farei para apenas um cluster, com uma matriz pequena*/
 	  barrier_t *global_barrier = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, 1);
 	  //this->mask.mppaAlloc();
-	  printf("Begin to create portal input!\n");
 	  this->input.portalWriteAlloc(0);
-	  printf("Endend the creation of protal input!\n");
-	  //this->output.portalReadAlloc(1);
+
+
+	  this->output.portalReadAlloc(1);
 
 	  mppa_barrier_wait(global_barrier);
 	  this->input.copyTo();
-	  //mppa_async_write_wait_portal(write_portals[j]);
-	  //this->output.copyFrom();
-	  //this->mask.copyTo();
-	//  this->input.waitWrite();
-	  //this->mask.waitWrite();
-	 // this->output.copyFrom();
-	 // this->output.waitRead();
+	  this->input.waitWrite();
+	  mppa_barrier_wait(global_barrier);
+	  this->output.copyFrom();
+
 	  /**Emmanuel: Neste ponto o output, teoricamente, está com a matriz final.*/
 
 	  for (pid = 0; pid < nb_clusters; pid++) {
