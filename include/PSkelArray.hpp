@@ -209,6 +209,14 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 		}
 	}
 	#endif
+	#ifdef PSKEL_MPPA
+	if(this->mppaArray!=NULL){
+		if(this->size()!=(width*height*depth)){
+			this->mppaFree();
+			this->mppaArray = NULL;
+		}
+	}
+	#endif
 	//Copy dimensions
 	this->width = width;
 	this->height = height;
@@ -219,7 +227,11 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realWidth = array.realWidth;
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
+	#ifndef PSKEL_MPPA
 	this->hostArray = array.hostArray;
+	#else
+	this->mppaArray = array.mppaArray;
+	#endif
 }
 
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
@@ -279,12 +291,12 @@ void ArrayBase<T>::portalWriteAlloc(int nb_cluster){
 	#ifdef MPPA_MASTER
 		/**Emmanuel: posteriormente, modificar para mais de um cluster*/
 		sprintf(path, "/mppa/portal/%d:%d", 0, 4);
-    	this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), 0);
+    	this->write_portal = mppa_create_write_portal(path, NULL, 0, 0);
 	#endif
     #ifdef MPPA_SLAVE
 		/**Emmanuel: Considerar mais de um cluster, número do cluster vindo como arg?*/
 		sprintf(path, "/mppa/portal/%d:5", 128);
-    	this->write_portal = mppa_create_write_portal(path, this->mppaArray, this->memSize(), 128);
+    	this->write_portal = mppa_create_write_portal(path, NULL, 0, 128);
     #endif
 }
 #endif

@@ -84,7 +84,11 @@ int main(int argc, char **argv){
 	
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads);
 
-
+	for(int h=0;h<height;h++) {
+		for(int w=0;w<width;w++) {
+			printf("outputGridApplication(%d,%d):%d\n",h,w, outputGrid(h,w));
+		}
+	}
 	inputGrid.mppaFree();
 	outputGrid.mppaFree();
 }

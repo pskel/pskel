@@ -97,29 +97,48 @@ int main(int argc,char **argv) {
    arg.externCircle = externCircle;
    /***********************************************/
 
-   Array2D<int> input(4,4);
+   //Array2D<int> input(4,4);
+   int nb_iterations = atoi(argv[0]);
+   int height = atoi(argv[2]);
+   int width = atoi(argv[1]);
+   Array2D<int> partInput(width,height);
    Array2D<int> output(4,4);
 
    barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
-   mppa_barrier_wait(global_barrier);
 
-   input.portalReadAlloc(1);
-
+   partInput.portalReadAlloc(1);
+   printf("CriouReadAlloc\n");
    output.portalWriteAlloc(0);
-   input.copyFrom();
-
+   printf("CriouWriteAlloc\n");
+   //mppa_barrier_wait(global_barrier);
+   mppa_barrier_wait(global_barrier);
+   for(int i = 0; i < nb_iterations; i++) {
+      printf("PassouDaBarreira\n");
+      partInput.copyFrom();
+      printf("PassouDoCopy\n");
+      for(int h=0;h<partInput.getHeight();h++) {
+          for(int w=0;w<partInput.getWidth();w++) {
+            printf("InputPartSlave(%d,%d):%d\n",h,w, partInput(h,w));
+          }
+      }
+      Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
+      stencil.runMPPA(16);
+      printf("CopyToSlave\n");
+      output.copyTo();
+      output.waitWrite();
+    }
 
    /**Emmaunel: Arg também precisa de um portal? */
-   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(input, output, mask, arg);
-   stencil.runMPPA(16);
+   // for(int h=0;h<4;h++) {
+   //  for(int w=0;w<4;w++) {
+   //    printf("OutputSlave(%d,%d):%d\n",h,w, output(h,w));
+   //  }
+   // }
    //output.copyTo();
-   
-   output.copyTo();
-   mppa_barrier_wait(global_barrier);
-
+   //output.waitWrite();
   /** Alyson: embutir isso no final método run? **/
   mppa_close_barrier(global_barrier);
-  input.closePortals();
+  partInput.closePortals();
   
   mppa_exit(0);
   

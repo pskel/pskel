@@ -45,7 +45,7 @@ using namespace std;
   #include <ga/std_stream.h>
 #endif
 
-#define ARGC_SLAVE 4
+#define ARGC_SLAVE 5
 
 namespace PSkel{
 
@@ -138,21 +138,20 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	  int i;
 	  int cluster_id;
 	  int pid;
+	  size_t tilingHeight = 1;
+	  size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
+
 	  // Prepare arguments to send to slaves
 	  char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
 	  for (i = 0; i < ARGC_SLAVE - 1; i++)
 	    argv_slave[i] = (char*) malloc (sizeof (char) * 10);
 	  
-	  sprintf(argv_slave[0], "%d", nb_clusters);
-	  sprintf(argv_slave[1], "%d", nb_threads);
-	  argv_slave[3] = NULL;
+	  sprintf(argv_slave[0], "%d", hTiling);
+	  sprintf(argv_slave[1], "%d", this->input.getWidth());
+	  sprintf(argv_slave[2], "%d", tilingHeight);
+	  argv_slave[4] = NULL;
 	  
 	  // Spawn slave processes
-	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
-	    sprintf(argv_slave[2], "%d", cluster_id);
-	    pid = mppa_spawn(cluster_id, NULL, "slave", (const char **)argv_slave, NULL);
-	    assert(pid >= 0);
-	  }
 	  /**Emmanuel: Aqui será feito a separação do array para pequenos arrays2D
 	  Por motivos de teste, farei para apenas um cluster, com uma matriz pequena*/
 	  barrier_t *global_barrier = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, 1);
@@ -162,12 +161,51 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 
 	  this->output.portalReadAlloc(1);
 
+	  for (cluster_id = 0; cluster_id < nb_clusters; cluster_id++) {
+	    sprintf(argv_slave[3], "%d", cluster_id);
+	    pid = mppa_spawn(cluster_id, NULL, "slave", (const char **)argv_slave, NULL);
+	    assert(pid >= 0);
+	  }
+	  for(int h=0;h<4;h++) {
+		for(int w=0;w<4;w++) {
+			printf("InputStencil(%d,%d):%d\n",h,w, this->input(h,w));
+		}
+	  }
+	  ////////////////////////////////////////Slice/////////////////////////////////////////////
+	  Array2D<int> partInput;
+	  partInput.portalWriteAlloc(0);
 	  mppa_barrier_wait(global_barrier);
-	  this->input.copyTo();
-	  this->input.waitWrite();
-	  mppa_barrier_wait(global_barrier);
-	  this->output.copyFrom();
+	  for(size_t ht = 0; ht<hTiling; ht++) {
+	  		size_t heightOffset = ht*tilingHeight;
+	  		partInput.hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
 
+			  for(int h=0;h<partInput.getHeight();h++) {
+				for(int w=0;w<partInput.getWidth();w++) {
+					printf("PartInputStencil(%d,%d):%d\n",h,w, partInput(h,w));
+				}
+			  }
+			printf("CopyToMaster1\n");
+			partInput.copyTo();
+			printf("CopyToMaster2\n");
+	  		partInput.waitWrite();
+	  		printf("CopyFromMaster1\n");
+	  		this->output.copyFrom();
+	  		printf("CopyFromMaster2\n");
+
+	  }
+	  // copyTo
+	  // for
+	  // slice create
+	  // end
+	  // waitWrite
+	  /////////////////////////////////////////////////////////////////////////////////////////
+	  //this->input.copyTo();
+
+	 //  for(int h=0;h<4;h++) {
+		// for(int w=0;w<4;w++) {
+		// 	printf("OutputStencil(%d,%d):%d\n",h,w, this->output(h,w));
+		// }
+	 //  }
 	  /**Emmanuel: Neste ponto o output, teoricamente, está com a matriz final.*/
 
 	  for (pid = 0; pid < nb_clusters; pid++) {
