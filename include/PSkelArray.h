@@ -235,7 +235,7 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void copyTo();
+	void copyTo(size_t heightOffset, int offset);
 	#endif
 
 	#ifdef PSKEL_MPPA

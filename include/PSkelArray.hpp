@@ -255,8 +255,9 @@ void ArrayBase<T>::hostClone(Arrays array){
 }
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo(){
-	mppa_async_write_portal(this->write_portal, this->mppaArray, this->memSize(), 0);
+void ArrayBase<T>::copyTo(size_t heightOffset, int offset){
+	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth);
+	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), offset);
 }
 #endif
 

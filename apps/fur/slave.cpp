@@ -27,18 +27,24 @@ namespace PSkel{
     for (int z = 0; z < mask.size; z++) {
       if(z < arg.internCircle) {
         numberA += mask.get(z, input, h, w);
+        printf("A: %d\n", numberA);
 
       } else {
         numberI += mask.get(z, input, h, w);
+        printf("I: %d\n", numberI);
       }
     }
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
+    printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {
       output(h,w) = 0; //without color and inhibitor
+      printf("Zero\n");
     } else if(numberA - totalPowerI > 0) {
       output(h,w) = 1;//with color and active
+      printf("One\n");
     } else {
       output(h,w) = input(h,w);//doesn't change
+      printf("K\n");
     }
   }
 }
@@ -102,7 +108,7 @@ int main(int argc,char **argv) {
    int height = atoi(argv[2]);
    int width = atoi(argv[1]);
    Array2D<int> partInput(width,height);
-   Array2D<int> output(4,4);
+   Array2D<int> output(width,height);
 
    barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 
@@ -123,10 +129,16 @@ int main(int argc,char **argv) {
       }
       Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
       stencil.runMPPA(16);
+      for(int h=0;h<output.getHeight();h++) {
+          for(int w=0;w<output.getWidth();w++) {
+            printf("OutputPartSlave(%d,%d):%d\n",h,w, output(h,w));
+          }
+      }
       printf("CopyToSlave\n");
-      output.copyTo();
+      output.copyTo(0, (i*partInput.memSize()));
       output.waitWrite();
     }
+
 
    /**Emmaunel: Arg também precisa de um portal? */
    // for(int h=0;h<4;h++) {

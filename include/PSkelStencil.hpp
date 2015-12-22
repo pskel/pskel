@@ -185,13 +185,18 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 				}
 			  }
 			printf("CopyToMaster1\n");
-			partInput.copyTo();
+			partInput.copyTo(heightOffset, 0);
 			printf("CopyToMaster2\n");
 	  		partInput.waitWrite();
 	  		printf("CopyFromMaster1\n");
 	  		this->output.copyFrom();
 	  		printf("CopyFromMaster2\n");
 
+	  }
+	  for(int h=0;h<this->output.getHeight();h++) {
+				for(int w=0;w<this->output.getWidth();w++) {
+					printf("PartOutputStencil(%d,%d):%d\n",h,w, output(h,w));
+				}
 	  }
 	  // copyTo
 	  // for
@@ -215,7 +220,7 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	    free(argv_slave[i]);
 	  free(argv_slave);
 
-	  mppa_exit(0);
+	  //mppa_exit(0);
 }
 #endif
 

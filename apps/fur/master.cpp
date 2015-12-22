@@ -91,4 +91,5 @@ int main(int argc, char **argv){
 	}
 	inputGrid.mppaFree();
 	outputGrid.mppaFree();
+	mppa_exit(0);
 }
