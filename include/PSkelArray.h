@@ -73,6 +73,10 @@ private:
 	T *mppaArray;
  	portal_t *write_portal;
  	portal_t *read_portal;
+ 	portal_t *aux_write_portal;
+ 	portal_t *aux_read_portal;
+ 	int aux;
+ 	//T *comm_buffer;
 	#endif
 	
 protected:
@@ -123,11 +127,19 @@ public:
 
 
 	#ifdef PSKEL_MPPA
-	void portalReadAlloc(int trigger);
+	void portalReadAlloc(int trigger, int nb_cluster);
 	#endif
 
 	#ifdef PSKEL_MPPA
 	void portalWriteAlloc(int nb_cluster);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void portalAuxWriteAlloc(int nb_cluster);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void portalAuxReadAlloc(int trigger, int nb_cluster);
 	#endif
 
 	void hostAlloc(size_t width, size_t height, size_t depth);
@@ -235,6 +247,26 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
+	void setTrigger(int trigger);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	int getAux();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void setAux(int heightOffset);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void copyToAux();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void copyFromAux();
+	#endif
+
+	#ifdef PSKEL_MPPA
 	void copyTo(size_t heightOffset, int offset);
 	#endif
 
@@ -251,7 +283,23 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void closePortals();
+	void waitAuxWrite();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void closeReadPortal();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void closeAuxReadPortal();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void closeAuxWritePortal();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void closeWritePortal();
 	#endif
 
 	#ifdef PSKEL_MPPA

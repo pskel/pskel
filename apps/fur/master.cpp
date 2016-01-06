@@ -42,16 +42,17 @@ int CalcSize(int level){
 
 
 int main(int argc, char **argv){ 
+	//printf("COmeçiy\n");
 	int width,height,iterations; //stencil size
 	int umCPUThreads;
 	int internCircle, externCircle, level,size; //mask
 	double power;
-	int nb_clusters=1, nb_threads=1;
+	int nb_clusters=4, nb_threads=1;
 	int pid;
   	
   	level = 1;
 	power = 2;
-	width = 4; height= 4; iterations=1;
+	width = 256; height= 20480; iterations=1;
   
 	internCircle = pow(CalcSize(level), 2) - 1;
 	externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
@@ -81,14 +82,13 @@ int main(int argc, char **argv){
 	* do master e stencil.runMPPA() para o codigo do slave?
 	* Emmanuel: Faz sentido, fica melhor organizado.
 	*/
-	
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads);
 
-	for(int h=0;h<height;h++) {
-		for(int w=0;w<width;w++) {
-			printf("outputGridApplication(%d,%d):%d\n",h,w, outputGrid(h,w));
-		}
-	}
+	// for(int h=0;h<height;h++) {
+	// 	for(int w=0;w<width;w++) {
+	// 		printf("outputGridApplication(%d,%d):%d\n",h,w, outputGrid(h,w));
+	// 	}
+	// }
 	inputGrid.mppaFree();
 	outputGrid.mppaFree();
 	mppa_exit(0);
