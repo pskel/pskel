@@ -63,10 +63,6 @@ int CalcSize(int level){
 
 int main(int argc,char **argv) {
 
-  // int nb_clusters = atoi(argv[0]);
-  // int nb_threads  = atoi(argv[1]);
-  // int cluster_id  = atoi(argv[2]);
-
    /**************Mask for test porpuses****************/
   int level = 1;
   int power = 2;
@@ -103,51 +99,16 @@ int main(int argc,char **argv) {
   arg.externCircle = externCircle;
   /***********************************************/
 
-  //Array2D<int> input(4,4);
   int nb_iterations = atoi(argv[0]);
-  int height = atoi(argv[2]);
   int width = atoi(argv[1]);
+  int height = atoi(argv[2]);
   int cluster_id = atoi(argv[3]);
-  printf("width:%d\n", width);
-  printf("height:%d\n", height);
+  int nb_threads = atoi(argv[4]);
+
+
   Array2D<int> partInput(width,height);
-  Array2D<int> partOutput;
-  Array2D<int> dummy;
   Array2D<int> output(width,height);
-  barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
+  Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
+  stencil.runMPPA(cluster_id, nb_threads, nb_iterations);
 
-  output.portalWriteAlloc(0);
-  partInput.portalReadAlloc(1, cluster_id);
-
-  partOutput.portalAuxReadAlloc(1, cluster_id);
-
-  mppa_barrier_wait(global_barrier);
-;
-  for(int i = 0; i < nb_iterations; i++) {
-    partInput.copyFrom();
-    if(partInput(0,0) == -1){
-        mppa_close_barrier(global_barrier);
-
-        mppa_exit(0);
-    }
-
-    Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
-    stencil.runMPPA(16);
-
-    partOutput.copyFromAux();
-    int aux = partOutput.getAux();
-    //printf("AUX:%d\n", aux);
-    output.copyTo(0, sizeof(int)*aux);
-    output.waitWrite();
-    //printf("Cluster_id End:%d\n", cluster_id);
-  }
-
-  /** Alyson: embutir isso no final método run? **/
-  mppa_close_barrier(global_barrier);
-  //partInput.closeReadPortals();
-  //partOutput.closePortals();
-  
-  mppa_exit(0);
-  
-  return 0;
 }

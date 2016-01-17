@@ -30,44 +30,25 @@ struct Arguments
 };
 
 
-int CalcSize(int level){
-	if (level == 1) {
-		return 3;
-	}
-	if (level >= 1) {
-		return CalcSize(level-1) + 2;
-	}
-	return 0;
-}
-
 
 int main(int argc, char **argv){ 
-	//printf("COmeçiy\n");
-	int width,height,iterations; //stencil size
-	int umCPUThreads;
-	int internCircle, externCircle, level,size; //mask
-	double power;
-	int nb_clusters=4, nb_threads=1;
-	int pid;
-  	
-  	level = 1;
-	power = 2;
-	width = 256; height= 20480; iterations=1;
-  
-	internCircle = pow(CalcSize(level), 2) - 1;
-	externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
-	size = internCircle + externCircle;
-	
+	int width, height, tilingHeight,iterations, pid, nb_clusters, nb_threads; //stencil size
+	if(argc < 7 || argc > 7){
+		printf("Usage: WIDTH, HEIGHT, TILINGHEIGHT, ITERATIONS, NUMBER CLUSTERS, NUMBER THREADS\n");
+	}
+	width = atoi(argv[1]);//4;
+	height= atoi(argv[2]);//4;
+  	tilingHeight = atoi(argv[3]);
+	iterations = atoi(argv[4]);//1;
+	nb_clusters = atoi(argv[5]);//2;
+	nb_threads = atoi(argv[6]);//16;
+
 	//Mask configuration
-	Mask2D<int> mask(size);
+	Mask2D<int> mask;
+	Arguments arg;
 
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
-
-	Arguments arg;
-	arg.power = power;
-	arg.internCircle = internCircle;
-	arg.externCircle = externCircle;
 
 	srand(123456789);
 	for(int h=0;h<height;h++) {
@@ -77,18 +58,8 @@ int main(int argc, char **argv){
 	}
 
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
+	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight);
 
-     /** Alyson: talves mudar para stencil.scheduleMPPA() para o codigo
-	* do master e stencil.runMPPA() para o codigo do slave?
-	* Emmanuel: Faz sentido, fica melhor organizado.
-	*/
-	stencil.scheduleMPPA("slave", nb_clusters, nb_threads);
-
-	// for(int h=0;h<height;h++) {
-	// 	for(int w=0;w<width;w++) {
-	// 		printf("outputGridApplication(%d,%d):%d\n",h,w, outputGrid(h,w));
-	// 	}
-	// }
 	inputGrid.mppaFree();
 	outputGrid.mppaFree();
 	mppa_exit(0);

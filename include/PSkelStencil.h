@@ -252,7 +252,16 @@ public:
 	 * \param[in] nb_clusters the number of clusters to be spawn.
 	 * \param[in] nb_threads the number of threads per cluster.
 	 **/
-	void spawn_slaves(const char slave_bin_name[], size_t nb_clusters, size_t nb_threads);
+	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads);
+	#endif
+
+	#ifdef PSKEL_MPPA
+
+	void mppaSlice(size_t tilingHeight, int nb_clusters);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void waitSlaves(int nb_clusters);
 	#endif
 	
 	#ifdef PSKEL_MPPA
@@ -261,10 +270,10 @@ public:
 	* \param[in] nb_clusters the number of clusters to be spawn.
 	* \param[in] nb_threads the number of threads per cluster.
 	**/
-	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads);
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight);
 	#endif
 	#ifdef PSKEL_MPPA
-	void runMPPA(int nb_threads);
+	void runMPPA(int cluster_id, int nb_threads, int nb_iterations);
 	#endif
 };
 

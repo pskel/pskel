@@ -68,11 +68,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->aux_write_portal = 0;
 	this->aux_read_portal = 0;
 	this->aux = 0;
-	//assert(aux != NULL);
 	if(size()>0) this->mppaAlloc();
-	// this->comm_buffer = (T*) malloc((this->memSize()+sizeof(int)));
-	// this->comm_buffer[0] = *this->mppaArray;
-	// this->comm_buffer[1] = this->aux;
 	#else
 	if(size()>0) this->hostAlloc();
 	#endif
@@ -232,11 +228,8 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->heightOffset = array.heightOffset+heightOffset;
 	this->depthOffset = array.depthOffset+depthOffset;
 	this->realWidth = array.realWidth;
-	//printf("realWidth:%d\n", this->realWidth);
 	this->realHeight = array.realHeight;
-	//printf("realHeight:%d\n", this->realHeight);
 	this->realDepth = array.realDepth;
-	//printf("realDepth:%d\n", this->realDepth);
 	#ifndef PSKEL_MPPA
 	this->hostArray = array.hostArray;
 	#else
@@ -274,9 +267,6 @@ void ArrayBase<T>::setTrigger(int trigger){
 #ifdef PSKEL_MPPA
 template<typename T>
 int ArrayBase<T>::getAux(){
-	//T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth);
-	//mppa_async_write_portal(this->aux_portal, aux, sizeof(size_t), 0);
-	//printf("AUX:%d\n", this->aux);
 	return this->aux;
 }
 #endif
@@ -284,15 +274,6 @@ int ArrayBase<T>::getAux(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::setAux(int heightOffset){
-	//T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth);
-	//mppa_async_write_portal(this->aux_portal, aux, sizeof(size_t), 0);
-	// printf("RealHeightAux:%d\n", heightOffset);
-	// printf("RealWidthAux:%d\n", realWidth);
-	// printf("RealDepthAux:%d\n", realDepth);
-	// printf("HeightAux:%d\n", heightOffset);
-	// printf("WidthAux:%d\n", width);
-	// printf("DepthAux:%d\n", depth);
-
 	this->aux = size_t(heightOffset*realWidth*realDepth);
 }
 #endif
@@ -300,7 +281,6 @@ void ArrayBase<T>::setAux(int heightOffset){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::copyToAux(){
-	//T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth);
 	mppa_async_write_portal(this->aux_write_portal, &this->aux, sizeof(int), 0);
 }
 #endif
@@ -316,7 +296,6 @@ void ArrayBase<T>::copyFromAux(){
 template<typename T>
 void ArrayBase<T>::copyTo(size_t heightOffset, int offset){
 	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth);
-	//this->comm_buffer[0] = *mppaSlicePtr;
 	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), offset);
 }
 #endif
@@ -325,22 +304,19 @@ void ArrayBase<T>::copyTo(size_t heightOffset, int offset){
 template<typename T>
 void ArrayBase<T>::copyFrom(){
 	mppa_async_read_wait_portal(this->read_portal);
-	// this->mppaArray = &this->comm_buffer[0];
-	// this->aux = this->comm_buffer[1];
+
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::portalReadAlloc(int trigger, int nb_cluster){
-	//printf("ReadAlloc\n");
 	#ifdef MPPA_MASTER
 		char pathMaster[256];
 	    sprintf(pathMaster, "/mppa/portal/%d:3", 128);
 		this->read_portal = mppa_create_read_portal(pathMaster, this->mppaArray, this->memSize(), trigger, NULL);
 	#endif
 	#ifdef MPPA_SLAVE
-	/**Emmanuel: posteriormente, modificar para mais de um cluster*/
 	char pathSlave[25];
 	char path[25];
 	sprintf(pathSlave, "/mppa/portal/%d:%d", nb_cluster, 4 + nb_cluster);
@@ -354,11 +330,9 @@ void ArrayBase<T>::portalReadAlloc(int trigger, int nb_cluster){
 template<typename T>
 void ArrayBase<T>::portalAuxWriteAlloc(int nb_cluster){
 	char path[256];
-	//printf("AuxWriteAlloc\n");
 	#ifdef MPPA_MASTER
 		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
     	this->aux_write_portal = mppa_create_write_portal(path, NULL, 0, nb_cluster);
-    	//printf("CriouAuxWrite!\n");
 	#endif
 }
 #endif
@@ -367,11 +341,9 @@ void ArrayBase<T>::portalAuxWriteAlloc(int nb_cluster){
 template<typename T>
 void ArrayBase<T>::portalAuxReadAlloc(int trigger, int nb_cluster){
 	char path[25];
-	//printf("AuxReadAlloc\n");
 	#ifdef MPPA_SLAVE
 		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
     	this->aux_read_portal = mppa_create_read_portal(path, &this->aux, sizeof(int), trigger, NULL);
-    	//printf("CriouAuxRead!\n");
 	#endif
 }
 #endif
@@ -381,19 +353,13 @@ void ArrayBase<T>::portalAuxReadAlloc(int trigger, int nb_cluster){
 template<typename T>
 void ArrayBase<T>::portalWriteAlloc(int nb_cluster){
 	char path[256];
-	//printf("WriteAlloc\n");
 	#ifdef MPPA_MASTER
-		/**Emmanuel: posteriormente, modificar para mais de um cluster*/
 		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, 4 + nb_cluster);
     	this->write_portal = mppa_create_write_portal(path, NULL, 0, nb_cluster);
-    	//printf("CriouWrite!\n");
 	#endif
     #ifdef MPPA_SLAVE
-		/**Emmanuel: Considerar mais de um cluster, número do cluster vindo como arg?*/
-
 		sprintf(path, "/mppa/portal/%d:3", 128);
     	this->write_portal = mppa_create_write_portal(path, NULL, 0, 128);
-    	//printf("CriouWrite!\n");
     #endif
 }
 #endif
@@ -423,7 +389,6 @@ void ArrayBase<T>::waitAuxWrite(){
 template<typename T>
 void ArrayBase<T>::closeReadPortal(){
 	mppa_close_portal(this->read_portal);
-	mppa_close_portal(this->aux_read_portal);
 }
 #endif
 
