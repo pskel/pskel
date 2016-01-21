@@ -5,17 +5,10 @@
 #include <sched.h>
 #include <unistd.h>
 #include <mppaipc.h>
-//#include <mppa/osconfig.h>
-/**Problema com o omp.h**/
 
-//#include "../../include/mppaStencil.h"
-//#include "../../include/PSkelMask.h"
-//#include "../../include/PSkelDefs.h"
-//#include "../../include/mppaArray.h"
 #define PSKEL_MPPA
 #define MPPA_MASTER
 #define ARGC_SLAVE 4
-//#include "../../include/interface_mppa.h"
 #include "../../include/PSkel.h"
 
 using namespace std;
@@ -32,20 +25,20 @@ struct Arguments
 
 
 int main(int argc, char **argv){ 
-	int width, height, tilingHeight,iterations, pid, nb_clusters, nb_threads; //stencil size
+	int width, height, tilingHeight, iterations, pid, nb_clusters, nb_threads; //stencil size
 	if(argc < 7 || argc > 7){
 		printf("Usage: WIDTH, HEIGHT, TILINGHEIGHT, ITERATIONS, NUMBER CLUSTERS, NUMBER THREADS\n");
 	}
-	width = atoi(argv[1]);//4;
-	height= atoi(argv[2]);//4;
+	width = atoi(argv[1]);
+	height= atoi(argv[2]);
   	tilingHeight = atoi(argv[3]);
-	iterations = atoi(argv[4]);//1;
-	nb_clusters = atoi(argv[5]);//2;
-	nb_threads = atoi(argv[6]);//16;
+	iterations = atoi(argv[4]);
+	nb_clusters = atoi(argv[5]);
+	nb_threads = atoi(argv[6]);
 
 	//Mask configuration
-	Mask2D<int> mask;
-	Arguments arg;
+	// Mask2D<int> mask;
+	// Arguments arg;
 
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
@@ -57,10 +50,9 @@ int main(int argc, char **argv){
 		}
 	}
 
-	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
-	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight);
+	//Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
+	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid);
+	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations);
 
-	inputGrid.mppaFree();
-	outputGrid.mppaFree();
 	mppa_exit(0);
 }

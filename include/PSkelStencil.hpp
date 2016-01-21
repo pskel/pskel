@@ -45,7 +45,7 @@ using namespace std;
   #include <ga/std_stream.h>
 #endif
 
-#define ARGC_SLAVE 6
+#define ARGC_SLAVE 7
 
 namespace PSkel{
 
@@ -134,7 +134,7 @@ void StencilBase<Array, Mask,Args>::runSequential(){
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads){
+void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int procIterations){
 	// Prepare arguments to send to slaves
 	int i;
 	int cluster_id;
@@ -152,16 +152,17 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 	sprintf(argv_slave[1], "%d", this->input.getWidth());
 	sprintf(argv_slave[2], "%d", tilingHeight);
 	sprintf(argv_slave[4], "%d", nb_threads);
-	argv_slave[5] = NULL;
+	sprintf(argv_slave[5], "%d", procIterations);
+	argv_slave[6] = NULL;
 	  
 	// Spawn slave processes
 	for (cluster_id = 0; cluster_id < nb_clusters || cluster_id < hTiling; cluster_id++) {
-		if(iterations == 0) {
-			iterationsSlave = 1;
-		} else {
-			r = (cluster_id < itMod)?1:0;
-			iterationsSlave = iterations + r;
-		}
+		// if(iterations == 0) {
+		// 	iterationsSlave = 1;
+		// } else {
+		r = (cluster_id < itMod)?1:0;
+		iterationsSlave = iterations + r;
+		//}
 		sprintf(argv_slave[0], "%d", iterationsSlave);
 		sprintf(argv_slave[3], "%d", cluster_id);
 	    pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
@@ -259,11 +260,11 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 		this->output.setTrigger(itMod);
 		this->output.copyFrom();
 		printf("CopyFromMaster2\n");
-		for(int h=0;h<this->output.getHeight();h++) {
-			for(int w=0;w<this->output.getWidth();w++) {
-				printf("PartOutputStencil(%d,%d):%d\n",h,w, output(h,w));
-			}
-		}
+		// for(int h=0;h<this->output.getHeight();h++) {
+		// 	for(int w=0;w<this->output.getWidth();w++) {
+		// 		printf("PartOutputStencil(%d,%d):%d\n",h,w, output(h,w));
+		// 	}
+		// }
 		for (int i = 0; i < nb_clusters; i++) {
 			cluster[i].closeWritePortal();
 			outputNumber[i].closeAuxWritePortal();
@@ -283,7 +284,7 @@ template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters) {
 	int pid;
 	for (pid = 0; pid < nb_clusters; pid++) {
-    	mppa_waitpid(pid, NULL, 0);
+    		mppa_waitpid(pid, NULL, 0);
 	}
 }
 #endif
@@ -291,45 +292,105 @@ void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters) {
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight){
+void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int procIterations){
 
-	this->spawn_slaves(slave_bin_name, tilingHeight, nb_clusters, nb_threads);
+	this->spawn_slaves(slave_bin_name, tilingHeight, nb_clusters, nb_threads, procIterations);
 	this->mppaSlice(tilingHeight, nb_clusters);
 	this->waitSlaves(nb_clusters);
 
 }
 #endif
 
+
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int nb_iterations){
+	Array2D<int> partOutput;
+	barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
+	output.portalWriteAlloc(0);
+	this->input.portalReadAlloc(1, cluster_id);
 
-  Array2D<int> partOutput;
-  barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
-  output.portalWriteAlloc(0);
-  this->input.portalReadAlloc(1, cluster_id);
+	partOutput.portalAuxReadAlloc(1, cluster_id);
 
-  partOutput.portalAuxReadAlloc(1, cluster_id);
+	mppa_barrier_wait(global_barrier);
 
-  mppa_barrier_wait(global_barrier);
+	for(int i = 0; i < nb_iterations; i++) {
+		this->input.copyFrom();
 
-  for(int i = 0; i < nb_iterations; i++) {
-    this->input.copyFrom();
+		this->runOpenMP(this->input, this->output, nb_threads);
+		partOutput.copyFromAux();
+		int aux = partOutput.getAux();
+		this->output.copyTo(0, sizeof(int)*aux);
+		this->output.waitWrite();
+	}
 
-	this->runOpenMP(this->input, this->output, nb_threads);
+	mppa_close_barrier(global_barrier);
+	this->input.closeReadPortal();
+	partOutput.closeAuxReadPortal();
+	this->output.closeWritePortal();
+	mppa_exit(0);
+}
+#endif
 
-    partOutput.copyFromAux();
-    int aux = partOutput.getAux();
-    this->output.copyTo(0, sizeof(int)*aux);
-    this->output.waitWrite();
-  }
+#ifdef PSKEL_MPPA
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativeMPPA(int cluster_id, int nb_threads, int nb_iterations, int iterations){
+	Array2D<int> partOutput;
+	barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
+	output.portalWriteAlloc(0);
+	this->input.portalReadAlloc(1, cluster_id);
 
-  mppa_close_barrier(global_barrier);
-  this->input.closeReadPortal();
-  partOutput.closeAuxReadPortal();
-  this->output.closeWritePortal();
-  
-  mppa_exit(0);
+	partOutput.portalAuxReadAlloc(1, cluster_id);
+
+	mppa_barrier_wait(global_barrier);
+
+	for(int i = 0; i < nb_iterations; i++) {
+		this->input.copyFrom();
+		Array inputCopy;
+		inputCopy.mppaClone(input);
+		printf("Begin: %d\n", cluster_id );
+		for(size_t it = 0; it<iterations; it++){
+			if(it%2==0){
+				for(int h=0;h<inputCopy.getHeight();h++) {
+					for(int w=0;w<inputCopy.getWidth();w++) {
+						printf("INPUTCOPY BEFORE: %d, %d\n", inputCopy(h,w) , it);
+					}
+				}
+				this->runOpenMP(inputCopy, this->output, nb_threads);
+				for(int h=0;h<this->output.getHeight();h++) {
+					for(int w=0;w<this->output.getWidth();w++) {
+						printf("OUTPUT BEFORE: %d, %d\n", output(h,w) , it);
+					}
+				}
+			} else {
+				for(int h=0;h<inputCopy.getHeight();h++) {
+					for(int w=0;w<inputCopy.getWidth();w++) {
+						printf("INPUTCOPY AFTER: %d, %d\n", inputCopy(h,w) , it);
+					}
+				}
+				this->runOpenMP(this->output, inputCopy, nb_threads);
+				for(int h=0;h<this->output.getHeight();h++) {
+					for(int w=0;w<this->output.getWidth();w++) {
+						printf("OUTPUT AFTER: %d, %d\n", output(h,w) , it);
+					}
+				}
+			}
+
+		}
+		printf("End: %d\n", cluster_id );
+		if((iterations%2)==0) output.mppaMemCopy(inputCopy);
+		inputCopy.mppaFree();
+		partOutput.copyFromAux();
+		int aux = partOutput.getAux();
+		this->output.copyTo(0, sizeof(int)*aux);
+		this->output.waitWrite();
+	}
+
+	mppa_close_barrier(global_barrier);
+	this->input.closeReadPortal();
+	partOutput.closeAuxReadPortal();
+	this->output.closeWritePortal();
+	mppa_exit(0);
 }
 #endif
 //*******************************************************************************************
@@ -1051,6 +1112,13 @@ Stencil2D<Array,Mask,Args>::Stencil2D(Array _input, Array _output, Mask _mask, A
 	this->args = _args;
 	this->mask = _mask;
 }
+
+template<class Array, class Mask, class Args>
+Stencil2D<Array,Mask,Args>::Stencil2D(Array _input, Array _output){
+	this->input = _input;
+	this->output = _output;
+}
+
 /*
 template<class Array, class Mask, class Args>
 Stencil2D<Array,Mask,Args>::~Stencil2D(){

@@ -256,6 +256,28 @@ void ArrayBase<T>::hostClone(Arrays array){
 	//Copy clone memory
 	this->hostMemCopy(array);
 }
+#ifndef MPPA_MASTER
+template<typename T> template<typename Arrays>
+void ArrayBase<T>::mppaClone(Arrays array){
+	//Copy dimensions
+	this->width = array.width;
+	this->height = array.height;
+	this->depth = array.depth;
+	this->widthOffset = 0;
+	this->heightOffset = 0;
+	this->depthOffset = 0;
+	this->realWidth = array.width;
+	this->realHeight = array.height;
+	this->realDepth = array.depth;
+	//Alloc clone memory
+	this->mppaArray = NULL;
+	this->mppaAlloc();
+	//Copy clone memory
+	//#ifdef MPPA_SLAVE
+	this->mppaMemCopy(array);
+	//#endif
+}
+#endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
@@ -429,6 +451,22 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 }
 #endif
 
+#ifndef MPPA_MASTER
+template<typename T> template<typename Arrays>
+void ArrayBase<T>::mppaMemCopy(Arrays array){
+	if(array.size()==array.realSize() && this->size()==this->realSize()){
+		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
+	}else{
+		#pragma omp parallel for
+		for(size_t i = 0; i<height; ++i){
+		for(size_t j = 0; j<width; ++j){
+		for(size_t k = 0; k<depth; ++k){
+                        this->mppaGet(i,j,k)=array.mppaGet(i,j,k);
+		}}}
+	}
+}
+#endif
+
 #ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::copyToDevice(){
@@ -543,6 +581,9 @@ template<typename T>
 T & Array3D<T>::operator()(size_t h,size_t w,size_t d) const {
 	#ifdef __CUDA_ARCH__
 		return this->deviceGet(h,w,d);
+	#endif
+	#ifdef PSKEL_MPPA
+		return this->mppaGet(h,w,d);
 	#else
 		return this->hostGet(h,w,d);
 	#endif
@@ -554,6 +595,11 @@ T & Array3D<T>::operator()(size_t h,size_t w,size_t d) const {
 
 template<typename T>
 Array2D<T>::Array2D() : ArrayBase<T>(0,0,0) {}
+
+//template<typename T>
+// Array2D<T>::~Array2D(){
+// 	this->mppaFree();
+// }
 
 template<typename T>
 Array2D<T>::Array2D(size_t width, size_t height) : ArrayBase<T>(width,height,1){}
@@ -584,6 +630,9 @@ template<typename T>
 T & Array<T>::operator()(size_t w) const {
 	#ifdef __CUDA_ARCH__
 		return this->deviceGet(0,w,0);
+	#endif
+	#ifdef PSKEL_MPPA
+		return this->mppaGet(0,w,0);
 	#else
 		return this->hostGet(0,w,0);
 	#endif

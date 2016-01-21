@@ -212,12 +212,18 @@ public:
 	template<typename Arrays>
 	void hostClone(Arrays array);
 	
+	template<typename Arrays>
+	void mppaClone(Arrays array);
+
 	/**
 	 * Copies the data, in the host (main) memory, from the array given as argument.
 	 * \param[in] array original array that will be copied.
 	 **/
 	template<typename Arrays>
 	void hostMemCopy(Arrays array);
+
+	template<typename Arrays>
+	void mppaMemCopy(Arrays array);
 
 	#ifdef PSKEL_CUDA
 	/**
@@ -376,6 +382,8 @@ public:
          **/
 	Array2D();
 	
+
+	//~Array2D();
 	/**
          * The Array2D constructor creates and allocates the specified 2-dimensional array
          * in the host memory.

@@ -252,7 +252,7 @@ public:
 	 * \param[in] nb_clusters the number of clusters to be spawn.
 	 * \param[in] nb_threads the number of threads per cluster.
 	 **/
-	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads);
+	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int procIterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -270,10 +270,15 @@ public:
 	* \param[in] nb_clusters the number of clusters to be spawn.
 	* \param[in] nb_threads the number of threads per cluster.
 	**/
-	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight);
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int procIterations);
 	#endif
+	
 	#ifdef PSKEL_MPPA
 	void runMPPA(int cluster_id, int nb_threads, int nb_iterations);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void runIterativeMPPA(int cluster_id, int nb_threads, int nb_iterations, int procIterations);
 	#endif
 };
 
@@ -322,6 +327,7 @@ protected:
 public:
 	Stencil2D();
 	Stencil2D(Array _input, Array _output, Mask _mask, Args _args);
+	Stencil2D(Array _input, Array _output);
 	//~Stencil2D();
 };
 
