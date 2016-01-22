@@ -249,36 +249,61 @@ public:
 	/**
 	 * Spawn the slaves in MPPA.
 	 * \param[in] slave_bin_name the name of the slave bynary code.
+	 * \param[in] tilingHeight the height for each tile.
 	 * \param[in] nb_clusters the number of clusters to be spawn.
 	 * \param[in] nb_threads the number of threads per cluster.
 	 **/
-	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int procIterations);
+	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int iterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
-
+	/**
+	* Create the slices for MPPA.
+	* \param[in] tilingHeight the height for each tile.
+	* \param[in] nb_clusters the number of clusters to divide the tiles.
+	**/
 	void mppaSlice(size_t tilingHeight, int nb_clusters);
 	#endif
 
 	#ifdef PSKEL_MPPA
+	/**
+	* wait for the slaves to complete.
+	* \param[in] nb_clusters the number of clusters to wait.
+	**/
 	void waitSlaves(int nb_clusters);
 	#endif
 	
 	#ifdef PSKEL_MPPA
 	/**
+	* Configure the slave execution and wait for them to finish.
 	* \param[in] slave_bin_name the name of the slave bynary code.
 	* \param[in] nb_clusters the number of clusters to be spawn.
 	* \param[in] nb_threads the number of threads per cluster.
+	* \param[in] tilingHeight the height for each tile.
+	* \param[in] iterations the number of iterations for the execution.
 	**/
-	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int procIterations);
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations);
 	#endif
 	
 	#ifdef PSKEL_MPPA
-	void runMPPA(int cluster_id, int nb_threads, int nb_iterations);
+	/**
+	* Configure the portals for the slave and execute the kernel.
+	* \param[in] cluster_id the id of the executing cluster.
+	* \param[in] nb_threads the number of threads for the kernel execution.
+	* \param[in] nb_tiles the number of tiles for the cluster to execute.
+	**/
+	void runMPPA(int cluster_id, int nb_threads, int nb_tiles);
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void runIterativeMPPA(int cluster_id, int nb_threads, int nb_iterations, int procIterations);
+	/**
+	*
+	* \param[in] cluster_id the id of the executing cluster.
+	* \param[in] nb_threads the number of threads for the kernel execution.
+	* \param[in] nb_tiles the number of tiles for the cluster to execute.
+	* \param[in] iterations the number of iterations for the execution.
+	**/
+	void runIterativeMPPA(int cluster_id, int nb_threads, int nb_tiles, int iterations);
 	#endif
 };
 

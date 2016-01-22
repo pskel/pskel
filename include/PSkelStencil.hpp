@@ -134,15 +134,15 @@ void StencilBase<Array, Mask,Args>::runSequential(){
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int procIterations){
+void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int iterations){
 	// Prepare arguments to send to slaves
 	int i;
 	int cluster_id;
 	int pid;
 	size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
-	int iterations = hTiling/nb_clusters;
+	int tiles = hTiling/nb_clusters;
 	int itMod = hTiling % nb_clusters;
-	int iterationsSlave;
+	int tilesSlave;
 	int r;
 
 	char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
@@ -152,7 +152,7 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 	sprintf(argv_slave[1], "%d", this->input.getWidth());
 	sprintf(argv_slave[2], "%d", tilingHeight);
 	sprintf(argv_slave[4], "%d", nb_threads);
-	sprintf(argv_slave[5], "%d", procIterations);
+	sprintf(argv_slave[5], "%d", iterations);
 	argv_slave[6] = NULL;
 	  
 	// Spawn slave processes
@@ -161,9 +161,9 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 		// 	iterationsSlave = 1;
 		// } else {
 		r = (cluster_id < itMod)?1:0;
-		iterationsSlave = iterations + r;
+		tilesSlave = tiles + r;
 		//}
-		sprintf(argv_slave[0], "%d", iterationsSlave);
+		sprintf(argv_slave[0], "%d", tilesSlave);
 		sprintf(argv_slave[3], "%d", cluster_id);
 	    pid = mppa_spawn(cluster_id, NULL, slave_bin_name, (const char **)argv_slave, NULL);
 	    assert(pid >= 0);
@@ -178,9 +178,8 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_clusters) {
-
 	size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
-	int iterations = hTiling/nb_clusters;
+	int tiles = hTiling/nb_clusters;
 	int itMod = hTiling % nb_clusters;
 
 	
@@ -189,7 +188,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	barrier_t *global_barrier = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, nb_clusters);
 
 	Array2D<int> outputNumber[nb_clusters];
-	if(iterations == 0) {
+	if(tiles == 0) {
 		////////////////////////////////Number of clusters are higher//////////////
 		Array2D<int> slice[hTiling];
 		for (int i = 0; i < hTiling; i++) {
@@ -223,11 +222,11 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			outputNumber[i].portalAuxWriteAlloc(i);
 		}
 		mppa_barrier_wait(global_barrier);
-		for(int i = 0; i < iterations; i++) {
+		for(int i = 0; i < tiles; i++) {
 			for (int j = 0; j < nb_clusters; j++) {
 				size_t heightOffset = (j+counter)*tilingHeight;
 				cluster[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
-				//talvez contornar isso, não é muito bom criar outro slice.
+				//talvez contornar isso.
 				outputNumber[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
 				Array2D<int> arr = cluster[j];
 				cluster[j].copyTo(j+counter, 0);
@@ -237,13 +236,10 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				outputNumber[j].waitAuxWrite();
 
 			}
-			printf("CopyFromMaster1\n");
 			this->output.copyFrom();
-			printf("CopyFromMaster2\n");
 		   	counter += nb_clusters;
 		}
 		for (int j = 0; j < itMod; j++) {
-			printf("Hello!\n");
 			size_t heightOffset = (j+counter)*tilingHeight;
 			cluster[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
 			//talvez contornar isso, não é muito bom criar outro slice.
@@ -256,10 +252,8 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			outputNumber[j].waitAuxWrite();
 
 		}
-		printf("CopyFromMaster1\n");
 		this->output.setTrigger(itMod);
 		this->output.copyFrom();
-		printf("CopyFromMaster2\n");
 		// for(int h=0;h<this->output.getHeight();h++) {
 		// 	for(int w=0;w<this->output.getWidth();w++) {
 		// 		printf("PartOutputStencil(%d,%d):%d\n",h,w, output(h,w));
@@ -292,9 +286,9 @@ void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters) {
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int procIterations){
+void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations){
 
-	this->spawn_slaves(slave_bin_name, tilingHeight, nb_clusters, nb_threads, procIterations);
+	this->spawn_slaves(slave_bin_name, tilingHeight, nb_clusters, nb_threads, iterations);
 	this->mppaSlice(tilingHeight, nb_clusters);
 	this->waitSlaves(nb_clusters);
 
@@ -304,7 +298,7 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int nb_iterations){
+void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int nb_tiles){
 	Array2D<int> partOutput;
 	barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 	output.portalWriteAlloc(0);
@@ -314,7 +308,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 
 	mppa_barrier_wait(global_barrier);
 
-	for(int i = 0; i < nb_iterations; i++) {
+	for(int i = 0; i < nb_tiles; i++) {
 		this->input.copyFrom();
 
 		this->runOpenMP(this->input, this->output, nb_threads);
@@ -334,7 +328,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runIterativeMPPA(int cluster_id, int nb_threads, int nb_iterations, int iterations){
+void StencilBase<Array, Mask,Args>::runIterativeMPPA(int cluster_id, int nb_threads, int nb_tiles, int iterations){
 	Array2D<int> partOutput;
 	barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 	output.portalWriteAlloc(0);
@@ -344,7 +338,7 @@ void StencilBase<Array, Mask,Args>::runIterativeMPPA(int cluster_id, int nb_thre
 
 	mppa_barrier_wait(global_barrier);
 
-	for(int i = 0; i < nb_iterations; i++) {
+	for(int i = 0; i < nb_tiles; i++) {
 		this->input.copyFrom();
 		Array inputCopy;
 		inputCopy.mppaClone(input);
