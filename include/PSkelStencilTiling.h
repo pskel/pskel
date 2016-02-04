@@ -66,12 +66,19 @@ public:
 	size_t coreHeight;
 	size_t coreDepth;
 
+	StencilTiling() {}
+
 	StencilTiling(Array in, Array out, Mask mask){
 		this->input = in;
 		this->output = out;
 		this->mask = mask;
 	}
 
+	void setVal(Array in, Array out, Mask mask) {
+		this->input = in;
+		this->output = out;
+		this->mask = mask;		
+	}
 	/**
 	 * Updates the stencil tiling information for the specified number of iterations and tile size.
 	 * \param[in] iterations number of iterations consecutively executed on the device (GPU).

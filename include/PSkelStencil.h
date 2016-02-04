@@ -44,9 +44,9 @@
 #include "PSkelDefs.h"
 #include "PSkelArray.h"
 #include "PSkelMask.h"
-#ifdef PSKEL_CUDA
+//#ifdef PSKEL_CUDA
   #include "PSkelStencilTiling.h"
-#endif
+//#endif
 
 namespace PSkel{
 
@@ -262,7 +262,7 @@ public:
 	* \param[in] tilingHeight the height for each tile.
 	* \param[in] nb_clusters the number of clusters to divide the tiles.
 	**/
-	void mppaSlice(size_t tilingHeight, int nb_clusters);
+	void mppaSlice(size_t tilingHeight, int nb_clusters, int iterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -352,7 +352,7 @@ protected:
 public:
 	Stencil2D();
 	Stencil2D(Array _input, Array _output, Mask _mask, Args _args);
-	Stencil2D(Array _input, Array _output);
+	Stencil2D(Array _input, Array _output, Mask _mask);
 	//~Stencil2D();
 };
 

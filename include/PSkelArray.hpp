@@ -67,7 +67,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->read_portal = 0;
 	this->aux_write_portal = 0;
 	this->aux_read_portal = 0;
-	this->aux = 0;
+	this->aux = (int *) malloc(sizeof(size_t*) * 13);
 	if(size()>0) this->mppaAlloc();
 	#else
 	if(size()>0) this->hostAlloc();
@@ -288,22 +288,38 @@ void ArrayBase<T>::setTrigger(int trigger){
 
 #ifdef PSKEL_MPPA
 template<typename T>
-int ArrayBase<T>::getAux(){
+int* ArrayBase<T>::getAux(){
+	printf("AuxArray: %d\n", *(this->aux));
 	return this->aux;
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::setAux(int heightOffset){
-	this->aux = size_t(heightOffset*realWidth*realDepth);
+void ArrayBase<T>::setAux(int heightOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth){
+	this->aux[0] = size_t(heightOffset*realWidth*realDepth);
+	this->aux[1] = it;
+	this->aux[2] = subIterations;
+	this->aux[3] = coreWidthOffset;
+	this->aux[4] = coreHeightOffset;
+	this->aux[5] = coreDepthOffset;
+	this->aux[6] = coreWidth;
+	this->aux[7] = coreHeight;
+	this->aux[8] = coreDepth;
+	this->aux[9] = outterIterations;
+	this->aux[10] = height;
+	this->aux[11] = width;
+	this->aux[12] = depth;
+
+
+	printf("SetAux: %d\n ", aux[0], (heightOffset*realWidth*realDepth));
 }
 #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::copyToAux(){
-	mppa_async_write_portal(this->aux_write_portal, &this->aux, sizeof(int), 0);
+	mppa_async_write_portal(this->aux_write_portal, this->aux, (sizeof(int*) * 13), 0);
 }
 #endif
 
@@ -365,7 +381,7 @@ void ArrayBase<T>::portalAuxReadAlloc(int trigger, int nb_cluster){
 	char path[25];
 	#ifdef MPPA_SLAVE
 		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
-    	this->aux_read_portal = mppa_create_read_portal(path, &this->aux, sizeof(int), trigger, NULL);
+    	this->aux_read_portal = mppa_create_read_portal(path, this->aux, (sizeof(int*) * 13), trigger, NULL);
 	#endif
 }
 #endif
@@ -454,16 +470,22 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 #ifndef MPPA_MASTER
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::mppaMemCopy(Arrays array){
+	printf("Entry permitted in mppaMemCopy\n");
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
+		printf("If\n");
 		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
+		printf("End1\n");
 	}else{
+		printf("Else\n");
 		#pragma omp parallel for
 		for(size_t i = 0; i<height; ++i){
 		for(size_t j = 0; j<width; ++j){
 		for(size_t k = 0; k<depth; ++k){
-                        this->mppaGet(i,j,k)=array.mppaGet(i,j,k);
+                        	this->mppaGet(i,j,k)=array.mppaGet(i,j,k);
 		}}}
+		printf("End2\n");
 	}
+	printf("Exit permitted\n");
 }
 #endif
 

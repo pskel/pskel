@@ -75,7 +75,7 @@ private:
  	portal_t *read_portal;
  	portal_t *aux_write_portal;
  	portal_t *aux_read_portal;
- 	int aux;
+ 	int* aux;
  	//T *comm_buffer;
 	#endif
 	
@@ -257,11 +257,11 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	int getAux();
+	int* getAux();
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void setAux(int heightOffset);
+	void setAux(int heightOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth);
 	#endif
 
 	#ifdef PSKEL_MPPA

@@ -106,13 +106,13 @@ int main(int argc,char **argv) {
   int nb_threads = atoi(argv[4]);
   int iterations = atoi(argv[5]);
 
-  Array2D<int> partInput(width,height);
-  Array2D<int> output(width,height);
+  Array2D<int> partInput(height, width);
+  Array2D<int> output(height, width);
   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
-  if(procIterations == 0)  {
-        stencil.runMPPA(cluster_id, nb_threads, nb_tiles);
-  } else {
-        stencil.runIterativeMPPA(cluster_id, nb_threads, nb_iterations, iterations);
-  }
+  // if(iterations == 0)  {
+         stencil.runMPPA(cluster_id, nb_threads, nb_tiles);
+  // } else {
+  //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
+  //}
 
 }
