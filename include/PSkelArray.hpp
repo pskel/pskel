@@ -212,6 +212,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 		}
 	}
 	#endif
+	printf("Done hostT\n");
 	#ifdef PSKEL_MPPA
 	if(this->mppaArray!=NULL){
 		if(this->size()!=(width*height*depth)){
@@ -221,6 +222,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	}
 	#endif
 	//Copy dimensions
+	printf("Done host\n");
 	this->width = width;
 	this->height = height;
 	this->depth = depth;
@@ -235,6 +237,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	#else
 	this->mppaArray = array.mppaArray;
 	#endif
+	printf("HOSTTT\n");
 }
 
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
@@ -289,7 +292,7 @@ void ArrayBase<T>::setTrigger(int trigger){
 #ifdef PSKEL_MPPA
 template<typename T>
 int* ArrayBase<T>::getAux(){
-	printf("AuxArray: %d\n", *(this->aux));
+	// printf("AuxArray: %d\n", *(this->aux));
 	return this->aux;
 }
 #endif
@@ -312,7 +315,7 @@ void ArrayBase<T>::setAux(int heightOffset, int it, int subIterations, size_t co
 	this->aux[12] = depth;
 
 
-	printf("SetAux: %d\n ", aux[0], (heightOffset*realWidth*realDepth));
+	// printf("SetAux: %d\n ", aux[0], (heightOffset*realWidth*realDepth));
 }
 #endif
 
@@ -470,22 +473,16 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 #ifndef MPPA_MASTER
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::mppaMemCopy(Arrays array){
-	printf("Entry permitted in mppaMemCopy\n");
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
-		printf("If\n");
 		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
-		printf("End1\n");
 	}else{
-		printf("Else\n");
 		#pragma omp parallel for
 		for(size_t i = 0; i<height; ++i){
 		for(size_t j = 0; j<width; ++j){
 		for(size_t k = 0; k<depth; ++k){
                         	this->mppaGet(i,j,k)=array.mppaGet(i,j,k);
 		}}}
-		printf("End2\n");
 	}
-	printf("Exit permitted\n");
 }
 #endif
 

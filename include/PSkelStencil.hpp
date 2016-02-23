@@ -196,28 +196,28 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	// porque subdividir as iterações?
 	// por que colocar iterações no tile?
 	//Como funciona?
-	StencilTiling<Array, Mask> tiling(this->input, this->output, this->mask);
-	StencilTiling<Array, Mask> tiling1(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask>tiling(this->input, this->output, this->mask);
+	//StencilTiling<Array, Mask> tiling1(this->input, this->output, this->mask);
 	//StencilTiling<Array, Mask> arrTiling[tiles];//(this->input, this->output, this->mask);
 	int innerIterations = 1;
 	size_t outterIterations;
-	if( iterations == 0) {
-		outterIterations = 1;
-	} else {
+	//if( iterations == 0) {
+		//outterIterations = 1;
+	//} else {
 		outterIterations = ceil(float(iterations)/innerIterations);
-	}
+	//}
 	for(size_t it = 0; it<outterIterations; it++){
 		size_t subIterations = innerIterations;
-		if ( iterations == 0) {
-			subIterations = 1;
-		} else {
+		// if ( iterations == 0) {
+		// 	subIterations = 1;
+		// } else {
 			if(((it+1)*innerIterations)>iterations){
 				subIterations = iterations-(it*innerIterations);
 			}
-		}
-		printf("Is\n");
+		//}
+		printf("SubIterations:%d\n", subIterations);
 		if(tiles == 0) {
-			printf("hTiling is lower\n");
+			//printf("hTiling is lower\n");
 			////////////////////////////////Number of clusters are higher//////////////
 			Array2D<int> slice[hTiling];
 			for (int i = 0; i < hTiling; i++) {
@@ -237,9 +237,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	   			slice[ht].copyTo(ht, 0);
 	   			slice[ht].waitWrite();
 	   			//tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth
-	   			printf("SetAux\n");
+	   			//printf("SetAux\n");
 	   			outputNumber[ht].setAux(heightOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth);
-	   			printf("CopyTo\n");
+	   			//printf("CopyTo\n");
 	   			outputNumber[ht].copyToAux();
 	   			outputNumber[ht].waitAuxWrite();
 			}
@@ -252,95 +252,93 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 
 		} else {
 			///////////////////////////hTiling is higher///////////////////////////////
-			printf("hTiling is higher\n");
+			//printf("hTiling is higher\n");
 			//Array2D<int> cluster[nb_clusters];
 			int counter = 0;
+			int counterAux = 0;
 			size_t heightOffset;
 			//StencilTiling<>
 			for (int i = 0; i < nb_clusters; i++) {
 				//cluster[i].portalWriteAlloc(i);
 				outputNumber[i].portalAuxWriteAlloc(i);
 			}
-			printf("Barrier Master\n");
-			mppa_barrier_wait(global_barrier);
-			printf("Exit Barrier Master\n");
+			for (int i = 0; i < nb_clusters; i++) {
+				cluster[i].portalWriteAlloc(i);
+				//outputNumber[i].portalAuxWriteAlloc(i);
+			}
+			// printf("Barrier Master\n");
+			// printf("Exit Barrier Master\n");
 			for(int i = 0; i < tiles; i++) {
+				mppa_barrier_wait(global_barrier);
 				for (int j = 0; j < nb_clusters; j++) {
 					heightOffset = (j+counter)*tilingHeight;
 					printf("heightOffset: %d\n", heightOffset);
+
 					tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
-					// for(int h=0;h<tiling.input.getHeight();h++) {
-					// 	for(int w=0;w<tiling.input.getWidth();w++) {
-					// 		printf("Slicetiling1.tile(%d,%d):%d\n",h,w, tiling.input(h,w));
-					// 	}
-					// }
-					// for (int i = 0; i < nb_clusters; i++) {
-					// 	//cluster[i].portalWriteAlloc(i);
-					// 	outputNumber[i].portalAuxWriteAlloc(i);
-					// }
-					// printf("Barrier Master\n");
-					// mppa_barrier_wait(global_barrier);
-					// printf("Exit Barrier Master\n");
-					//talvez contornar isso.
-					//outputNumber[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
-					printf("Hi,\n");
-	   				printf("tilingHeight:%d\n", tiling.height);
-	   				printf("tilingWidth:%d\n", tiling.width);
-	   				// printf("tilingCoreWidthOffset:%d\n", tiling.height);
-	   				// printf("tilingCoreHeightOffset:%d\n", tiling.height);
-	   				// printf("tilingCoreDepthOffset:%d\n", tiling.height);
-	   				// printf("tilingCoreWidth:%d\n", tiling.height);
-	   				// printf("tilingCoreHeight:%d\n", tiling.height);
-	   				// printf("tilingCoreDepth:%d\n", tiling.height);
-	   				// printf("tilingHeight:%d\n", tiling.height);
-	   				// printf("tilingHeight:%d\n", tiling.height);
-	   				// printf("tilingHeight:%d\n", tiling.height);
-	   				// printf("tilingHeight:%d\n", tiling.height);
-					outputNumber[j].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-					printf("Are\n");
-					printf("SetAux\n");
+
+					outputNumber[j].hostSlice(this->input,  0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
+
 					outputNumber[j].setAux(heightOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth);
-					printf("CopyTo\n");
+
 					outputNumber[j].copyToAux();
-					printf("EndedCopyTo\n");
+
 					outputNumber[j].waitAuxWrite();
 				}
 
-				for (int i = 0; i < nb_clusters; i++) {
-					cluster[i].portalWriteAlloc(i);
-					//outputNumber[i].portalAuxWriteAlloc(i);
-				}
-				printf("Barreira Mestre outputNumber\n");
 				mppa_barrier_wait(global_barrier);
-				printf("Barreira Mestre Cluster\n");
 				for (int j = 0; j < nb_clusters; j++) {
 					heightOffset = (j+counter)*tilingHeight;
-					printf("heightOffset: %d\n", heightOffset);
+					for(int h=0;h<tiling.input.getHeight();h++) {
+						for(int w=0;w<tiling.input.getWidth();w++) {
+							printf("Slicetiling.tile fisrt(%d,%d):%d\n",h,w, tiling.input(h,w));
+						}
+					}
 					tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
-					// for(int h=0;h<tiling.input.getHeight();h++) {
-					// 	for(int w=0;w<tiling.input.getWidth();w++) {
-					// 		printf("Slicetiling.tile(%d,%d):%d\n",h,w, tiling.input(h,w));
-					// 	}
-					// }
+					for(int h=0;h<tiling.input.getHeight();h++) {
+						for(int w=0;w<tiling.input.getWidth();w++) {
+							printf("Slicetiling.tile second(%d,%d):%d\n",h,w, tiling.input(h,w));
+						}
+					}
+					printf("maskRange:%d\n", this->mask.getRange());
+					printf("subIterations:%d\n", subIterations);
+					printf("heightOffsetMaster:%d\n", heightOffset);
+					printf("InputGetWidth:%d\n", this->input.getWidth());
+					printf("tilingHeight:%d\n", tilingHeight);
+					printf("tilingWidthOffset: %d\n", tiling.widthOffset);
+					printf("tilingHeightOffset: %d\n", tiling.heightOffset);
+					printf("tilingDepthOffset: %d\n", tiling.depthOffset);
+					printf("tiling.height: %d\n", tiling.height);
+					printf("tiling.width: %d\n", tiling.width);
+					printf("tiling.depth: %d\n", tiling.depth);
+
+
 					//cluster[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
+					//cluster[j].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
 					cluster[j].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+					printf("SAIU DO ERRO!\n");
 					Array nb = cluster[j];
-					for(int h=0;h<nb.getHeight();h++) {
-						for(int w=0;w<nb.getWidth();w++) {
-							printf("Tiling.input Sliced(%d,%d):%d\n",h,w, nb(h,w));
+					for(int h=0;h<cluster[j].getHeight();h++) {
+						for(int w=0;w<cluster[j].getWidth();w++) {
+							printf("Tiling.input Sliced(%d,%d):%d\n",h,w, cluster[j](h,w));
 						}
 					}
 					Array2D<int> arr = cluster[j];
-					cluster[j].copyTo(j+counter, 0);
+					cluster[j].copyTo(0, 0);//j+counter
 					cluster[j].waitWrite();
-					printf("Waited\n");
-
+					// printf("Waited\n");
 				}
-				printf("CopyFrom\n");
+				// printf("CopyFrom\n");
+				//printf("GW\n");
 				this->output.copyFrom();
-				printf("CopyFromEnd\n");
-			   	counter += nb_clusters;
-			}
+				for(int h=0;h<this->output.getHeight();h++) {
+					for(int w=0;w<this->output.getWidth();w++) {
+						printf("OutputSemi(%d,%d):%d\n",h,w, this->output(h,w));
+					}
+				}
+				//printf("WW\n");
+		   		counter += nb_clusters;
+				// printf("CopyFromEnd\n");
+		   	}
 			for (int j = 0; j < itMod; j++) {
 				size_t heightOffset = (j+counter)*tilingHeight;
 				cluster[j].hostSlice(this->input, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
@@ -350,9 +348,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				cluster[j].copyTo(j+counter, 0);
 				cluster[j].waitWrite();
 				outputNumber[j].setAux(heightOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth);
-				printf("SetAux\n");
+				//printf("SetAux\n");
 				outputNumber[j].copyToAux();
-				printf("CopyTo\n");
+				//printf("CopyTo\n");
 				outputNumber[j].waitAuxWrite();
 
 			}
@@ -367,7 +365,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 					printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
 				}
 			}
-			printf("Heap\n");
+			//printf("Heap\n");
 		}
 	}
 	this->output.closeReadPortal();
@@ -391,13 +389,13 @@ void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters) {
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations){
-	printf("Hello\n");
+	//printf("Hello\n");
 	this->spawn_slaves(slave_bin_name, tilingHeight, nb_clusters, nb_threads, iterations);
-	printf("Hello2\n");
+	//printf("Hello2\n");
 	this->mppaSlice(tilingHeight, nb_clusters, iterations);
-	printf("Hello3\n");
+	//printf("Hello3\n");
 	this->waitSlaves(nb_clusters);
-	printf("Hello4\n");
+	//printf("Hello4\n");
 
 }
 #endif
@@ -406,46 +404,51 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int nb_tiles){
-	printf("OOIOAIE\n");
-	Array2D<int> partOutput;
+	// printf("OOIOAIE\n");
+	Array2D<int> auxPortal;
 	Array2D<int> coreTmp;
+	Array2D<int> finalArr;
+
+	int* aux;
 	barrier_t *global_barrier = mppa_create_slave_barrier (BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
-	//barrier_t *global_barrier1 = mppa_create_slave_barrier (BARRIER_SYNC_MASTER1, BARRIER_SYNC_SLAVE1);
-	output.portalWriteAlloc(0);
 
-	partOutput.portalAuxReadAlloc(1, cluster_id);
-	printf("Barreira Aux Escravo\n");
-	mppa_barrier_wait(global_barrier);
-	printf("Saiu Barreira Aux Escravo: %d\n", cluster_id);
-	partOutput.copyFromAux();
-	printf("Copied:%d\n", cluster_id);
-	int* aux = partOutput.getAux();
-	int h = aux[10];
-	printf("height:%d\n", h);
-	int w = aux[11];
-	printf("width:%d\n", w);
-	int d = aux[12];
-	Array2D<int> tmp(h,w);
-	
-	//sleep(5);
-	printf("Chegou na barreira o escravo: %d\n", cluster_id);
-	tmp.portalReadAlloc(1, cluster_id);
-	printf("Barreira Input Escravo\n");
-
-	printf("nb_tiles: %d, cluster _id: %d\n", nb_tiles, cluster_id);
+	//inputTmp = arr[0];
+	int counter = cluster_id;
 	for(int i = 0; i < nb_tiles; i++) {
+		//printf("Barreira Input Escravo\n");
+		// printf("Saiu Barreira Aux Escravo: %d\n", cluster_id);
+		auxPortal.portalAuxReadAlloc(1, cluster_id);
 		mppa_barrier_wait(global_barrier);
-		printf("Saiu Barreira Input Escravo\n");
-		tmp.copyFrom();
+		auxPortal.copyFromAux();
+		aux = auxPortal.getAux();
+		int h = aux[10];
+		int w = aux[11];
+		int d = aux[12];
+		Array2D<int> inputTmp(w,h);
+		Array2D<int> outputTmp(w,h);
+
+
+		inputTmp.portalReadAlloc(1, cluster_id);
+		//outputTmp.mppaClone(arrOutput[cluster_id]);
+		//outputTmp.portalReadAlloc(1, cluster_id);
+		finalArr.portalWriteAlloc(0);
+		mppa_barrier_wait(global_barrier);
+		// printf("nb_tiles: %d, cluster _id: %d\n", nb_tiles, cluster_id);
+		// printf("heightTmp:%d, %d\n", h, cluster_id);
+		// printf("widthTmp:%d, %d\n", w, cluster_id);
+		
+
+		// printf("Saiu Barreira Input Escravo\n");
+		inputTmp.copyFrom();
 		//tmp.mppaClone(this->input);
-		for(int h=0;h<tmp.getHeight();h++) {
-			for(int w=0;w<tmp.getWidth();w++) {
-				printf("Input in Cluster(%d,%d):%d\n",h,w, tmp(h,w));
+		for(int h=0;h<inputTmp.getHeight();h++) {
+			for(int w=0;w<inputTmp.getWidth();w++) {
+				printf("Input in Cluster(%d,%d):%d\n",h,w, inputTmp(h,w));
 			}
 		}
 
-		printf("CopyFromAux: %d\n", cluster_id);
-		printf("endedCopyFromAux\n");
+		// printf("CopyFromAux: %d\n", cluster_id);
+		// printf("endedCopyFromAux\n");
 		int val = aux[0];
 		int it = aux[1];
 		int subIterations = aux[2];
@@ -456,30 +459,41 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 		int coreHeight = aux[7];
 		int coreDepth = aux[8];
 		int outterIterations = aux[9];
-		printf("val: %d\n", val);
-		printf("AuxSlave: %d\n", val);
-		this->runOpenMP(tmp, this->output, nb_threads);
-		for(int h=0;h<this->output.getHeight();h++) {
-		 	for(int w=0;w<this->output.getWidth();w++) {
-		 		printf("runOpenMPOutput(%d,%d):%d\n",h,w, this->output(h,w));
+
+		//printf("AuxSlave: %d\n", val);
+		//Array test;
+		//test.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
+
+
+		this->runOpenMP(inputTmp, outputTmp, nb_threads);
+		for(int h=0;h<outputTmp.getHeight();h++) {
+		 	for(int w=0;w<outputTmp.getWidth();w++) {
+		 		printf("runOpenMPOutput(%d,%d):%d\n",h,w, outputTmp(h,w));
 		 	}
 		}
 
-		coreTmp.hostSlice(this->output, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-		 for(int h=0;h<coreTmp.getHeight();h++) {
+		coreTmp.hostSlice(outputTmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
+		for(int h=0;h<coreTmp.getHeight();h++) {
 		 	for(int w=0;w<coreTmp.getWidth();w++) {
 		 		printf("runOpenMPOutput Sliced(%d,%d):%d\n",h,w, coreTmp(h,w));
 		 	}
-		 }
+		}
 
-		this->output.copyTo(0, sizeof(int)*val);
-		this->output.waitWrite();
-		printf("EndSalveFor: %d\n", cluster_id );
+		finalArr.mppaClone(coreTmp);
+		finalArr.copyTo(0, sizeof(int)*val);
+		//printf("WRITE:%d\n", cluster_id);
+		finalArr.waitWrite();
+
+		inputTmp.closeReadPortal();
+		finalArr.closeWritePortal();
+		auxPortal.closeAuxReadPortal();
+		// printf("EndSalveFor: %d\n", cluster_id );
 	}
-	printf("Begin print output:%d\n", cluster_id);
+	//printf("CLUSTER FINISHED:%d\n", cluster_id);
+	// printf("Begin print output:%d\n", cluster_id);
 	mppa_close_barrier(global_barrier);
 	// this->input.closeReadPortal();
-	// partOutput.closeAuxReadPortal();
+	// auxPortal.closeAuxReadPortal();
 	// this->output.closeWritePortal();
 	mppa_exit(0);
 }

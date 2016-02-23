@@ -78,29 +78,69 @@ int main(int argc, char **argv){
 
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
-
+	count = 0;
 	srand(123456789);
-	// for(int h=0;h<height;h++) {
-	// 	for(int w=0;w<width;w++) {
-	// 		inputGrid(h,w) = rand()%2;
-	// 	}
-	// }
-	inputGrid(0,0) = 0;
-	inputGrid(0,1) = 1;
-	inputGrid(0,2) = 1;
-	inputGrid(0,3) = 1;
-	inputGrid(1,0) = 0;
-	inputGrid(1,1) = 0;
-	inputGrid(1,2) = 1;
-	inputGrid(1,3) = 0;
-	inputGrid(2,0) = 1;
-	inputGrid(2,1) = 0;
-	inputGrid(2,2) = 1;
-	inputGrid(2,3) = 1;
-	inputGrid(3,0) = 0;
-	inputGrid(3,1) = 0;
-	inputGrid(3,2) = 0;
-	inputGrid(3,3) = 1;
+	for(int h=0;h<height;h++) {
+		for(int w=0;w<width;w++) {
+			//inputGrid(h,w) = rand()%2;
+			inputGrid(h,w) = count;
+			count++;
+		}
+	}
+	// inputGrid(0,0) = 0;
+	// inputGrid(0,1) = 1;
+	// inputGrid(0,2) = 2;
+	// inputGrid(0,3) = 3;
+	// inputGrid(1,0) = 4;
+	// inputGrid(1,1) = 5;
+	// inputGrid(1,2) = 6;
+	// inputGrid(1,3) = 7;
+	// inputGrid(2,0) = 8;
+	// inputGrid(2,1) = 9;
+	// inputGrid(2,2) = 10;
+	// inputGrid(2,3) = 11;
+	// inputGrid(3,0) = 12;
+	// inputGrid(3,1) = 13;
+	// inputGrid(3,2) = 14;
+	// inputGrid(3,3) = 15;
+	// inputGrid(4,0) = 16;
+	// inputGrid(4,1) = 17;
+	// inputGrid(4,2) = 18;
+	// inputGrid(4,3) = 19;
+	// inputGrid(5,0) = 20;
+	// inputGrid(5,1) = 21;
+	// inputGrid(5,2) = 22;
+	// inputGrid(5,3) = 23;
+	// inputGrid(6,0) = 24;
+	// inputGrid(6,1) = 25;
+	// inputGrid(6,2) = 26;
+	// inputGrid(6,3) = 27;
+	// inputGrid(7,0) = 28;
+	// inputGrid(7,1) = 29;
+	// inputGrid(7,2) = 30;
+	// inputGrid(7,3) = 31;
+	// inputGrid(8,0) = 15;
+	// inputGrid(8,1) = 15;
+	// inputGrid(8,2) = 15;
+	// inputGrid(8,3) = 15;
+
+	// inputGrid(0,0) = 0;
+	// inputGrid(0,1) = 1;
+	// inputGrid(0,2) = 1;
+	// inputGrid(0,3) = 1;
+	// inputGrid(1,0) = 0;
+	// inputGrid(1,1) = 0;
+	// inputGrid(1,2) = 1;
+	// inputGrid(1,3) = 0;
+	// inputGrid(2,0) = 1;
+	// inputGrid(2,1) = 0;
+	// inputGrid(2,2) = 1;
+	// inputGrid(2,3) = 1;
+	// inputGrid(3,0) = 0;
+	// inputGrid(3,1) = 0;
+	// inputGrid(3,2) = 0;
+	// inputGrid(3,3) = 1;
+
 	//Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations);
