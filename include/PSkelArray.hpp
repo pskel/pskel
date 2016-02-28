@@ -129,7 +129,7 @@ void ArrayBase<T>::mppaFree(){
 	//if(this->hostArray!=NULL){
 		free(this->mppaArray);
 		//cudaFreeHost(this->hostArray);
-		this->mppaArray = NULL;
+		//this->mppaArray = NULL;
 	//}
 }	
 #endif
@@ -212,15 +212,15 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 		}
 	}
 	#endif
-	printf("Done hostT\n");
-	#ifdef PSKEL_MPPA
-	if(this->mppaArray!=NULL){
-		if(this->size()!=(width*height*depth)){
-			this->mppaFree();
-			this->mppaArray = NULL;
-		}
-	}
-	#endif
+	// #ifdef PSKEL_MPPA
+	// if(this->mppaArray!=NULL){
+	// 	if(this->size()!=(width*height*depth)){
+	// 		printf("Done hostT\n");
+	// 		this->mppaFree();
+	// 		this->mppaArray = NULL;
+	// 	}
+	// }
+	// #endif
 	//Copy dimensions
 	printf("Done host\n");
 	this->width = width;
@@ -232,6 +232,11 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realWidth = array.realWidth;
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
+	#ifdef MPPA_MASTER
+	printf("cluster.widthOffset: %d\n", this->widthOffset);
+	printf("cluster.heightOffset: %d\n", this->heightOffset);
+	printf("cluster.depthOffset: %d\n", this->depthOffset);
+	#endif
 	#ifndef PSKEL_MPPA
 	this->hostArray = array.hostArray;
 	#else

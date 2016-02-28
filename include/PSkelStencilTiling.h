@@ -109,8 +109,8 @@ public:
 		if(widthOffset>=maskRange){
 			widthOffset=widthOffset-maskRange;
 		}else{
-			widthOffset = 0;
 			widthExtra = maskRange-widthOffset;
+			widthOffset = 0;
 		}
 		width = width+(maskRange*2)-widthExtra;
 		if((widthOffset+width)>this->input.getWidth())
@@ -119,8 +119,8 @@ public:
 		if(heightOffset>=maskRange){
 			heightOffset=heightOffset-maskRange;
 		}else{
-			heightOffset = 0;
 			heightExtra = maskRange-heightOffset;
+			heightOffset = 0;
 		}
 		height = height+(maskRange*2)-heightExtra;
 		if((heightOffset+height)>this->input.getHeight())
@@ -129,8 +129,8 @@ public:
 		if(depthOffset>=maskRange){
 			depthOffset=depthOffset-maskRange;
 		}else{
-			depthOffset = 0;
 			depthExtra = maskRange-depthOffset;
+			depthOffset = 0;
 		}
 		depth = depth+(maskRange*2)-depthExtra;
 		if((depthOffset+depth)>this->input.getDepth())
@@ -146,6 +146,7 @@ public:
 		this->width = width;
 		this->height = height;
 		this->depth = depth;
+		printf("TilingInside: %d\n", this->height);
 	}
 };
 
