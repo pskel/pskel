@@ -202,7 +202,7 @@ void mppa_barrier_wait(barrier_t *barrier) {
     // the cluster sends the mask to the IO
     status = mppa_write(barrier->sync_fd_master, &mask, sizeof(mask));
     assert(status == sizeof(mask));
-    
+    printf("Barrier\n");
     // the cluster waits for a message containing 1111...111 from the IO to unblock
     status = mppa_read(barrier->sync_fd_slave, &dummy, sizeof(long long));
     assert(status == sizeof(long long));

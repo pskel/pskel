@@ -142,6 +142,10 @@ public:
 	void portalAuxReadAlloc(int trigger, int nb_cluster);
 	#endif
 
+	#ifdef PSKEL_MPPA	
+	void mppaAlloc(size_t width, size_t height, size_t depth);
+	#endif
+
 	void hostAlloc(size_t width, size_t height, size_t depth);
 
 	/**
@@ -223,6 +227,9 @@ public:
 	void hostMemCopy(Arrays array);
 
 	template<typename Arrays>
+	void mppaMasterCopy(Arrays array);
+
+	template<typename Arrays>
 	void mppaMemCopy(Arrays array);
 
 	#ifdef PSKEL_CUDA
@@ -253,11 +260,19 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
+	void auxFree();
+	#endif
+
+	#ifdef PSKEL_MPPA
 	void setTrigger(int trigger);
 	#endif
 
 	#ifdef PSKEL_MPPA
 	int* getAux();
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void auxAlloc();
 	#endif
 
 	#ifdef PSKEL_MPPA

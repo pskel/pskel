@@ -146,7 +146,7 @@ public:
 		this->width = width;
 		this->height = height;
 		this->depth = depth;
-		printf("TilingInside: %d\n", this->height);
+		//printf("TilingInside: %d\n", this->height);
 	}
 };
 

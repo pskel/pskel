@@ -36,20 +36,21 @@ int CalcSize(int level){
 
 
 int main(int argc, char **argv){ 
-	int width, height, tilingHeight, iterations, pid, nb_clusters, nb_threads; //stencil size
-	if(argc < 7 || argc > 7){
-		printf("Usage: WIDTH, HEIGHT, TILINGHEIGHT, ITERATIONS, NUMBER CLUSTERS, NUMBER THREADS\n");
+	int width, height, tilingHeight, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
+	if(argc == 8){
+		printf("Usage: WIDTH, HEIGHT, TILINGHEIGHT, ITERATIONS, INNERITERATIONS, NUMBER CLUSTERS, NUMBER THREADS\n");
+		mppa_exit(0);
 	}
 	width = atoi(argv[1]);
 	height= atoi(argv[2]);
   	tilingHeight = atoi(argv[3]);
 	iterations = atoi(argv[4]);
-	nb_clusters = atoi(argv[5]);
-	nb_threads = atoi(argv[6]);
-
+	innerIterations = atoi(argv[5]);
+	nb_clusters = atoi(argv[6]);
+	nb_threads = atoi(argv[7]);
 	//Mask configuration
 	int level = 1;
-  	int power = 2;
+  	int power = 1;
   	int internCircle = pow(CalcSize(level), 2) - 1;
   	int externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
   	int size = internCircle + externCircle;
@@ -79,12 +80,13 @@ int main(int argc, char **argv){
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
 	count = 0;
-	srand(123456789);
+	srand(1);
 	for(int h=0;h<height;h++) {
 		for(int w=0;w<width;w++) {
 			//inputGrid(h,w) = rand()%2;
 			inputGrid(h,w) = count;
 			count++;
+			//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
 		}
 	}
 	// inputGrid(0,0) = 0;
@@ -143,7 +145,7 @@ int main(int argc, char **argv){
 
 	//Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
-	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations);
+	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations, innerIterations);
 
 	mppa_exit(0);
 }

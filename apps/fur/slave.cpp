@@ -22,6 +22,9 @@ struct Arguments
 
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
+    // if(h == 513 && w==127) {
+    //   printf("Chamando...%d,%d\n", h,w);
+    // }
     int numberA = 0;
     int numberI = 0;
     for (int z = 0; z < mask.size; z++) {
@@ -105,12 +108,15 @@ int main(int argc,char **argv) {
   int cluster_id = atoi(argv[3]);
   int nb_threads = atoi(argv[4]);
   int iterations = atoi(argv[5]);
+  int outteriterations = atoi(argv[6]);
+  int itMod = atoi(argv[7]);
+  
 
   Array2D<int> partInput(height, width);
   Array2D<int> output(height, width);
   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
   // if(iterations == 0)  {
-         stencil.runMPPA(cluster_id, nb_threads, nb_tiles);
+  stencil.runMPPA(cluster_id, nb_threads, nb_tiles, outteriterations, itMod);
   // } else {
   //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
   //}

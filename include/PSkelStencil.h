@@ -253,7 +253,7 @@ public:
 	 * \param[in] nb_clusters the number of clusters to be spawn.
 	 * \param[in] nb_threads the number of threads per cluster.
 	 **/
-	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int iterations);
+	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int iterations, int innerIterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -262,7 +262,7 @@ public:
 	* \param[in] tilingHeight the height for each tile.
 	* \param[in] nb_clusters the number of clusters to divide the tiles.
 	**/
-	void mppaSlice(size_t tilingHeight, int nb_clusters, int iterations);
+	void mppaSlice(size_t tilingHeight, int nb_clusters, int iterations, int innerIterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -270,7 +270,7 @@ public:
 	* wait for the slaves to complete.
 	* \param[in] nb_clusters the number of clusters to wait.
 	**/
-	void waitSlaves(int nb_clusters);
+	void waitSlaves(int nb_clusters, int tilingHeight);
 	#endif
 	
 	#ifdef PSKEL_MPPA
@@ -282,7 +282,7 @@ public:
 	* \param[in] tilingHeight the height for each tile.
 	* \param[in] iterations the number of iterations for the execution.
 	**/
-	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations);
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations, int innerIterations);
 	#endif
 	
 	#ifdef PSKEL_MPPA
@@ -292,7 +292,7 @@ public:
 	* \param[in] nb_threads the number of threads for the kernel execution.
 	* \param[in] nb_tiles the number of tiles for the cluster to execute.
 	**/
-	void runMPPA(int cluster_id, int nb_threads, int nb_tiles);
+	void runMPPA(int cluster_id, int nb_threads, int nb_tiles, int outterIterations, int itMod);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -303,7 +303,7 @@ public:
 	* \param[in] nb_tiles the number of tiles for the cluster to execute.
 	* \param[in] iterations the number of iterations for the execution.
 	**/
-	void runIterativeMPPA(int cluster_id, int nb_threads, int nb_tiles, int iterations);
+	void runIterativeMPPA(Array in, Array out, int iterations, int numThreads);
 	#endif
 };
 
