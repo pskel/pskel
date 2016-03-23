@@ -185,11 +185,12 @@ void mppa_barrier_wait(barrier_t *barrier) {
     // when match = 11111...1111 the following mppa_read() returns
     status = mppa_read(barrier->sync_fd_master, &match, sizeof(match));
     assert(status == sizeof(match));
-    //printf("BarrierMaster\n");
+    //printf("R\n");
     // the IO sends a message (dummy) containing 1111...1111 to all slaves involved in the barrier
     // this will unblock their mppa_read()
     status = mppa_write(barrier->sync_fd_slave, &dummy, sizeof(long long));
     assert(status == sizeof(long long));
+    //printf("W\n");
     //printf("BarrierMasterSts\n");
   }
   else {
@@ -199,14 +200,16 @@ void mppa_barrier_wait(barrier_t *barrier) {
     // the cluster sets its corresponding bit to 1
     mask = 0;
     mask |= 1 << __k1_get_cluster_id();
-    //printf("Barrier\n");
     
     // the cluster sends the mask to the IO
+    //printf("%d\n", __k1_get_cluster_id());
     status = mppa_write(barrier->sync_fd_master, &mask, sizeof(mask));
     assert(status == sizeof(mask));
+    //printf("R\n");
     // the cluster waits for a message containing 1111...111 from the IO to unblock
     status = mppa_read(barrier->sync_fd_slave, &dummy, sizeof(long long));
     assert(status == sizeof(long long));
+    //printf("Barr\n");
     //usleep(1000001);
     //printf("aaaaaaaaaaaaa\n");
   }

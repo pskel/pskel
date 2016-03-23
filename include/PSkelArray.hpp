@@ -410,7 +410,7 @@ void ArrayBase<T>::portalReadAlloc(int trigger, int nb_cluster){
 	char pathSlave[25];
 	char path[25];
 	//printf("SIZE:%d\n", this->memSize());
-	sprintf(pathSlave, "/mppa/portal/%d:%d", nb_cluster, 5 + nb_cluster);
+	sprintf(pathSlave, "/mppa/portal/%d:%d", nb_cluster, 4 + nb_cluster);
     this->read_portal = mppa_create_read_portal(pathSlave, this->mppaArray, this->memSize(), trigger, NULL);
 	#endif
 }
@@ -422,7 +422,7 @@ template<typename T>
 void ArrayBase<T>::portalAuxWriteAlloc(int nb_cluster){
 	char path[256];
 	#ifdef MPPA_MASTER
-		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (23 + nb_cluster));
+		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
     	this->aux_write_portal = mppa_create_write_portal(path, NULL, 0, nb_cluster);
 	#endif
 }
@@ -433,7 +433,7 @@ template<typename T>
 void ArrayBase<T>::portalAuxReadAlloc(int trigger, int nb_cluster){
 	char path[25];
 	#ifdef MPPA_SLAVE
-		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (23 + nb_cluster));
+		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
     	this->aux_read_portal = mppa_create_read_portal(path, this->aux, (sizeof(int*) * 13), trigger, NULL);
 	#endif
 }
@@ -445,7 +445,7 @@ template<typename T>
 void ArrayBase<T>::portalWriteAlloc(int nb_cluster){
 	char path[256];
 	#ifdef MPPA_MASTER
-		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, 5 + nb_cluster);
+		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, 4 + nb_cluster);
     	this->write_portal = mppa_create_write_portal(path, NULL, 0, nb_cluster);
 	#endif
     #ifdef MPPA_SLAVE
