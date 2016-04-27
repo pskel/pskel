@@ -23,8 +23,8 @@ struct Arguments
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
     // if(h == 513 && w==127) {
-    //   printf("Chamando...%d,%d\n", h,w);
-    // }
+    // //   printf("Chamando...%d,%d\n", h,w);
+    // // }
     int numberA = 0;
     int numberI = 0;
     for (int z = 0; z < mask.size; z++) {
@@ -47,8 +47,10 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
       //printf("One\n");
     } else {
       output(h,w) = input(h,w);//doesn't change
-      ////printf("K\n");
+      //printf("K\n");
     }
+  // int c;
+  // c++;
   }
 }
 

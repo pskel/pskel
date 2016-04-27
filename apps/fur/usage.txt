@@ -1,0 +1,1 @@
+Usage: width of the original matrix[1], height of the original matrix[2], the height of each tile that will be sent to the clusters[3], the total number of iterations[4], the number of iterations inside the cluster[5], number of clusters[6], the number of threads(PEs inside the cluster)[7].
