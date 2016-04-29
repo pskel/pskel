@@ -359,11 +359,14 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	inputCopy.mppaFree();
 	this->output.closeReadPortal();
 	this->output.mppaMasterCopy(this->input);
-	for(int h=0;h<this->output.getHeight();h++) {
-		for(int w=0;w<this->output.getWidth();w++) {
-			printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
+	
+	#ifdef DEBUG
+		for(int h=0;h<this->output.getHeight();h++) {
+			for(int w=0;w<this->output.getWidth();w++) {
+				printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
+			}
 		}
-	}
+	#endif
 }
 #endif
 
@@ -411,7 +414,9 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 		for(int i = 0; i < nb_tiles; i++) {
 			mppa_barrier_wait(global_barrier);
 			auxPortal.auxAlloc();
-			printf("ITERATION:%d\n", cluster_id);
+				#ifdef DEBUG
+					printf("ITERATION:%d\n", cluster_id);
+				#endif
 			if(i == 0) {
 				auxPortal.portalAuxReadAlloc(1, cluster_id);
 			}
@@ -419,8 +424,10 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			mppa_barrier_wait(global_barrier);
 	
 			auxPortal.copyFromAux();
-			printf("ITERATION1:%d\n", cluster_id);
-			printf("passouCopyFrom\n");
+				#ifdef DEBUG
+					printf("ITERATION1:%d\n", cluster_id);
+					printf("passouCopyFrom\n");
+				#endif
 			aux = auxPortal.getAux();
 
 			int val = aux[0];
@@ -478,16 +485,22 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			finalArr.waitWrite();
 			tmp.mppaFree();
 			
-			printf("hello from %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#ifdef DEBUG
+				printf("hello from %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#endif
 			fflush(stdout);
 			inputTmp.mppaFree();
 			finalArr.mppaFree();
 			outputTmp.mppaFree();
 			inputTmp.closeReadPortal();
-			printf("hello to %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#ifdef DEBUG
+				printf("hello to %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#endif
 		}
 		if(cluster_id >= itMod) {
-			printf("inoutBarrier:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#ifdef DEBUG
+				printf("inoutBarrier:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			#endif
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);

@@ -41,9 +41,12 @@ int CalcSize(int level){
 int main(int argc, char **argv){ 
 	int width, height, tilingHeight, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
 	if(argc != 8){
-		printf("Usage: WIDTH, HEIGHT, TILINGHEIGHT, ITERATIONS, INNERITERATIONS, NUMBER CLUSTERS, NUMBER THREADS\n");
-		mppa_exit(0);
+		printf ("Wrong number of parameters.\n");
+		printf("Usage: WIDTH HEIGHT TILING_HEIGHT ITERATIONS INNER_ITERATIONS NUMBER_CLUSTERS NUMBER_THREADS\n");
+		mppa_exit(-1);
 	}
+	
+	//Stencil configuration
 	width = atoi(argv[1]);
 	height= atoi(argv[2]);
   	tilingHeight = atoi(argv[3]);
@@ -51,49 +54,73 @@ int main(int argc, char **argv){
 	innerIterations = atoi(argv[5]);
 	nb_clusters = atoi(argv[6]);
 	nb_threads = atoi(argv[7]);
+	
 	//Mask configuration
 	int level = 1;
   	int power = 2;
+  	int count = 0;
   	int internCircle = pow(CalcSize(level), 2) - 1;
   	int externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
   	int size = internCircle + externCircle;
+	
+	
+	Array2D<int> inputGrid(width,height);
+	Array2D<int> outputGrid(width,height);
   	Mask2D<int> mask(size);
-  	int count = 0;
+  	
 	for (int x = (level-2*level); x <= level; x++) {
-    		for (int y = (level-2*level); y <= level; y++) {
-      			if (x != 0 || y != 0) {
-          				mask.set(count, x, y);
-          				count++;
-      			}
-    		}
+		for (int y = (level-2*level); y <= level; y++) {
+			if (x != 0 || y != 0) {
+				mask.set(count, x, y);
+				count++;
+			}
+		}
   	}
  
   	for (int x = (2*level-4*level); x <= 2*level; x++) {
-    		for (int y = (2*level-4*level); y <= 2*level; y++) {
-      			if (x != 0 || y != 0) {
-        				if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
-          					mask.set(count, x, y);
-          					count++;
-        				}
-      			}
-    		}
+		for (int y = (2*level-4*level); y <= 2*level; y++) {
+			if (x != 0 || y != 0) {
+				if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
+					mask.set(count, x, y);
+					count++;
+				}
+			}
+		}
   	}
+  	
 	//Arguments arg;
 
-	Array2D<int> inputGrid(width,height);
-	Array2D<int> outputGrid(width,height);
 	count = 0;
 	srand(123456789);
 	for(int h=0;h<height;h++) {
 		for(int w=0;w<width;w++) {
 	 		inputGrid(h,w) = rand()%2;
-	 		printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
+	 		#ifdef DEBUG
+				printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
+			#endif
 	 	}
 	 }
 
-
+	//Instantiate Stencil 2D
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
+	
+	//Schedule computation to slaves
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations, innerIterations);
+	
+	//Print results
+	cout.precision(12);
+	cout<<"INPUT"<<endl;
+	for(int i=10; i<height;i+=10){
+		cout<<"("<<i<<","<<i<<") = "<<inputGrid(i,i)<<"\t\t("<<x_max-i<<","<<y_max-i<<") = "<<inputGrid(x_max-i,y_max-i)<<endl;
+	}
+	cout<<endl;
+	
+	cout<<"OUTPUT"<<endl;
+	for(int i=10; i<height;i+=10){
+		cout<<"("<<i<<","<<i<<") = "<<outputGrid(i,i)<<"\t\t("<<x_max-i<<","<<y_max-i<<") = "<<outputGrid(x_max-i,y_max-i)<<endl;
+	}
+	cout<<endl;
+	
 
 	mppa_exit(0);
 }
