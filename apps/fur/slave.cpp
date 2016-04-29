@@ -68,7 +68,7 @@ int CalcSize(int level){
 
 int main(int argc,char **argv) {
 
-   /**************Mask for test porpuses****************/
+  /**************Mask for test porpuses****************/
   int level = 1;
   int power = 2;
   int internCircle = pow(CalcSize(level), 2) - 1;

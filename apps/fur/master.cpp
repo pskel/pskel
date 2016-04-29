@@ -111,13 +111,13 @@ int main(int argc, char **argv){
 	cout.precision(12);
 	cout<<"INPUT"<<endl;
 	for(int i=10; i<height;i+=10){
-		cout<<"("<<i<<","<<i<<") = "<<inputGrid(i,i)<<"\t\t("<<x_max-i<<","<<y_max-i<<") = "<<inputGrid(x_max-i,y_max-i)<<endl;
+		cout<<"("<<i<<","<<i<<") = "<<inputGrid(i,i)<<"\t\t("<<width-i<<","<<height-i<<") = "<<inputGrid(width-i,height-i)<<endl;
 	}
 	cout<<endl;
 	
 	cout<<"OUTPUT"<<endl;
 	for(int i=10; i<height;i+=10){
-		cout<<"("<<i<<","<<i<<") = "<<outputGrid(i,i)<<"\t\t("<<x_max-i<<","<<y_max-i<<") = "<<outputGrid(x_max-i,y_max-i)<<endl;
+		cout<<"("<<i<<","<<i<<") = "<<outputGrid(i,i)<<"\t\t("<<width-i<<","<<height-i<<") = "<<outputGrid(width-i,height-i)<<endl;
 	}
 	cout<<endl;
 	
