@@ -12,6 +12,7 @@
 #define PSKEL_MPPA
 #define MPPA_MASTER
 #define ARGC_SLAVE 4
+#define DEBUG
 #include "../../include/PSkel.h"
 
 using namespace std;
@@ -72,6 +73,7 @@ int main(int argc, char **argv){
 		for (int y = (level-2*level); y <= level; y++) {
 			if (x != 0 || y != 0) {
 				mask.set(count, x, y);
+				//cout<<count<<": ("<<x<<","<<y<<")"<<endl;
 				count++;
 			}
 		}
@@ -82,6 +84,7 @@ int main(int argc, char **argv){
 			if (x != 0 || y != 0) {
 				if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
 					mask.set(count, x, y);
+					//cout<<count<<": ("<<x<<","<<y<<")"<<endl;
 					count++;
 				}
 			}
@@ -91,16 +94,27 @@ int main(int argc, char **argv){
 	//Arguments arg;
 
 	count = 0;
-	srand(123456789);
+	srand(1234);
 	for(int h=0;h<height;h++) {
 		for(int w=0;w<width;w++) {
 	 		inputGrid(h,w) = rand()%2;
 	 		#ifdef DEBUG
-				printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
+				//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
 			#endif
 	 	}
 	 }
-
+	
+	//Print input
+	/*cout.precision(12);
+	cout<<"INPUT"<<endl;
+	for(int i=0; i<width;i+=25){
+		for(int j=0; j<height;j+=25){
+			cout<<"("<<i      <<","<<j       <<") = "<<inputGrid(i,j)<<"\t\t";
+			cout<<"("<<width-1-i<<","<<height-1-j<<") = "<<inputGrid(width-1-i,height-1-j)<<endl;
+		}
+	}
+	cout<<endl;
+	*/
 	//Instantiate Stencil 2D
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
 	
@@ -108,19 +122,13 @@ int main(int argc, char **argv){
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations, innerIterations);
 	
 	//Print results
-	cout.precision(12);
-	cout<<"INPUT"<<endl;
-	for(int i=10; i<height;i+=10){
-		cout<<"("<<i<<","<<i<<") = "<<inputGrid(i,i)<<"\t\t("<<width-i<<","<<height-i<<") = "<<inputGrid(width-i,height-i)<<endl;
-	}
-	cout<<endl;
-	
-	cout<<"OUTPUT"<<endl;
-	for(int i=10; i<height;i+=10){
-		cout<<"("<<i<<","<<i<<") = "<<outputGrid(i,i)<<"\t\t("<<width-i<<","<<height-i<<") = "<<outputGrid(width-i,height-i)<<endl;
-	}
-	cout<<endl;
-	
-
+	/*cout<<"OUTPUT"<<endl;
+	for(int i=0;i<width;i+=25){
+		for(int j=0; j<height;j+=25){
+			cout<<"("<<i    <<","<<j       <<") = "<<outputGrid(i,j)<<"\t\t";
+			cout<<"("<<width-1-i<<","<<height-1-j<<") = "<<outputGrid(width-1-i,height-1-j)<<endl;
+		}
+	}	
+	*/
 	mppa_exit(0);
 }

@@ -31,12 +31,84 @@ output/build/master_build/master.cpp.o: master.cpp \
  /usr/local/k1tools/k1-rtems/include/sys/signal.h \
  /usr/local/k1tools/k1-rtems/include/signal.h \
  /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stdbool.h \
- /usr/local/k1tools/k1-rtems/include/strings.h ../../include/PSkel.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cstdio \
+ /usr/local/k1tools/k1-rtems/include/strings.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/iostream \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++config.h \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/os_defines.h \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/cpu_defines.h \
- /usr/local/k1tools/k1-rtems/include/time.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ostream \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ios \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/iosfwd \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stringfwd.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/memoryfwd.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/postypes.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cwchar \
+ /usr/local/k1tools/k1-rtems/include/wchar.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/exception \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/atomic_lockfree_defines.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/char_traits.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_algobase.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/functexcept.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/exception_defines.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/cpp_type_traits.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/type_traits.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/numeric_traits.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_pair.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/move.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/concept_check.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator_base_types.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator_base_funcs.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/debug/debug.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ptr_traits.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/predefined_ops.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/localefwd.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++locale.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/clocale \
+ /usr/local/k1tools/k1-rtems/include/locale.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cctype \
+ /usr/local/k1tools/k1-rtems/include/ctype.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ios_base.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/atomicity.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/gthr.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/gthr-default.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/atomic_word.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_classes.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/string \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/allocator.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++allocator.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/malloc_allocator.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cstdlib \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/new \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ostream_insert.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/cxxabi_forced.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_function.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/backward/binders.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/range_access.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_string.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_string.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_classes.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/streambuf \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/streambuf.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_ios.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_facets.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cwctype \
+ /usr/local/k1tools/k1-rtems/include/wctype.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/ctype_base.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/streambuf_iterator.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/ctype_inline.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_facets.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_ios.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ostream.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/istream \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/istream.tcc \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/fstream \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/codecvt.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cstdio \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/basic_file.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++io.h \
+ /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/fstream.tcc \
+ ../../include/PSkel.h /usr/local/k1tools/k1-rtems/include/time.h \
  /usr/local/k1tools/k1-rtems/include/machine/time.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/hal.h \
  /usr/local/k1tools/k1-rtems/include/builtin_k1.h \
@@ -214,73 +286,6 @@ output/build/master_build/master.cpp.o: master.cpp \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/trap.h \
  /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/trap.h \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/typeinfo \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/exception \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/atomic_lockfree_defines.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/iostream \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ostream \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ios \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/iosfwd \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stringfwd.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/memoryfwd.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/postypes.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cwchar \
- /usr/local/k1tools/k1-rtems/include/wchar.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/char_traits.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_algobase.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/functexcept.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/exception_defines.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/cpp_type_traits.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/type_traits.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/numeric_traits.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_pair.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/move.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/concept_check.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator_base_types.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator_base_funcs.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/debug/debug.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_iterator.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ptr_traits.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/predefined_ops.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/localefwd.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++locale.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/clocale \
- /usr/local/k1tools/k1-rtems/include/locale.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cctype \
- /usr/local/k1tools/k1-rtems/include/ctype.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ios_base.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/atomicity.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/gthr.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/gthr-default.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/atomic_word.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_classes.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/string \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/allocator.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/c++allocator.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/ext/malloc_allocator.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cstdlib \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/new \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ostream_insert.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/cxxabi_forced.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/stl_function.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/backward/binders.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/range_access.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_string.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_string.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_classes.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/streambuf \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/streambuf.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_ios.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_facets.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cwctype \
- /usr/local/k1tools/k1-rtems/include/wctype.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/ctype_base.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/streambuf_iterator.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/k1-rtems/bits/ctype_inline.h \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/locale_facets.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/basic_ios.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/ostream.tcc \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/istream \
- /usr/local/k1tools/k1-rtems/include/c++/4.9.1/bits/istream.tcc \
  ../../include/interface_mppa.h \
  /usr/local/k1tools/k1-rtems/include/inttypes.h \
  /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stdint.h \
@@ -289,7 +294,8 @@ output/build/master_build/master.cpp.o: master.cpp \
  ../../include/PSkelArray.hpp \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cstring \
  ../../include/PSkelMask.h ../../include/PSkelMask.hpp \
- ../../include/PSkelStencil.h ../../include/PSkelStencil.hpp \
+ ../../include/PSkelStencil.h ../../include/PSkelStencilTiling.h \
+ ../../include/PSkelStencil.hpp \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/cmath \
  /usr/local/k1tools/k1-rtems/include/math.h \
  /usr/local/k1tools/k1-rtems/include/c++/4.9.1/algorithm \

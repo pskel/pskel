@@ -361,11 +361,13 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	this->output.mppaMasterCopy(this->input);
 	
 	#ifdef DEBUG
-		for(int h=0;h<this->output.getHeight();h++) {
-			for(int w=0;w<this->output.getWidth();w++) {
-				printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
-			}
+	/*
+ 	for(int h=0;h<this->output.getHeight();h++) {
+		for(int w=0;w<this->output.getWidth();w++) {
+			printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
 		}
+	}
+	*/
 	#endif
 }
 #endif
@@ -407,27 +409,34 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	Array inputTmp;
 	Array outputTmp;
 	Array auxPortal;
+	int *aux;
+
 	finalArr.portalWriteAlloc(0);
-	int* aux;
+	
+	#ifdef DEBUG
+	cout<<"Cluster "<<cluster_id<<" opened finalArr portal in write mode"<<endl;
+	#endif	
+
 	barrier_t *global_barrier = mppa_create_slave_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 	for(int j = 0; j < outterIterations; j++) {
 		for(int i = 0; i < nb_tiles; i++) {
 			mppa_barrier_wait(global_barrier);
 			auxPortal.auxAlloc();
-				#ifdef DEBUG
-					printf("ITERATION:%d\n", cluster_id);
-				#endif
+			
 			if(i == 0) {
 				auxPortal.portalAuxReadAlloc(1, cluster_id);
+				#ifdef DEBUG
+				cout<<"Cluster "<<cluster_id<<" opened auxPortal in read mode for iteration #"<<j<<endl;
+				#endif
 			}
 
 			mppa_barrier_wait(global_barrier);
 	
 			auxPortal.copyFromAux();
-				#ifdef DEBUG
-					printf("ITERATION1:%d\n", cluster_id);
-					printf("passouCopyFrom\n");
-				#endif
+			#ifdef DEBUG
+			cout<<"Cluster "<<cluster_id<<" copied data from auxPortal"<<endl;
+			#endif
+			
 			aux = auxPortal.getAux();
 
 			int val = aux[0];
@@ -451,18 +460,27 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			outputTmp.mppaAlloc(w,h,d);
 
 			mppa_barrier_wait(global_barrier);
+
 			inputTmp.portalReadAlloc(1, cluster_id);
-				
+			#ifdef DEBUG
+			cout<<"Cluster "<<cluster_id<<" opened inputTmp portal in read mode for tile #"<<i<<"of iteration #"<<j<<endl;
+			#endif
+			
 
 			mppa_barrier_wait(global_barrier);
 
 
 			inputTmp.copyFrom();
 
-
+			#ifdef DEBUG
+			cout<<"Cluster "<<cluster_id<<" is processing tile #"<<i<<" of iteration #"<<j<<endl;
+			#endif
 
 			this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
-
+			
+			#ifdef DEBUG
+			cout<<"Cluster "<<cluster_id<<" finished processing tile #"<<i<<" of iteration #"<<j<<endl;
+			#endif
 
 			if (subIterations%2==0) {
 				tmp.mppaMemCopy(inputTmp);
@@ -473,7 +491,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			}
 
 			coreTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-
+			
 
 			finalArr.hostSlice(outputTmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
 
@@ -486,29 +504,40 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			tmp.mppaFree();
 			
 			#ifdef DEBUG
-				printf("hello from %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			cout<<"Cluster "<<cluster_id<<" copied tile #"<<i<<" data of iteration #"<<j<<" to master"<<endl;
 			#endif
+			
 			fflush(stdout);
 			inputTmp.mppaFree();
 			finalArr.mppaFree();
 			outputTmp.mppaFree();
 			inputTmp.closeReadPortal();
+			
 			#ifdef DEBUG
-				printf("hello to %d\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			cout<<"Cluster "<<cluster_id<<" closed read portal of inputTmp for tile #"<<i<<" of iteration #"<<j<<endl;
 			#endif
 		}
 		if(cluster_id >= itMod) {
 			#ifdef DEBUG
-				printf("inoutBarrier:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", cluster_id);
+			cout<<"Cluster "<<cluster_id<<" is insided InOut Barrier for iteration "<<j<<endl;
 			#endif
+			
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 		}
 		auxPortal.closeAuxReadPortal();
+		
+		#ifdef DEBUG
+		cout<<"Cluster "<<cluster_id<<" closed read portal of auxPortal for iteration #"<<j<<endl;
+		#endif
 	}
 	finalArr.closeWritePortal();
+	
+	#ifdef DEBUG
+	cout<<"Cluster "<<cluster_id<<" closed write portal for finalArr"<<endl;
+	#endif
 	
 	mppa_close_barrier(global_barrier);
 
