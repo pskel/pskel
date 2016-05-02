@@ -410,7 +410,13 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				cluster[j].waitWrite();
 			}
 			this->output.setTrigger(itMod);
+
+			
 			this->output.copyFrom();
+			#ifdef DEBUG
+					cout<<"MASTER["<<it<<"]: Received processed data from clusters"<<endl;
+			#endif
+			
 			for (int i = 0; i < itMod; i++) {
 				cluster[i].closeWritePortal();
 			}
