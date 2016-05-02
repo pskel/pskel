@@ -120,9 +120,9 @@ void ArrayBase<T>::mppaAlloc(){
 		this->mppaArray = (T*) calloc(this->size(), sizeof(T));
 		#ifdef DEBUG
 			#ifdef MPPA_MASTER
-				cout<<"MASTER: Allocating "<<this->memsize()<<" bytes"<<endl;
+				cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes"<<endl;
 			#elifdef MPPA_SLAVE
-				cout<<"SLAVE: Allocating "<<this->memsize()<<" bytes"<<endl;
+				cout<<"SLAVE: Allocating "<<this->size()*sizeof(T)<<" bytes"<<endl;
 			#endif
 		#endif
 	}
