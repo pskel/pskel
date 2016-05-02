@@ -190,7 +190,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	Array slice[hTiling];
 
 	#ifdef DEBUG
-		cout<<"MASTER: hTiling = "<<hTiling<<" tiles = "<<tiles<<" itMod = "<<itMod<<endl;
+		cout<<"MASTER: hTiling="<<hTiling<<" tiles="<<tiles<<" itMod="<<itMod<<endl;
 	#endif
 
 	this->output.portalReadAlloc(nb_clusters, 0);
@@ -285,6 +285,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			#endif
 			int counter = 0;
 
+			#ifdef DEBUG
+				cout<<"MASTER["<<it<<"]: Barrier CREATED"<<endl;
+			#endif
 			barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, nb_clusters);
 
 			Array outputNumberNb[nb_clusters];
@@ -345,6 +348,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				}
 
 				this->output.copyFrom();
+				#ifdef DEBUG
+					cout<<"MASTER["<<it<<"]: Received processed data from clusters"<<endl;
+				#endif
 
 				for (int i = 0; i < nb_clusters; i++) {
 					cluster[i].closeWritePortal();
