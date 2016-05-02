@@ -215,12 +215,15 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			#ifdef DEBUG
 				cout<<"MASTER ["<<it<<"]: number of clusters are higher than number of tilings"<<endl;
 			#endif
-			
+
+			#ifdef DEBUG
+				cout<<"MASTER["<<it<<"]: Barrier CREATED"<<endl;
+			#endif
 			barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, hTiling);
 
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 1"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 1"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 
@@ -229,7 +232,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			}
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 2"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 2"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 
@@ -249,7 +252,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			}
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 3"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 3"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 
@@ -272,7 +275,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				slice[i].closeWritePortal();
 			}
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 4"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 4"<<endl;
 			#endif
 			mppa_close_barrier(barrierNbClusters);
 		} else {
@@ -289,7 +292,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 
 			for(int i = 0; i < tiles; i++) {
 				#ifdef DEBUG
-					cout<<"MASTER: Barrier 1"<<endl;
+					cout<<"MASTER["<<it<<"]: Barrier 1"<<endl;
 				#endif
 				mppa_barrier_wait(barrierNbClusters);
 
@@ -298,7 +301,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				}
 
 				#ifdef DEBUG
-					cout<<"MASTER: Barrier 2"<<endl;
+					cout<<"MASTER["<<it<<"]: Barrier 2"<<endl;
 				#endif
 				mppa_barrier_wait(barrierNbClusters);
 
@@ -318,7 +321,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 					outputNumberNb[i].closeAuxWritePortal();
 				}
 				#ifdef DEBUG
-					cout<<"MASTER: Barrier 3"<<endl;
+					cout<<"MASTER["<<it<<"]: Barrier 3"<<endl;
 				#endif
 				mppa_barrier_wait(barrierNbClusters);
 
@@ -326,7 +329,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 					cluster[i].portalWriteAlloc(i);
 				}
 				#ifdef DEBUG
-					cout<<"MASTER: Barrier 4"<<endl;
+					cout<<"MASTER["<<it<<"]: Barrier 4"<<endl;
 				#endif
 				mppa_barrier_wait(barrierNbClusters);
 				
@@ -351,7 +354,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 		   	}
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 5"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 5"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 			for(int j = 0; j < itMod; j++) {
@@ -360,7 +363,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			}
 			
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 6"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 6"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 
@@ -372,15 +375,15 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				outputNumberMod[j].setAux(heightOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth);
 				outputNumberMod[j].copyToAux();
 				outputNumberMod[j].waitAuxWrite();
-
 			}
+			
 			for(int i = 0; i < itMod; i++) {
 				outputNumberMod[i].auxFree();
 				outputNumberMod[i].closeAuxWritePortal();
 			}
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 7"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 7"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 			
@@ -389,7 +392,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 			}
 
 			#ifdef DEBUG
-				cout<<"MASTER: Barrier 8"<<endl;
+				cout<<"MASTER["<<it<<"]: Barrier 8"<<endl;
 			#endif
 			mppa_barrier_wait(barrierNbClusters);
 
@@ -409,6 +412,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				outputNumberMod[i].auxFree();
 			}
 
+			#ifdef DEBUG
+				cout<<"MASTER["<<it<<"]: Barrier CLOSED"<<endl;
+			#endif
 			mppa_close_barrier(barrierNbClusters);
 		}
 
