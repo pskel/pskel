@@ -149,10 +149,10 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 
 
 	#ifdef DEBUG
-		cout<<"MASTER: width="<<this->input.getWidth()<<" height="<<this->input.getWidth();
-		cout<<"tilingHeight="<<tilingHeight <<" iterations="<<iterations;
-		cout<<" inner_iterations= "<<innerIterations<<" nbclusters="<<nb_clusters<<endl;
-		cout<<"MASTER: tiles="<<tiles<<" itMod="<<itMod<<" outterIterations="<<outterIterations<<endl;
+	cout<<"MASTER: width="<<this->input.getWidth()<<" height="<<this->input.getWidth();
+	cout<<" tilingHeight="<<tilingHeight <<" iterations="<<iterations;
+	cout<<" inner_iterations="<<innerIterations<<" nbclusters="<<nb_clusters<<" nbthreads="<<nb_threads;
+	cout<<"MASTER: tiles="<<tiles<<" itMod="<<itMod<<" outterIterations="<<outterIterations<<endl;
 	#endif
 
 	char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
