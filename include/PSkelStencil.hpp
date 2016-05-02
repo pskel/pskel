@@ -1370,13 +1370,23 @@ Stencil2D<Array,Mask,Args>::Stencil2D(Array _input, Array _output, Mask _mask){
 	this->mask = _mask;
 }
 
-/*
+
 template<class Array, class Mask, class Args>
 Stencil2D<Array,Mask,Args>::~Stencil2D(){
-	this->cudaMemFree();
-	this->cpuMemFree();
+	#ifdef PSKEL_CUDA
+		this->input.deviceFree();
+		this->output.deviceFree();
+	#endif
+	#ifdef PSKEL_MPPA
+		this->input.mppaFree();
+		this->output.mppaFree();
+	#endif
+	#ifdef PSKEL_CPU
+		this->input.hostFree();
+		this->output.hostFree();
+	#endif
 }
-*/
+
 #ifndef MPPA_MASTER
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){

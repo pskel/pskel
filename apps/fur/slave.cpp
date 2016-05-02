@@ -7,8 +7,7 @@
 #define DEBUG
 #define BARRIER_SYNC_MASTER "/mppa/sync/128:1"
 #define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
-//#include "common.h"
-//#include "../../include/interface_mppa.h"
+
 #include "../../include/PSkel.h"
 
 using namespace std;
