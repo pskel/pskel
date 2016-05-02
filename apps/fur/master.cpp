@@ -130,5 +130,7 @@ int main(int argc, char **argv){
 		}
 	}	
 	*/
+
+	stencil.~Stencil2D();
 	mppa_exit(0);
 }
