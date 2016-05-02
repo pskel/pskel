@@ -493,7 +493,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			if(i == 0) {
 				auxPortal.portalAuxReadAlloc(1, cluster_id);
 				#ifdef DEBUG
-				cout<<"Cluster "<<cluster_id<<" opened auxPortal in read mode for iteration #"<<j<<endl;
+				cout<<"SLAVE["<<cluster_id<<"]: opened auxPortal in read mode for iteration #"<<j<<endl;
 				#endif
 			}
 
@@ -501,7 +501,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	
 			auxPortal.copyFromAux();
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" copied data from auxPortal"<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: copied data from auxPortal"<<endl;
 			#endif
 			
 			aux = auxPortal.getAux();
@@ -530,7 +530,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 
 			inputTmp.portalReadAlloc(1, cluster_id);
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" opened inputTmp portal in read mode for tile #"<<i<<"of iteration #"<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode for tile #"<<i<<"of iteration #"<<j<<endl;
 			#endif
 			
 
@@ -540,13 +540,13 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			inputTmp.copyFrom();
 
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" is processing tile #"<<i<<" of iteration #"<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: is processing tile #"<<i<<" of iteration #"<<j<<endl;
 			#endif
 
 			this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
 			
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" finished processing tile #"<<i<<" of iteration #"<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: finished processing tile #"<<i<<" of iteration #"<<j<<endl;
 			#endif
 
 			if (subIterations%2==0) {
@@ -571,7 +571,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			tmp.mppaFree();
 			
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" copied tile #"<<i<<" data of iteration #"<<j<<" to master"<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: copied tile #"<<i<<" data of iteration #"<<j<<" to master"<<endl;
 			#endif
 			
 			fflush(stdout);
@@ -581,12 +581,12 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			inputTmp.closeReadPortal();
 			
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" closed read portal of inputTmp for tile #"<<i<<" of iteration #"<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: closed read portal of inputTmp for tile #"<<i<<" of iteration #"<<j<<endl;
 			#endif
 		}
 		if(cluster_id >= itMod) {
 			#ifdef DEBUG
-			cout<<"Cluster "<<cluster_id<<" is insided InOut Barrier for iteration "<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: is insided InOut Barrier for iteration "<<j<<endl;
 			#endif
 			
 			mppa_barrier_wait(global_barrier);
@@ -597,13 +597,13 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 		auxPortal.closeAuxReadPortal();
 		
 		#ifdef DEBUG
-		cout<<"Cluster "<<cluster_id<<" closed read portal of auxPortal for iteration #"<<j<<endl;
+		cout<<"SLAVE["<<cluster_id<<"]: closed read portal of auxPortal for iteration #"<<j<<endl;
 		#endif
 	}
 	finalArr.closeWritePortal();
 	
 	#ifdef DEBUG
-	cout<<"Cluster "<<cluster_id<<" closed write portal for finalArr"<<endl;
+	cout<<"SLAVE["<<cluster_id<<"]: closed write portal for finalArr"<<endl;
 	#endif
 	
 	mppa_close_barrier(global_barrier);
