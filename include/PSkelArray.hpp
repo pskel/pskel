@@ -32,6 +32,7 @@
 #ifndef PSKEL_ARRAY_HPP
 #define PSKEL_ARRAY_HPP
 #include <cstring>
+#include <iostream>
 
 #ifndef MPPA_MASTER
 #include <omp.h>
