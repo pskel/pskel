@@ -622,8 +622,6 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	#endif
 	
 	mppa_close_barrier(global_barrier);
-
-	mppa_exit(0);
 }
 #endif
 

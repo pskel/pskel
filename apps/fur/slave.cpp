@@ -125,4 +125,5 @@ int main(int argc,char **argv) {
   printf("Processou!\n");
   stencil.~Stencil2D();
   printf("Free!\n");
+  mppa_exit(0);
 }
