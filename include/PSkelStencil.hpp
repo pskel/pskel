@@ -196,10 +196,6 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	Array cluster[nb_clusters];
 	Array slice[hTiling];
 
-	#ifdef DEBUG
-		cout<<"MASTER: hTiling="<<hTiling<<" tiles="<<tiles<<" itMod="<<itMod<<endl;
-	#endif
-
 	this->output.portalReadAlloc(nb_clusters, 0);
 	size_t outterIterations;
 	size_t heightOffset;
