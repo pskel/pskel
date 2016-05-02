@@ -117,8 +117,14 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaAlloc(){
 	if(this->mppaArray==NULL){
-
 		this->mppaArray = (T*) calloc(this->size(), sizeof(T));
+		#ifdef DEBUG
+			#ifdef MPPA_MASTER
+				cout<<"MASTER: Allocating "<<this->memsize()<<" bytes"<<endl;
+			#elifdef MPPA_SLAVE
+				cout<<"SLAVE: Allocating "<<this->memsize()<<" bytes"<<endl;
+			#endif
+		#endif
 	}
 }
 #endif
