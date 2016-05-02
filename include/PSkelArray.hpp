@@ -156,6 +156,13 @@ void ArrayBase<T>::mppaFree(){
 	//cudaFreeHost(this->hostArray);
 	this->mppaArray = NULL;
 	//}
+	#ifdef DEBUG
+		#ifdef MPPA_MASTER
+			std::cout<<"MASTER: Deallocating "<<this->size()*sizeof(T)<<" bytes"<<std::endl;
+		#else
+			std::cout<<"SLAVE: Deallocating "<<this->size()*sizeof(T)<<" bytes"<<std::endl;
+		#endif
+	#endif
 }	
 #endif
 
