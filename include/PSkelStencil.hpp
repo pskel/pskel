@@ -186,37 +186,53 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	int tiles = hTiling/nb_clusters;
 	int itMod = hTiling % nb_clusters;
 
-	
-
 	Array cluster[nb_clusters];
 	Array slice[hTiling];
 
-
+	#ifdef DEBUG
+		cout<<"MASTER: hTiling = "<<hTiling<<" tiles = "<<tiles<<" itMod = "<<itMod<<endl;
+	#endif
 
 	this->output.portalReadAlloc(nb_clusters, 0);
 	size_t outterIterations;
 	size_t heightOffset;
+	
 	StencilTiling<Array, Mask>tiling(this->input, this->output, this->mask);
+
 	barrier_t *barrierNbClusters;
 	outterIterations = ceil(float(iterations)/innerIterations);
 	Array inputCopy(this->input.getWidth(),this->input.getHeight());
+
 	for(size_t it = 0; it<outterIterations; it++){
 		size_t subIterations = innerIterations;
 		if(((it+1)*innerIterations)>iterations){
 			subIterations = iterations-(it*innerIterations);
 		}
-
-
-
+		
 		if(tiles == 0) {
 			Array outputNumberHt[hTiling];
 			////////////////////////////////Number of clusters are higher//////////////
+			#ifdef DEBUG
+				cout<<"MASTER ["<<it<<"]: number of clusters are higher than number of tilings"<<endl;
+			#endif
+			
 			barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, hTiling);
+
+
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 1"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
+
 			for (int i = 0; i < hTiling; i++) {
 				outputNumberHt[i].portalAuxWriteAlloc(i);
 			}
+
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 2"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
+
 			for (int ht = 0; ht < hTiling; ht++) {
 				heightOffset = ht*tilingHeight;
 				tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
@@ -226,14 +242,21 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				outputNumberHt[ht].copyToAux();
 				outputNumberHt[ht].waitAuxWrite();
 			}
+			
 			for (int i = 0; i < hTiling; i++) {
 				outputNumberHt[i].auxFree();
 				outputNumberHt[i].closeAuxWritePortal();
 			}
+
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 3"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
+
 			for (int i = 0; i < hTiling; i++) {
 				slice[i].portalWriteAlloc(i);
 			}
+			
 			mppa_barrier_wait(barrierNbClusters);
 			for(int ht = 0; ht < hTiling; ht++) {
 				heightOffset = ht*tilingHeight;
@@ -241,28 +264,44 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 	   			slice[ht].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
 	   			slice[ht].copyTo(tiling.heightOffset, 0);
 	   			slice[ht].waitWrite();
-
 			}
+			
 			this->output.setTrigger(hTiling);
 			this->output.copyFrom();
 			for (int i = 0; i < hTiling; i++) {
 				slice[i].closeWritePortal();
 			}
-
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 4"<<endl;
+			#endif
 			mppa_close_barrier(barrierNbClusters);
 		} else {
 			///////////////////////////hTiling is higher///////////////////////////////
+			#ifdef DEBUG
+				cout<<"MASTER ["<<it<<"]: number of tiles are higher than number of clusters"<<endl;
+			#endif
 			int counter = 0;
+
 			barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, nb_clusters);
+
 			Array outputNumberNb[nb_clusters];
 			Array outputNumberMod[itMod];
+
 			for(int i = 0; i < tiles; i++) {
+				#ifdef DEBUG
+					cout<<"MASTER: Barrier 1"<<endl;
+				#endif
 				mppa_barrier_wait(barrierNbClusters);
 
 				for (int i = 0; i < nb_clusters; i++) {
 					outputNumberNb[i].portalAuxWriteAlloc(i);
 				}
+
+				#ifdef DEBUG
+					cout<<"MASTER: Barrier 2"<<endl;
+				#endif
 				mppa_barrier_wait(barrierNbClusters);
+
 				for (int j = 0; j < nb_clusters; j++) {
 					heightOffset = (j+counter)*tilingHeight;
 					tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
@@ -278,12 +317,19 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 					outputNumberNb[i].auxFree();
 					outputNumberNb[i].closeAuxWritePortal();
 				}
+				#ifdef DEBUG
+					cout<<"MASTER: Barrier 3"<<endl;
+				#endif
 				mppa_barrier_wait(barrierNbClusters);
 
 				for (int i = 0; i < nb_clusters; i++) {
 					cluster[i].portalWriteAlloc(i);
 				}
+				#ifdef DEBUG
+					cout<<"MASTER: Barrier 4"<<endl;
+				#endif
 				mppa_barrier_wait(barrierNbClusters);
+				
 				for (int j = 0; j < nb_clusters; j++) {
 					heightOffset = (j+counter)*tilingHeight;
 					
@@ -304,14 +350,21 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 		   		counter += nb_clusters;
 		   	}
 
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 5"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
 			for(int j = 0; j < itMod; j++) {
 				outputNumberMod[j].auxAlloc();
 				outputNumberMod[j].portalAuxWriteAlloc(j);
 			}
+			
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 6"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
-			for (int j = 0; j < itMod; j++) {
 
+			for (int j = 0; j < itMod; j++) {
 				heightOffset = (j+counter)*tilingHeight;
 				tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
 				outputNumberMod[j].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
@@ -326,12 +379,20 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 				outputNumberMod[i].closeAuxWritePortal();
 			}
 
-
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 7"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
+			
 			for(int j = 0; j < itMod; j++) {
 				cluster[j].portalWriteAlloc(j);
 			}
+
+			#ifdef DEBUG
+				cout<<"MASTER: Barrier 8"<<endl;
+			#endif
 			mppa_barrier_wait(barrierNbClusters);
+
 			for (int j = 0; j < itMod; j++) {
 				heightOffset = (j+counter)*tilingHeight;
 				tiling.tile(subIterations, 0, heightOffset, 0, this->input.getWidth(), tilingHeight, 1);
