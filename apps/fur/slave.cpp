@@ -122,6 +122,7 @@ int main(int argc,char **argv) {
   // } else {
   //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
   //}
+  printf("Processou!\n");
   stencil.~Stencil2D();
-
+  printf("Free!\n");
 }
