@@ -545,7 +545,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 
 			inputTmp.portalReadAlloc(1, cluster_id);
 			#ifdef DEBUG
-			cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode for tile #"<<i<<"of iteration #"<<j<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode for tile #"<<i<<" of iteration #"<<j<<endl;
 			#endif
 			
 
@@ -555,7 +555,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			inputTmp.copyFrom();
 
 			#ifdef DEBUG
-			cout<<"SLAVE["<<cluster_id<<"]: is processing tile #"<<i<<" of iteration #"<<j<<" with"<<subIterations<<" subIterations"<<endl;
+			cout<<"SLAVE["<<cluster_id<<"]: is processing tile #"<<i<<" of iteration #"<<j<<" with "<<subIterations<<" subIterations"<<endl;
 			#endif
 
 			this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
