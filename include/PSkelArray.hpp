@@ -119,6 +119,7 @@ template<typename T>
 void ArrayBase<T>::mppaAlloc(){
 	if(this->mppaArray==NULL){
 		this->mppaArray = (T*) calloc(this->size(), sizeof(T));
+		assert(mppaArray!= NULL);
 		#ifdef DEBUG
 			#ifdef MPPA_MASTER
 				std::cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes"<<std::endl;

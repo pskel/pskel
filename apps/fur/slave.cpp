@@ -9,6 +9,7 @@
 #define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
 
 #include "../../include/PSkel.h"
+#include "../../include/hr_time.h"
 
 using namespace std;
 using namespace PSkel;
@@ -22,35 +23,29 @@ struct Arguments
 
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
-    // if(h == 513 && w==127) {
-    // //   printf("Chamando...%d,%d\n", h,w);
-    // // }
     int numberA = 0;
     int numberI = 0;
     for (int z = 0; z < mask.size; z++) {
-      if(z < arg.internCircle) {
-        numberA += mask.get(z, input, h, w);
-        //printf("A: %d\n", numberA);
-
-      } else {
-        numberI += mask.get(z, input, h, w);
-        //printf("I: %d\n", numberI);
-      }
+		if(z < arg.internCircle) {
+			numberA += mask.get(z, input, h, w);
+			//printf("A: %d\n", numberA);
+		}
+		else {
+			numberI += mask.get(z, input, h, w);
+			//printf("I: %d\n", numberI);
+		}
     }
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
     //printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {
-      output(h,w) = 0; //without color and inhibitor
-      //printf("Zero\n");
-    } else if(numberA - totalPowerI > 0) {
-      output(h,w) = 1;//with color and active
-      //printf("One\n");
-    } else {
-      output(h,w) = input(h,w);//doesn't change
-      //printf("K\n");
+		output(h,w) = 0; //without color and inhibitor
     }
-  // int c;
-  // c++;
+    else if(numberA - totalPowerI > 0) {
+		output(h,w) = 1;//with color and active
+    }
+    else {
+		output(h,w) = input(h,w);//doesn't change
+    }
   }
 }
 
@@ -122,6 +117,6 @@ int main(int argc,char **argv) {
   // } else {
   //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
   //}
-  stencil.~Stencil2D();
+  //stencil.~Stencil2D();
   mppa_exit(0);
 }
