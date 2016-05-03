@@ -65,9 +65,9 @@ int main(int argc, char **argv){
   	int size = internCircle + externCircle;
 	
 	
-	Array2D<int> inputGrid(width,height);
-	Array2D<int> outputGrid(width,height);
-  	Mask2D<int> mask(size);
+	Array2D<short> inputGrid(width,height);
+	Array2D<short> outputGrid(width,height);
+  	Mask2D<short> mask(size);
   	
 	for (int x = (level-2*level); x <= level; x++) {
 		for (int y = (level-2*level); y <= level; y++) {
@@ -116,7 +116,7 @@ int main(int argc, char **argv){
 	cout<<endl;
 	*/
 	//Instantiate Stencil 2D
-	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
+	Stencil2D<Array2D<short>, Mask2D<short>, Arguments> stencil(inputGrid, outputGrid, mask);
 	
 	//Schedule computation to slaves
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations, innerIterations);
