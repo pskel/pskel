@@ -21,12 +21,12 @@ struct Arguments
 };
 
 namespace PSkel{
-__parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
+__parallel__ void stencilKernel(Array2D<short> input,Array2D<short> output,Mask2D<short> mask, Arguments arg, size_t h, size_t w){
     // if(h == 513 && w==127) {
     // //   printf("Chamando...%d,%d\n", h,w);
     // // }
-    int numberA = 0;
-    int numberI = 0;
+    short numberA = 0;
+    short numberI = 0;
     for (int z = 0; z < mask.size; z++) {
       if(z < arg.internCircle) {
         numberA += mask.get(z, input, h, w);
@@ -74,7 +74,7 @@ int main(int argc,char **argv) {
   int internCircle = pow(CalcSize(level), 2) - 1;
   int externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
   int size = internCircle + externCircle;
-  Mask2D<int> mask(size);
+  Mask2D<short> mask(size);
   int count = 0;
   for (int x = (level-2*level); x <= level; x++) {
     for (int y = (level-2*level); y <= level; y++) {
@@ -114,14 +114,14 @@ int main(int argc,char **argv) {
   int itMod = atoi(argv[7]);
   
 
-  Array2D<int> partInput(height, width);
-  Array2D<int> output(height, width);
-  Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
+  Array2D<short> partInput(height, width);
+  Array2D<short> output(height, width);
+  Stencil2D<Array2D<short>, Mask2D<short>, Arguments> stencil(partInput, output, mask, arg);
   // if(iterations == 0)  {
   stencil.runMPPA(cluster_id, nb_threads, nb_tiles, outteriterations, itMod);
   // } else {
   //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
   //}
-  stencil.~Stencil2D();
+  //stencil.~Stencil2D();
   mppa_exit(0);
 }
