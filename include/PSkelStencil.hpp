@@ -436,8 +436,8 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, int nb_cluste
 		inputCopy.mppaMasterCopy(this->input);
 		this->input.mppaMasterCopy(this->output);
 		this->output.mppaMasterCopy(inputCopy);
-
 	}
+	
 	inputCopy.mppaFree();
 	this->output.closeReadPortal();
 	this->output.mppaMasterCopy(this->input);
