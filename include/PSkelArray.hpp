@@ -153,17 +153,16 @@ void ArrayBase<T>::mppaAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaFree(){
 	//if(this->mppaArray!=NULL){
-	free(this->mppaArray);
-	//cudaFreeHost(this->hostArray);
-	this->mppaArray = NULL;
-	//}
 	#ifdef DEBUG
 		#ifdef MPPA_MASTER
-			std::cout<<"MASTER: Deallocating "<<this->size()*sizeof(T)<<" bytes"<<std::endl;
+			std::cout<<"MASTER: Deallocating "<<this->size()*sizeof(T)<<" bytes of address "<<&(this->mppaArray)<<std::endl;
 		#else
-			std::cout<<"SLAVE: Deallocating "<<this->size()*sizeof(T)<<" bytes"<<std::endl;
+			std::cout<<"SLAVE: Deallocating "<<this->size()*sizeof(T)<<" bytes of address "<<&(this->mppaArray)<<std::endl;
 		#endif
 	#endif
+	free(this->mppaArray);
+	this->mppaArray = NULL;
+	//}
 }	
 #endif
 
