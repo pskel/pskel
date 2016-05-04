@@ -60,18 +60,18 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->depthOffset = 0;
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
-	this->deviceArray = 0;
+		this->deviceArray = 0;
 	#endif
 	#ifdef PSKEL_MPPA
-	this->mppaArray = 0;
-	this->write_portal = 0;
-	this->read_portal = 0;
-	this->aux_write_portal = 0;
-	this->aux_read_portal = 0;
-	this->aux = 0;//(int *) malloc(sizeof(size_t*) * 13);
-	if(size()>0) this->mppaAlloc();
+		this->mppaArray = 0;
+		this->write_portal = 0;
+		this->read_portal = 0;
+		this->aux_write_portal = 0;
+		this->aux_read_portal = 0;
+		this->aux = 0;//(int *) malloc(sizeof(size_t*) * 13);
+		if(size()>0) this->mppaAlloc();
 	#else
-	if(size()>0) this->hostAlloc();
+		if(size()>0) this->hostAlloc();
 	#endif
 }
 
