@@ -122,9 +122,9 @@ void ArrayBase<T>::mppaAlloc(){
 		assert(this->mppaArray!= NULL);
 		#ifdef DEBUG
 			#ifdef MPPA_MASTER
-				std::cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray<<std::endl;
+				std::cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray)<<std::endl;
 			#else
-				std::cout<<"SLAVE: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray"<<std::endl;
+				std::cout<<"SLAVE: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray)"<<std::endl;
 			#endif
 		#endif
 	}
