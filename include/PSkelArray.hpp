@@ -540,12 +540,12 @@ template<typename T> template<typename Arrays>
 void ArrayBase<T>::mppaMemCopy(Arrays array){
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		#ifdef DEBUG
-			std::cout<<"MASTER: Copying memory from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+			std::cout<<"SLAVE: Copying memory from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
 		#endif
 		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
 	}else{
 		#ifdef DEBUG
-			std::cout<<"MASTER: Copying element-by-element from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+			std::cout<<"SLAVE: Copying element-by-element from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
 		#endif
 		#pragma omp parallel for
 		for(size_t i = 0; i<height; ++i){
