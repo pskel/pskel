@@ -1,1 +1,1 @@
-cmd_output/build/slave_build/slave.cpp.o := /usr/local/k1tools/bin/k1-g++ -Wp,-MD,output/build/slave_build/.slave.cpp.o.d -Wp,-MT,output/build/slave_build/slave.cpp.o -mcore=k1dp -mboard=developer  -w -I ../../lib/   -mos=nodeos   -c -o output/build/slave_build/slave.cpp.o slave.cpp
+cmd_output/build/slave_build/slave.cpp.o := /usr/local/k1tools/bin/k1-g++ -Wp,-MD,output/build/slave_build/.slave.cpp.o.d -Wp,-MT,output/build/slave_build/slave.cpp.o -mcore=k1dp -mboard=developer  -w -I ../../lib/    -mos=nodeos   -c -o output/build/slave_build/slave.cpp.o slave.cpp

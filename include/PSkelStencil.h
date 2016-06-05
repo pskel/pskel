@@ -353,7 +353,7 @@ public:
 	Stencil2D();
 	Stencil2D(Array _input, Array _output, Mask _mask, Args _args);
 	Stencil2D(Array _input, Array _output, Mask _mask);
-	//~Stencil2D();
+	~Stencil2D();
 };
 
 //*******************************************************************************************

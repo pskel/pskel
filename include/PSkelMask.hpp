@@ -73,7 +73,10 @@ template<typename T>
 void MaskBase<T>::hostAlloc(){
 	if(this->hostMask==NULL && this->hostWeight==NULL){
 		hostMask = (int*) malloc (dimension * size * sizeof (int));
+		assert(hostMask != NULL);
+		
 		hostWeight = (T*) malloc (size * sizeof (T));
+		assert(hostWeight != NULL);
 		//memset(hostWeight,1,size);
 	}
 }

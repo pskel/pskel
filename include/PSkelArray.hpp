@@ -32,6 +32,7 @@
 #ifndef PSKEL_ARRAY_HPP
 #define PSKEL_ARRAY_HPP
 #include <cstring>
+#include <iostream>
 
 #ifndef MPPA_MASTER
 #include <omp.h>
@@ -59,7 +60,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->depthOffset = 0;
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
-	this->deviceArray = 0;
+		this->deviceArray = 0;
 	#endif
 	#ifdef PSKEL_MPPA
 	this->mppaArray = 0;
@@ -70,7 +71,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->aux = (int *) malloc(sizeof(size_t*) * 13);
 	if(size()>0) this->mppaAlloc();
 	#else
-	if(size()>0) this->hostAlloc();
+		if(size()>0) this->hostAlloc();
 	#endif
 }
 
@@ -117,8 +118,15 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaAlloc(){
 	if(this->mppaArray==NULL){
-
 		this->mppaArray = (T*) calloc(this->size(), sizeof(T));
+		assert(this->mppaArray!= NULL);
+		#ifdef DEBUG
+			#ifdef MPPA_MASTER
+				std::cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray)<<std::endl;
+			#else
+				std::cout<<"SLAVE: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray)<<std::endl;
+			#endif
+		#endif
 	}
 }
 #endif
@@ -146,8 +154,14 @@ void ArrayBase<T>::mppaAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaFree(){
 	//if(this->mppaArray!=NULL){
+	#ifdef DEBUG
+		#ifdef MPPA_MASTER
+			std::cout<<"MASTER: Deallocating "<<this->size()*sizeof(T)<<" bytes of address "<<&(this->mppaArray)<<std::endl;
+		#else
+			std::cout<<"SLAVE: Deallocating "<<this->size()*sizeof(T)<<" bytes of address "<<&(this->mppaArray)<<std::endl;
+		#endif
+	#endif
 	free(this->mppaArray);
-	//cudaFreeHost(this->hostArray);
 	this->mppaArray = NULL;
 	//}
 }	
@@ -168,6 +182,7 @@ template<typename T>
 void ArrayBase<T>::hostAlloc(){
 	if(this->hostArray==NULL){
 		this->hostArray = (T*) calloc(size(), sizeof(T));
+		assert(this->hostArray != NULL);
 		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
 		//memset(this->hostArray, 0, size()*sizeof(T));
 	}
@@ -321,7 +336,8 @@ int* ArrayBase<T>::getAux(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::auxAlloc(){
-	this->aux = (int *) malloc(sizeof(size_t*) * 13);	
+	this->aux = (int *) malloc(sizeof(size_t*) * 13);
+	assert(this->aux != NULL);
 }
 #endif
 
@@ -502,7 +518,20 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::mppaMasterCopy(Arrays array){
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
+		#ifdef DEBUG
+			std::cout<<"MASTER: Copying memory from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+		#endif
 		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
+	}
+	else{
+		#ifdef DEBUG
+			std::cout<<"MASTER: Copying element-by-element from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+		#endif
+		for(size_t i = 0; i<height; ++i){
+			for(size_t j = 0; j<width; ++j){
+				for(size_t k = 0; k<depth; ++k){
+                    this->mppaGet(i,j,k) = array.mppaGet(i,j,k);
+		}}}
 	}
 }
 
@@ -510,13 +539,19 @@ void ArrayBase<T>::mppaMasterCopy(Arrays array){
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::mppaMemCopy(Arrays array){
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
+		#ifdef DEBUG
+			std::cout<<"SLAVE: Copying memory from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+		#endif
 		memcpy(this->mppaArray, array.mppaArray, size()*sizeof(T));
 	}else{
+		#ifdef DEBUG
+			std::cout<<"SLAVE: Copying element-by-element from address "<<&(array.mppaArray)<<" to address "<<&(this->mppaArray)<<std::endl;
+		#endif
 		#pragma omp parallel for
 		for(size_t i = 0; i<height; ++i){
-		for(size_t j = 0; j<width; ++j){
-		for(size_t k = 0; k<depth; ++k){
-                        	this->mppaGet(i,j,k)=array.mppaGet(i,j,k);
+			for(size_t j = 0; j<width; ++j){
+				for(size_t k = 0; k<depth; ++k){
+                    this->mppaGet(i,j,k) = array.mppaGet(i,j,k);
 		}}}
 	}
 }

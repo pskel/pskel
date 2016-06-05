@@ -152,7 +152,8 @@ output/build/slave_build/slave.cpp.o: slave.cpp \
  ../../include/common.h ../../include/PSkelArray.hpp \
  /usr/local/k1tools/k1-nodeos/include/c++/4.9.1/cstring \
  ../../include/PSkelMask.h ../../include/PSkelMask.hpp \
- ../../include/PSkelStencil.h ../../include/PSkelStencil.hpp \
+ ../../include/PSkelStencil.h ../../include/PSkelStencilTiling.h \
+ ../../include/PSkelStencil.hpp \
  /usr/local/k1tools/k1-nodeos/include/c++/4.9.1/cmath \
  /usr/local/k1tools/k1-nodeos/include/math.h \
  /usr/local/k1tools/k1-nodeos/include/c++/4.9.1/algorithm \
