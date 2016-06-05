@@ -30,13 +30,13 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
     for (int z = 0; z < mask.size; z++) {
       if(z < arg.internCircle) {
         numberA += mask.get(z, input, h, w);
-        //printf("A: %d\n", numberA);
 
       } else {
         numberI += mask.get(z, input, h, w);
         //printf("I: %d\n", numberI);
       }
     }
+    //printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
     //printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {

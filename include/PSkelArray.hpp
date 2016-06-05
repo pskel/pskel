@@ -67,7 +67,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->read_portal = 0;
 	this->aux_write_portal = 0;
 	this->aux_read_portal = 0;
-	this->aux = 0;//(int *) malloc(sizeof(size_t*) * 13);
+	this->aux = (int *) malloc(sizeof(size_t*) * 13);
 	if(size()>0) this->mppaAlloc();
 	#else
 	if(size()>0) this->hostAlloc();
@@ -126,6 +126,7 @@ void ArrayBase<T>::mppaAlloc(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::mppaAlloc(size_t width, size_t height, size_t depth){
+	printf("allocated\n");
 	this->width = width;
 	this->height = height;
 	this->depth = depth;
