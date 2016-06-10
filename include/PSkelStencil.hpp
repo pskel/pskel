@@ -486,20 +486,20 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	Array auxPortal;
 	int *aux;
 
-	finalArr.portalWriteAlloc(0);
 	
 	#ifdef DEBUG
 	cout<<"SLAVE["<<cluster_id<<"]: opened finalArr portal in write mode"<<endl;
 	#endif	
 
-	barrier_t *global_barrier = mppa_create_slave_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 	for(int j = 0; j < outterIterations; j++) {
+		barrier_t *global_barrier = mppa_create_slave_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
 		for(int i = 0; i < nb_tiles; i++) {
 			//mppa_barrier_wait(global_barrier);
 			//auxPortal.auxAlloc();
 			
 			if(i == 0) {
 				auxPortal.portalAuxReadAlloc(1, cluster_id);
+				finalArr.portalWriteAlloc(0);
 				#ifdef DEBUG
 				cout<<"SLAVE["<<cluster_id<<"]: opened auxPortal in read mode for iteration #"<<j<<endl;
 				#endif
@@ -533,8 +533,8 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			inputTmp.mppaAlloc(w,h,d);
 			outputTmp.mppaAlloc(w,h,d);
 
-				inputTmp.portalReadAlloc(1, cluster_id);
-				mppa_barrier_wait(global_barrier);
+			inputTmp.portalReadAlloc(1, cluster_id);
+			mppa_barrier_wait(global_barrier);
 
 			#ifdef DEBUG
 			cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode for tile #"<<i<<" of iteration #"<<j<<endl;
@@ -571,13 +571,19 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	
 
 			tmp.mppaFree();
+			tmp.auxFree();
 			#ifdef DEBUG
 			cout<<"SLAVE["<<cluster_id<<"]: copied tile #"<<i<<" data of iteration #"<<j<<" to master"<<endl;
 			#endif
 			
 
 			inputTmp.mppaFree();
+			inputTmp.auxFree();
+
 			outputTmp.mppaFree();
+			outputTmp.auxFree();
+
+			//auxPortal.mppaFree();
 
 			inputTmp.closeReadPortal();
 			#ifdef DEBUG
@@ -585,6 +591,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			#endif
 			if (i == (nb_tiles-1)) {
 				auxPortal.closeAuxReadPortal();
+				finalArr.closeWritePortal();
 				#ifdef DEBUG
 				cout<<"SLAVE["<<cluster_id<<"]: closed read portal of auxPortal for iteration #"<<j<<endl;
 				#endif
@@ -599,14 +606,15 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 		}
+		//finalArr.mppaFree();
+		//finalArr.auxFree();
+		mppa_close_barrier(global_barrier);
 	}
-	finalArr.closeWritePortal();
 	
 	#ifdef DEBUG
 	cout<<"SLAVE["<<cluster_id<<"]: closed write portal for finalArr"<<endl;
 	#endif
 	
-	mppa_close_barrier(global_barrier);
 }
 #endif
 

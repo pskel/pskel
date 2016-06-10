@@ -94,15 +94,15 @@ int main(int argc, char **argv){
 	//Arguments arg;
 
 	count = 0;
-	srand(1234);
-	for(int h=0;h<height;h++) {
-		for(int w=0;w<width;w++) {
-	 		inputGrid(h,w) = rand()%2;
-	 		#ifdef DEBUG
-				//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
-			#endif
-	 	}
-	 }
+	// srand(1234);
+	// for(int h=0;h<height;h++) {
+	// 	for(int w=0;w<width;w++) {
+	//  		inputGrid(h,w) = rand()%2;
+	//  		#ifdef DEBUG
+	// 			//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
+	// 		#endif
+	//  	}
+	//  }
 
 	//Print input
 	/*cout.precision(12);
