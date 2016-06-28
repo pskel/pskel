@@ -253,7 +253,7 @@ public:
 	 * \param[in] nb_clusters the number of clusters to be spawn.
 	 * \param[in] nb_threads the number of threads per cluster.
 	 **/
-	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, int nb_clusters, int nb_threads, int iterations, int innerIterations);
+	void spawn_slaves(const char slave_bin_name[], size_t tilingHeight, size_t tilingWidth, int nb_clusters, int nb_threads, int iterations, int innerIterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -262,7 +262,7 @@ public:
 	* \param[in] tilingHeight the height for each tile.
 	* \param[in] nb_clusters the number of clusters to divide the tiles.
 	**/
-	void mppaSlice(size_t tilingHeight, int nb_clusters, int iterations, int innerIterations);
+	void mppaSlice(size_t tilingHeight, size_t tilingWidth, int nb_clusters, int iterations, int innerIterations);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -282,7 +282,7 @@ public:
 	* \param[in] tilingHeight the height for each tile.
 	* \param[in] iterations the number of iterations for the execution.
 	**/
-	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, int iterations, int innerIterations);
+	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, size_t tilingWidth, int iterations, int innerIterations);
 	#endif
 	
 	#ifdef PSKEL_MPPA

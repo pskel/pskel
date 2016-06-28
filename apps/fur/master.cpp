@@ -40,10 +40,10 @@ int CalcSize(int level){
 
 
 int main(int argc, char **argv){ 
-	int width, height, tilingHeight, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
+	int width, height, tilingHeight, tilingWidth, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
 	if(argc != 8){
 		printf ("Wrong number of parameters.\n");
-		printf("Usage: WIDTH HEIGHT TILING_HEIGHT ITERATIONS INNER_ITERATIONS NUMBER_CLUSTERS NUMBER_THREADS\n");
+		printf("Usage: WIDTH HEIGHT TILING_HEIGHT TILING_WIDTH ITERATIONS INNER_ITERATIONS NUMBER_CLUSTERS NUMBER_THREADS\n");
 		mppa_exit(-1);
 	}
 	
@@ -51,10 +51,11 @@ int main(int argc, char **argv){
 	width = atoi(argv[1]);
 	height= atoi(argv[2]);
   	tilingHeight = atoi(argv[3]);
-	iterations = atoi(argv[4]);
-	innerIterations = atoi(argv[5]);
-	nb_clusters = atoi(argv[6]);
-	nb_threads = atoi(argv[7]);
+  	tilingWidth = atoi(argv[4]);
+	iterations = atoi(argv[5]);
+	innerIterations = atoi(argv[6]);
+	nb_clusters = atoi(argv[7]);
+	nb_threads = atoi(argv[8]);
 	
 	//Mask configuration
 	int level = 1;
@@ -94,15 +95,80 @@ int main(int argc, char **argv){
 	//Arguments arg;
 
 	count = 0;
-	// srand(1234);
+	srand(1234);
 	// for(int h=0;h<height;h++) {
 	// 	for(int w=0;w<width;w++) {
 	//  		inputGrid(h,w) = rand()%2;
 	//  		#ifdef DEBUG
-	// 			//printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
+	// 			printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
 	// 		#endif
 	//  	}
 	//  }
+	inputGrid(0,0) = 0;
+	inputGrid(0,1) = 1;
+	inputGrid(0,2) = 0;
+	inputGrid(0,3) = 1;
+	inputGrid(0,4) = 0;
+	inputGrid(0,5) = 0;
+	inputGrid(0,6) = 0;
+	inputGrid(0,7) = 0;
+	inputGrid(1,0) = 1;
+	inputGrid(1,1) = 0;
+	inputGrid(1,2) = 1;
+	inputGrid(1,3) = 0;
+	inputGrid(1,4) = 1;
+	inputGrid(1,5) = 1;
+	inputGrid(1,6) = 1;
+	inputGrid(1,7) = 0;
+	inputGrid(2,0) = 1;
+	inputGrid(2,1) = 0;
+	inputGrid(2,2) = 1;
+	inputGrid(2,3) = 0;
+	inputGrid(2,4) = 0;
+	inputGrid(2,5) = 1;
+	inputGrid(2,6) = 1;
+	inputGrid(2,7) = 1;
+	inputGrid(3,0) = 1;
+	inputGrid(3,1) = 0;
+	inputGrid(3,2) = 1;
+	inputGrid(3,3) = 1;
+	inputGrid(3,4) = 0;
+	inputGrid(3,5) = 1;
+	inputGrid(3,6) = 1;
+	inputGrid(3,7) = 1;
+	inputGrid(4,0) = 0;
+	inputGrid(4,1) = 0;
+	inputGrid(4,2) = 0;
+	inputGrid(4,3) = 0;
+	inputGrid(4,4) = 0;
+	inputGrid(4,5) = 0;
+	inputGrid(4,6) = 0;
+	inputGrid(4,7) = 1;
+	inputGrid(5,0) = 1;
+	inputGrid(5,1) = 1;
+	inputGrid(5,2) = 1;
+	inputGrid(5,3) = 0;
+	inputGrid(5,4) = 0;
+	inputGrid(5,5) = 0;
+	inputGrid(5,6) = 0;
+	inputGrid(5,7) = 0;
+	inputGrid(6,0) = 0;
+	inputGrid(6,1) = 0;
+	inputGrid(6,2) = 0;
+	inputGrid(6,3) = 0;
+	inputGrid(6,4) = 1;
+	inputGrid(6,5) = 0;
+	inputGrid(6,6) = 1;
+	inputGrid(6,7) = 0;
+	inputGrid(7,0) = 0;
+	inputGrid(7,1) = 0;
+	inputGrid(7,2) = 0;
+	inputGrid(7,3) = 1;
+	inputGrid(7,4) = 0;
+	inputGrid(7,5) = 1;
+	inputGrid(7,6) = 0;
+	inputGrid(7,7) = 0;
+
 
 	//Print input
 	/*cout.precision(12);
@@ -119,7 +185,7 @@ int main(int argc, char **argv){
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask);
 	
 	//Schedule computation to slaves
-	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, iterations, innerIterations);
+	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, tilingWidth, iterations, innerIterations);
 	
 	//Print results
 	/*cout<<"OUTPUT"<<endl;
