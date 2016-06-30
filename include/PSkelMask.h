@@ -37,7 +37,10 @@
 #define PSKEL_MASK_H
 
 #include "PSkelArray.h"
-#include "interface_mppa.h"
+
+#ifdef PSKEL_MPPA
+	#include "interface_mppa.h"
+#endif
 
 namespace PSkel{
 
