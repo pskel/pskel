@@ -1,0 +1,9 @@
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown
+call to cuInit returned error 999: Unknown

@@ -1,0 +1,6 @@
+./run_test_jacobi.bash: line 28: 8192: command not found
+./run_test_jacobi.bash: line 28: 8192: command not found
+./run_test_jacobi.bash: line 28: 8192: command not found
+./run_test_jacobi.bash: line 28: 8192: command not found
+./run_test_jacobi.bash: line 28: 8192: command not found
+./run_test_jacobi.bash: line 28: 8192: command not found
