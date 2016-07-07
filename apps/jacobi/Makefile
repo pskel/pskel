@@ -36,8 +36,8 @@ acc_kernels: ${SRC_NAME}_acc_kernels.cpp
 pskel: ${SRC_NAME}_pskel.cu
 	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SRC_NAME}_pskel ${SRC_NAME}_pskel.cu ${LIBS}
 	
-src: ${SRC_NAME}_src.cpp
-	${PSKEL_SRC} ${SRC_NAME}_src.cpp ${SRC_NAME}_src2src.cu
+src: ${SRC_NAME}_serial.cpp
+	${PSKEL_SRC} ${SRC_NAME}_serial.cpp ${SRC_NAME}_src2src.cu
 	${CUDAC} ${CUDAFLAGS} -ccbin=/usr/bin/g++ -o ${BIN_DIR}${SRC_NAME}_src2src ${SRC_NAME}_src2src.cu ${LIBS}
 	
 papi: ${SRC_NAME}.cu

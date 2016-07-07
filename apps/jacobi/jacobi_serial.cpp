@@ -64,7 +64,7 @@ int main(int argc, char **argv){
 		}
 	}
   
-	//#pragma pskel stencil dim2d(width,height) inout(inputGrid, outputGrid) iterations(T_MAX) device(cpu)
+	#pragma pskel stencil dim2d(width,height) inout(inputGrid, outputGrid) iterations(T_MAX) device(gpu)
 	stencilKernel(inputGrid, outputGrid,width,height,T_MAX,alpha,beta);
   
 	return 0;
