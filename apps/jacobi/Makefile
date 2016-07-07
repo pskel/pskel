@@ -22,7 +22,7 @@ SRC_NAME        = jacobi
 SEQ_SRC_NAME    = jacobi_seq
 BIN_DIR         = ../../bin/
 
-all: clean pskel
+all: acc_parallel acc_kernels 
 
 seq: ${SEQ_SRC_NAME}.cpp
 	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SEQ_SRC_NAME} ${SEQ_SRC_NAME}.cpp -Xcompiler ${OMP_TBB}
