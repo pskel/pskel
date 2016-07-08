@@ -6,7 +6,7 @@ OPTIMUS=""
 OUTPUT_DIR=""
 EXEC="jacobi"
 TEST_DIR="./quadro"
-BIN_ACC_KERNEL="../bin/jacobi_acc_kernels"
+BIN_ACC_KERNELS="../bin/jacobi_acc_kernels"
 BIN_ACC_PARALLEL="../bin/jacobi_acc_parallel"
 ITERATIONS=50
 
@@ -14,7 +14,7 @@ ITERATIONS=50
 make acc_kernels -C ../apps/${EXEC}
 make acc_parallel -C ../apps/${EXEC}
 OUTPUT_DIR="${TEST_DIR}/${EXEC}"
-mkdir ${OUTPUT_DIR}
+#mkdir ${OUTPUT_DIR}
 
 #teste GPU a 100%
 VERBOSE=0
@@ -25,10 +25,10 @@ do
 		echo $"Running with INPUT_SIZE = ${INPUT_SIZE}"
 		echo "ITERATION #${ITERATION}"
         
-		${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} 2>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
+		${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1
         
-        ${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} 2>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
+        ${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1
 	done
 done

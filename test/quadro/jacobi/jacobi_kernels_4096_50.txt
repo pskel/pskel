@@ -1,7 +1,0 @@
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found
-./run_test_jacobi.bash: line 28: 4096: command not found

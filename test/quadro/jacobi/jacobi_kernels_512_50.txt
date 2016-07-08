@@ -1,9 +1,0 @@
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
-./run_test_jacobi.bash: line 28: 512: command not found
