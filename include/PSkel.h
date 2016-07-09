@@ -63,6 +63,7 @@ runtime details.
 #include <time.h>
 #include <typeinfo>
 #include <iostream>
+#include <cassert>
 #ifdef PSKEL_CUDA
 #include <cuda.h>
 #include <cuda_runtime_api.h>
