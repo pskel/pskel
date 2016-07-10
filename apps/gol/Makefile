@@ -1,22 +1,22 @@
-CC 		= g++
-CUDAC 		= nvcc
-ACC		= pgc++
-PSKEL_SRC	= python ../pskelccv2.py 
+CC 				= g++
+CUDAC 			= /usr/local/cuda/bin/nvcc
+ACC				= /opt/pgi/linux86-64/2016/bin/pgc++
+PSKEL_SRC		= python ../pskelccv2.py 
 OPTIMUS         = optirun #remover este valor se não estiver em um sistema OPTIMUS (notebook)
 CUDA_LIB_PATH   = /usr/local/cuda-5.5/lib64
 CUDAFLAGS       = -O3 -arch=sm_21 -m64 -Xcompiler -ftree-vectorize -Xcompiler -march=native -Xcompiler -mtune=native -Xcompiler -O3 
-ACCFLAGS	= -O3 -ta=tesla -Minfo=accel
-CXXFLAGS	= -O3 -w
-GENCODE		= -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\"
+ACCFLAGS		= -O3 -ta=tesla -Minfo=accel
+CXXFLAGS		= -O3 -w
+GENCODE			= -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\"
 OMP_TBB         = -fopenmp -lgomp -ltbb
 GA_LIB_PATH 	= /home/alyson/galib247/ga
 GA_SRC_PATH 	= /home/alyson/galib247/
 PAPI_LIB_PATH 	= /home/alyson/papi-5.4.1/build/lib
 PAPI_SRC_PATH 	= /home/alyson/papi-5.4.1/build/include
-HR_TIME		= ../../pskel/include
-LIBS		= -Xcompiler -fopenmp -lgomp -ltbb -I${HR_TIME} -I${PAPI_SRC_PATH} -L${PAPI_LIB_PATH} -lpapi -I${GA_SRC_PATH} -L${GA_LIB_PATH} -lga -lm  
-ACC_LIBS	= -I${HR_TIME} -lrt
-SRC_NAME        = jacobi
+HR_TIME			= ../../pskel/include
+LIBS			= -Xcompiler -fopenmp -lgomp -ltbb -I${HR_TIME} -I${PAPI_SRC_PATH} -L${PAPI_LIB_PATH} -lpapi -I${GA_SRC_PATH} -L${GA_LIB_PATH} -lga -lm 
+ACC_LIBS		= -I${HR_TIME}
+SRC_NAME        = gol
 BIN_DIR         = ../../bin/
 
 all: acc_parallel acc_kernels 
