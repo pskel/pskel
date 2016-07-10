@@ -16,7 +16,7 @@
 
 #include "PSkel.h"
 #include "hr_time.h"
-#include "wb.h"
+//#include "wb.h"
 
 using namespace std;
 using namespace PSkel;
@@ -35,7 +35,8 @@ __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2
 	//output(i,j) = 0.2 * (input(i,j) + mask.get(0, input, i, j) + mask.get(1, input, i, j) + 
 	//					 mask.get(2, input, i, j) + mask.get(3, input, i, j));
 						 
-	output(i,j) = 0.25f * (input(i+1,j) + input(i-1,j) + input(i,j+1) + input(i,j-1) - args.h);
+	output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) +
+                            input(i+1,j) - args.h);
 		
 	}
 
@@ -129,13 +130,15 @@ int main(int argc, char **argv){
 	}
 	else{
 		//jacobi.runIterativePartition(T_MAX, GPUTime, numCPUThreads,GPUBlockSize);
-		#ifdef PSKEL_PAPI
+		/*
+        #ifdef PSKEL_PAPI
 			for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
 				jacobi.runIterativePartition(T_MAX, GPUTime, numCPUThreads,GPUBlockSizeX,i);
 			}
 		#else
 			jacobi.runIterativePartition(T_MAX, GPUTime, numCPUThreads,GPUBlockSizeX);
 		#endif
+        */
 	}
 	
 	
