@@ -14,7 +14,7 @@ GA_LIB_PATH 	= /home/alyson/galib247/ga
 GA_SRC_PATH 	= /home/alyson/galib247/
 PAPI_LIB_PATH 	= /home/alyson/papi-5.4.1/build/lib
 PAPI_SRC_PATH 	= /home/alyson/papi-5.4.1/build/include
-HR_TIME			= /home/alyson/Dropbox/IC/svn/pskel/code/include
+HR_TIME			= ../../pskel/include
 LIBS			= -Xcompiler -fopenmp -lgomp -ltbb -I${HR_TIME} -I${PAPI_SRC_PATH} -L${PAPI_LIB_PATH} -lpapi -I${GA_SRC_PATH} -L${GA_LIB_PATH} -lga -lm 
 				  #-I../../../lib/ -L../../../lib/ga -lga -lm 
 ACC_LIBS		= -I${HR_TIME}
@@ -24,7 +24,7 @@ BIN_DIR         = ../../bin/
 all: acc_parallel acc_kernels 
 
 serial: ${SRC_NAME}_serial.cpp
-	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SEQ_SRC_NAME} ${SEQ_SRC_NAME}.cpp -Xcompiler ${OMP_TBB}
+	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SRC_NAME}_serial ${SRC_NAME}_serial.cpp -Xcompiler ${OMP_TBB}
 
 acc_parallel: ${SRC_NAME}_acc_parallel.cpp
 	${ACC} ${ACCFLAGS} -o  ${BIN_DIR}${SRC_NAME}_acc_parallel ${SRC_NAME}_acc_parallel.cpp ${ACC_LIBS}

@@ -86,6 +86,7 @@ int main(int argc, char **argv){
 	
 	hr_timer_t timer;
 	hrt_start(&timer);
+    
 	//wbTime_start(GPU, "Doing GPU Computation (memory + compute)");
 	Stencil2D<Array2D<float>, Mask2D<float>, Arguments> jacobi(inputGrid, outputGrid, mask, args);
 	
