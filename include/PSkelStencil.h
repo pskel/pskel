@@ -119,7 +119,7 @@ protected:
 	#endif
 	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
 	#ifdef PSKEL_CUDA
-	void runCUDA(Array,Array,int);
+	void runCUDA(Array,Array,int,int);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSize);
 	#endif
 public:
@@ -142,7 +142,7 @@ public:
 	 * \param[in] GPUBlockSize the block size used for the GPU processing the stencil kernel.
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
-	void runGPU(size_t GPUBlockSize=0);
+	void runGPU(size_t GPUBlockSizeX=0, size_t GPUBlockSizeY=0);
 	#endif
 
 	#ifdef PSKEL_CUDA
@@ -196,7 +196,7 @@ public:
 	 * \param[in] GPUBlockSize the block size used for the GPU processing the stencil kernel.
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
-	void runIterativeGPU(size_t iterations, size_t GPUBlockSize=0);
+	void runIterativeGPU(size_t iterations, size_t GPUBlockSizeX=0, size_t GPUBlockSizeY=0);
 	#endif
 
 	#ifdef PSKEL_CUDA
