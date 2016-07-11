@@ -50,7 +50,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->depthOffset = 0;
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
-	this->deviceArray = 0;
+    this->deviceArray = 0;
 	#endif
 	if(size()>0) this->hostAlloc();
 }
@@ -60,7 +60,7 @@ template<typename T>
 void ArrayBase<T>::deviceAlloc(){
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
-		cudaMemset(this->deviceArray, 0, size()*sizeof(T));
+		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 }
 #endif
@@ -97,7 +97,12 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::hostAlloc(){
 	if(this->hostArray==NULL){
-		this->hostArray = (T*) calloc(size(), sizeof(T));
+        #ifdef PSKEL_CUDA
+            gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
+            //cudaMemset(this->hostArray, 0, size()*sizeof(T));
+        #else
+            this->hostArray = (T*) calloc(size(), sizeof(T));
+        #endif
 		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
 		//memset(this->hostArray, 0, size()*sizeof(T));
 	}
