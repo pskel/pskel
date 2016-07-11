@@ -25,7 +25,7 @@ namespace PSkel{
 	
 	
 __parallel__ void stencilKernel(Array2D<bool> input, Array2D<bool> output,
-                  Mask2D<bool> mask, size_t args, size_t i, size_t j){
+                  Mask2D<bool> mask, short args, size_t i, size_t j){
 	int neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
                      input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
                      input(i,j-1)   + input(i,j+1) ; 
@@ -66,18 +66,18 @@ int main(int argc, char **argv){
 		
 	omp_set_num_threads(numCPUThreads);
 
-    srand(123456789);
-    for(int j = 0; j < height; j++){		
-        for(int i = 0; i < width; i++){
-            inputGrid(i,j) = (rand()%2);
-            outputGrid(i,j) =  inputGrid(i,j);
+    srand(1234);
+    for(int h = 1; h < height-1; h++){		
+        for(int w = 1; w < width-1; w++){
+            inputGrid(h,w) = (rand()%2);            
+            //outputGrid(i,j) =  inputGrid(i,j);
 		}
 	}	
 	
 	hr_timer_t timer;
 	hrt_start(&timer);
 	//wbTime_start(GPU, "Doing GPU Computation (memory + compute)");
-	Stencil2D<Array2D<bool>, Mask2D<bool>, size_t> stencil(inputGrid, outputGrid, mask, 0);
+	Stencil2D<Array2D<bool>, Mask2D<bool>, short> stencil(inputGrid, outputGrid, mask, 0);
 	
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0)
@@ -127,12 +127,19 @@ int main(int argc, char **argv){
 		//cout<<setprecision(6);
 		//cout<<fixed;
 		cout<<"INPUT"<<endl;
-		for(int i=0; i<width;i+=10){
+		/*for(int i=0; i<width;i+=10){
             
 			cout<<"("<<i<<","<<i<<") = "<<inputGrid(i,i)<<"\t\t(";
             cout<<width-i<<","<<height-i<<") = "<<inputGrid(height-i,width-i)<<endl;
 		}
 		cout<<endl;
+        */
+        for(int h = 0; h < height; h++){		
+			for(int w = 0; w < width; w++){
+				cout<<inputGrid(h,w);
+			}
+			cout<<endl;
+		}
 		
 		cout<<"OUTPUT"<<endl;
 		//for(int i=0; i<width/10;i+=10){
@@ -142,7 +149,7 @@ int main(int argc, char **argv){
 		
 		for(int h = 0; h < height; ++h){		
 			for(int w = 0; w < width; ++w){
-				cout<<outputGrid(w,h);
+				cout<<outputGrid(h,w);
 			}
 			cout<<endl;
 		}
