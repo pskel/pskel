@@ -270,7 +270,7 @@ public:
 	* wait for the slaves to complete.
 	* \param[in] nb_clusters the number of clusters to wait.
 	**/
-	void waitSlaves(int nb_clusters, int tilingHeight);
+	void waitSlaves(int nb_clusters, int tilingHeight, int tilingWidth);
 	#endif
 	
 	#ifdef PSKEL_MPPA

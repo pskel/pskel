@@ -218,6 +218,11 @@ public:
 	
 	template<typename Arrays>
 	void mppaClone(Arrays array);
+    
+    
+	template<typename Arrays>
+	void mppaMasterClone(Arrays array);
+
 
 	/**
 	 * Copies the data, in the host (main) memory, from the array given as argument.

@@ -166,7 +166,7 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 	for (i = 0; i < ARGC_SLAVE - 1; i++)
 	  argv_slave[i] = (char*) malloc (sizeof (char) * 10);
 	 
-	sprintf(argv_slave[1], "%d", this->input.getWidth());
+	sprintf(argv_slave[1], "%d", tilingWidth);
 	sprintf(argv_slave[2], "%d", tilingHeight);
 	sprintf(argv_slave[4], "%d", nb_threads);
 	sprintf(argv_slave[5], "%d", iterations);
@@ -228,6 +228,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 		if(tiles == 0) {
 			Array slice[totalSize];
 			Array outputNumberHt[totalSize];
+            Array tmp;
 			////////////////////////////////Number of clusters are higher//////////////
 			#ifdef DEBUG
 				cout<<"MASTER ["<<it<<"]: number of clusters are higher than number of tilings"<<endl;
@@ -284,8 +285,18 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 					heightOffset = ht*tilingHeight;
 					widthOffset = wt*tilingWidth;
 					tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
-		   			slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-		   			slice[tS].copyTo(tiling.heightOffset, tiling.widthOffset, 0);
+		   			tmp.hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+		   			printf("TAMANHO DO SLICE: %d", slice[tS].getHeight());
+		   			printf("TAMANHO DO SLICE: %d", slice[tS].getWidth());
+                    //Array tmp(tiling.width, tiling.height);
+                    //tmp.mppaMasterCopy(slice[tS]);
+                    slice[tS].mppaMasterClone(tmp);
+		   			for(int i = 0; i < slice[tS].getHeight(); i++){
+						for(int j = 0; j< slice[tS].getWidth(); j++){
+							printf("slice[tS][%d,%d]: %d\n", i,j,slice[tS](i,j));
+						}
+					}
+                    slice[tS].copyTo(0, 0, 0);
 		   			slice[tS].waitWrite();
 		   			tS++;
 		   		}
@@ -478,11 +489,13 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 
 #ifdef PSKEL_MPPA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters, int tilingHeight) {
+void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters, int tilingHeight, int tilingWidth) {
 	size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
+	size_t wTiling = ceil(float(this->input.getHeight())/float(tilingWidth));
+	size_t totalSize = float(hTiling*wTiling);
 	int pid;
-	if(hTiling < nb_clusters)
-		nb_clusters = hTiling;
+	if(totalSize < nb_clusters)
+		nb_clusters = totalSize;
 	for (pid = 0; pid < nb_clusters; pid++) {
     		mppa_waitpid(pid, NULL, 0);
 	}
@@ -495,7 +508,7 @@ template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, size_t tilingWidth, int iterations, int innerIterations){
 	this->spawn_slaves(slave_bin_name, tilingHeight, tilingWidth, nb_clusters, nb_threads, iterations, innerIterations);
 	this->mppaSlice(tilingHeight, tilingWidth, nb_clusters, iterations, innerIterations);
-	this->waitSlaves(nb_clusters, tilingHeight);
+	this->waitSlaves(nb_clusters, tilingHeight, tilingWidth);
 
 }
 #endif
@@ -600,10 +613,11 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 				tmp.mppaMemCopy(outputTmp);
 			}
 
-
-			finalArr.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-
-			finalArr.copyTo(coreHeightOffset, coreWidthOffset, sizeof(int)*val);
+            Array fTmp;
+			fTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
+            finalArr.mppaClone(fTmp);
+            printf("CoreHEIGHT and CoreWIDTH: %d, %d", coreHeightOffset, coreWidthOffset);
+			finalArr.copyTo(0, 0, sizeof(int)*val);
 
 			finalArr.waitWrite();
 	

@@ -320,6 +320,30 @@ void ArrayBase<T>::mppaClone(Arrays array){
 #endif
 
 #ifdef PSKEL_MPPA
+template<typename T> template<typename Arrays>
+void ArrayBase<T>::mppaMasterClone(Arrays array){
+	//Copy dimensions
+	this->width = array.width;
+	this->height = array.height;
+	this->depth = array.depth;
+	this->widthOffset = 0;
+	this->heightOffset = 0;
+	this->depthOffset = 0;
+	this->realWidth = array.width;
+	this->realHeight = array.height;
+	this->realDepth = array.depth;
+	//Alloc clone memory
+	this->mppaArray = NULL;
+	this->mppaAlloc();
+	//Copy clone memory
+	//#ifdef MPPA_SLAVE
+	this->mppaMasterCopy(array);
+	//#endif
+}
+#endif
+
+
+#ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::setTrigger(int trigger){
     mppa_aiocb_set_trigger(&read_portal->aiocb, trigger);
@@ -344,7 +368,7 @@ void ArrayBase<T>::auxAlloc(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth){
-	this->aux[0] = size_t(heightOffset*realWidth*realDepth)+widthOffset;
+	this->aux[0] = size_t(heightOffset*realWidth*realDepth) + widthOffset;
 
 	this->aux[1] = it;
 	this->aux[2] = subIterations;
@@ -380,7 +404,8 @@ void ArrayBase<T>::copyFromAux(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::copyTo(size_t heightOffset, size_t widthOffset, int offset){
-	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(heightOffset*realWidth*realDepth) + size_t(widthOffset*realDepth);
+	T *mppaSlicePtr = (T*)(this->mppaArray) + (size_t(heightOffset*realWidth*realDepth) + widthOffset);
+	//mppaSlicePtr = (T*)(this->mppaArray) + size_t(widthOffset*realDepth);
 	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), offset);
 }
 #endif
