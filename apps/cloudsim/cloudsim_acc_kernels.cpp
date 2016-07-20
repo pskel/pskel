@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <string.h>
 
-#include "../../pskel/include/hr_time.h"
+#include "hr_time.h"
 
 using namespace std;
 
@@ -26,56 +26,101 @@ using namespace std;
 
 void stencilKernel(float *input,float *output, int width, int height, int T_MAX,float *wind_x,float *wind_y,float deltaT){
 	#pragma acc data copyin(input[0:width*height],wind_x[0:width*height],wind_y[0:width*height]) copyout(output[0:width*height])
+    {
 	for(int t=0;t<T_MAX;t++){
-		#pragma acc parallel loop
+		#pragma acc kernels
+        {
+        #pragma acc loop independent
 		for(int j=0;j<height;j++){
-			#pragma acc loop
+            #pragma acc loop independent
 			for(int i=0;i<width;i++){
 				int numNeighbor = 0;
 				float sum = 0.0f;
-				float inValue = input[i*width+j];
-				float temperatura_vizinho = 0.0f;
-				int factor = 0;
+				float inValue = input[j*width+i];
+                float temp_wind = 0.0f;
 				
-				for(int y=-1;y<1;y++){
-					for(int x=-1;x<1;x++){
-						if(x!=0 && y!=0){
-							temperatura_vizinho = input[(j+y)*width+(i+x)];
-							factor = (temperatura_vizinho == 0)?0:1;
-							sum += factor*(inValue - temperatura_vizinho);
-							numNeighbor += factor;
-						}
-					}
-				}
-						
-				float temperatura_conducao = -K*(sum / numNeighbor) * deltaT;
-				
-				float result = inValue + temperatura_conducao;
-				
-				float xwind = wind_x[j*width+i];
-				float ywind = wind_y[j*width+i];
-				int xfactor = (xwind>0)?1:-1;
-				int yfactor = (ywind>0)?1:-1;
+                /*	Corner 1	*/
+                if ( (j == 0) && (i == 0) ) {
+                    sum = (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 2;
+                }	/*	Corner 2	*/
+                else if ((j == 0) && (i == width-1)) {
+                    sum = (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 2;
+                }	/*	Corner 3	*/
+                else if ((j == height-1) && (i == width-1)) {
+                    sum = (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[(j-1)*width+i]);
+                    numNeighbor = 2;
+                }	/*	Corner 4	*/
+                else if ((j == height-1) && (i == 0)) {
+                    sum = (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j-1)*width+i]);
+                    numNeighbor = 2;
+                }	/*	Edge 1	*/
+                else if (j == 0) {
+                    sum = (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 3;
+                }	/*	Edge 2	*/
+                else if (i == width-1) {
+                    sum = (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[(j-1)*width+i]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 3;
+                }	/*	Edge 3	*/
+                else if (j == height-1) {
+                    sum = (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j-1)*width+i]);
+                    numNeighbor = 3;
+                }	/*	Edge 4	*/
+                else if (i == 0) {
+                    sum = (inValue - input[(j-1)*width+i]) +
+                          (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 3;
+                }	/*	Inside the cloud  */
+                else {
+                    sum = (inValue - input[(j-1)*width+i]) +
+                          (inValue - input[j*width+(i-1)]) +
+                          (inValue - input[j*width+(i+1)]) +
+                          (inValue - input[(j+1)*width+i]);
+                    numNeighbor = 4;
+                    
+                    float xwind = wind_x[j*width+i];
+                    float ywind = wind_y[j*width+i];
+                    int xfactor = (xwind>0)?1:-1;
+                    int yfactor = (ywind>0)?1:-1;
 
-				float temperaturaNeighborX = input[(j+xfactor) * width + i];
-				float componenteVentoX = xfactor * xwind;
-				float temperaturaNeighborY = input[j*width + (i+yfactor)];
-				float componenteVentoY = yfactor * ywind;
+                    float temperaturaNeighborX = input[(j+xfactor) * width + i];
+                    float componenteVentoX = xfactor * xwind;
+                    float temperaturaNeighborY = input[j*width + (i+yfactor)];
+                    float componenteVentoY = yfactor * ywind;
 				
-				float temp_wind = (-componenteVentoX * ((inValue - temperaturaNeighborX)/CELL_LENGTH)) -(componenteVentoY * ((inValue - temperaturaNeighborY)/CELL_LENGTH));
-				
-				output[j*width+i] = result + ((numNeighbor==4)?(temp_wind*deltaT):0.0f);
+                    temp_wind = (-componenteVentoX * ((inValue - temperaturaNeighborX)/CELL_LENGTH)) -
+                                ( componenteVentoY * ((inValue - temperaturaNeighborY)/CELL_LENGTH));
+                    
+                }
+				float temperatura_conducao = -K*(sum / numNeighbor) * deltaT;
+				float result = inValue + temperatura_conducao;
+				output[j*width+i] = result + temp_wind * deltaT;
 			}
 		}
 		//swap(output,input);	
-		#pragma acc kernels loop
+		#pragma acc loop independent
 		for(int j=0;j<height;j++){
-			#pragma acc loop
+			#pragma acc loop independent
 			for(int i=0;i<width;i++){
 				input[j*width+i] = output[j*width+i];
 			}
-		}	
+		}
+        }	
 	}
+    }
 	//swap(output,input);
 	//if(T_MAX%2==0)
 	//   memcpy(input,output,width*height*sizeof(float));
@@ -171,22 +216,25 @@ int main(int argc, char **argv){
 
 	/* Inicialização da matriz de entrada com a temperatura ambiente */
 	//#pragma omp parallel for private (i,j)
+    cout<<"Initializing cloud"<<endl;
 	for (i = 0; i < linha; i++){		
 		for (j = 0; j < coluna; j++){
-			inputGrid[j*coluna+i] = temperaturaAtmosferica;
-			outputGrid[j*coluna+i] = temperaturaAtmosferica;
+			inputGrid[i*coluna+j] = temperaturaAtmosferica;
+			outputGrid[i*coluna+j] = temperaturaAtmosferica;
 		}
 	}
 		
 	/* Inicialização dos ventos Latitudinal(Wind_X) e Longitudinal(Wind_Y) */
+    cout<<"Initializing wind"<<endl;
 	for( i = 0; i < linha; i++ ){
 		for(j = 0; j < coluna; j++ ){			
-			wind_x[j*coluna+i] = (WIND_X_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;
-			wind_y[j*coluna+i] = (WIND_Y_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;		
+			wind_x[i*coluna+j] = (WIND_X_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;
+			wind_y[i*coluna+j] = (WIND_Y_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;		
 		}
 	}
 
 	/* Inicialização de uma nuvem no centro da matriz de entrada */
+    cout<<"Generating initial cloud in center of inputGrid"<<endl;
 	int y, x0 = linha/2, y0 = coluna/2;
 	srand(1);
 	for(i = x0 - raio_nuvem; i < x0 + raio_nuvem; i++){
@@ -194,20 +242,20 @@ int main(int argc, char **argv){
 		y = (int)((floor(sqrt(pow((float)raio_nuvem, 2.0) - pow(((float)x0 - (float)i), 2)) - y0) * -1));
 		for(int j = y0 + (y0 - y); j >= y; j--){
 			float value = limInfPO + (float)rand()/RAND_MAX * (limSupPO - limInfPO);
-			inputGrid[j*coluna+i] = value;
-			outputGrid[j*coluna+i] = value;
+			inputGrid[i*coluna+j] = value;
+			outputGrid[i*coluna+j] = value;
 		}
 	}
 	
-	//hr_timer_t timer;
-	//hrt_start(&timer);
+    cout<<"Starting simulation..."<<endl;
+	hr_timer_t timer;
+	hrt_start(&timer);
 	
-	
-	#pragma pskel stencil dim2d(coluna,linha) inout(inputGrid, outputGrid) iterations(T_MAX) device(cpu)
+	//#pragma pskel stencil dim2d(coluna,linha) inout(inputGrid, outputGrid) iterations(T_MAX) device(cpu)
 	stencilKernel(inputGrid, outputGrid, coluna, linha, T_MAX, wind_x, wind_y, deltaT);
 	
-	//hrt_stop(&timer);
-	//cout << "Exec_time\t" << hrt_elapsed_time(&timer) << endl;
+	hrt_stop(&timer);
+	cout << "Exec_time\t" << hrt_elapsed_time(&timer) << endl;
 	
 	if(menu_option == 1){		
 		cout.precision(12);
