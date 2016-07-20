@@ -43,14 +43,88 @@ namespace PSkel{
 		int numNeighbor = 0;
 		float sum = 0.0f;
 		float inValue = input(i,j);
+        float temp_wind = 0.0f;
+        int height=input.getHeight();
+        int width=input.getWidth();
+        
+         if ( (j == 0) && (i == 0) ) {
+                    sum = (inValue - input(i+1,j) ) +
+                          (inValue - input(i,j+1) );
+                    numNeighbor = 2;
+                }	/*	Corner 2	*/
+                else if ((j == 0) && (i == width-1)) {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i,j+1) );
+                    numNeighbor = 2;
+                }	/*	Corner 3	*/
+                else if ((j == height-1) && (i == width-1)) {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i,j-1) );
+                    numNeighbor = 2;
+                }	/*	Corner 4	*/
+                else if ((j == height-1) && (i == 0)) {
+                    sum = (inValue - input(i,j-1) ) +
+                          (inValue - input(i+1,j) );
+                    numNeighbor = 2;
+                }	/*	Edge 1	*/
+                else if (j == 0) {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i+1,j) ) +
+                          (inValue - input(i,j+1) );
+                    numNeighbor = 3;
+                }	/*	Edge 2	*/
+                else if (i == width-1) {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i,j-1) ) +
+                          (inValue - input(i,j+1) );
+                    numNeighbor = 3;
+                }	/*	Edge 3	*/
+                else if (j == height-1) {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i,j-1) ) +
+                          (inValue - input(i+1,j) );
+                    numNeighbor = 3;
+                }	/*	Edge 4	*/
+                else if (i == 0) {
+                    sum = (inValue - input(i,j-1) ) +
+                          (inValue - input(i,j+1) ) +
+                          (inValue - input(i+1,j) );
+                    numNeighbor = 3;
+                }	/*	Inside the cloud  */
+                else {
+                    sum = (inValue - input(i-1,j) ) +
+                          (inValue - input(i,j-1) ) +
+                          (inValue - input(i,j+1) ) +
+                          (inValue - input(i+1,j) );
+                    numNeighbor = 4;
+                    
+                    float xwind = 1; //cloud.wind_x(i,j);
+                    float ywind = 1; //cloud.wind_y(i,j);
+                    int xfactor = (xwind>0)?1:-1;
+                    int yfactor = (ywind>0)?1:-1;
 
-		for( int m = 0; m < mask.size ; m++ ){
+                    float temperaturaNeighborX = input(i,(j+xfactor));
+                    float componenteVentoX = xfactor * xwind;
+                    float temperaturaNeighborY = input((i+yfactor),j);
+                    float componenteVentoY = yfactor * ywind;
+				
+                    temp_wind = (-componenteVentoX * ((inValue - temperaturaNeighborX)/CELL_LENGTH)) -
+                                ( componenteVentoY * ((inValue - temperaturaNeighborY)/CELL_LENGTH));
+                    
+                }
+				float temperatura_conducao = -K*(sum / numNeighbor) * cloud.deltaT;
+				float result = inValue + temperatura_conducao;
+				output(i,j) = result + temp_wind * cloud.deltaT;
+
+		/*
+        for( int m = 0; m < mask.size ; m++ ){
 			float temperatura_vizinho = mask.get(m,input,i,j);
 			int factor = (temperatura_vizinho==0)?0:1;
 			sum += factor*(inValue - temperatura_vizinho);
 			numNeighbor += factor;
 		}
-				
+		
+        		
 		float temperatura_conducao = -K*(sum / numNeighbor)*cloud.deltaT;
 		
 		float result = inValue + temperatura_conducao;
@@ -68,6 +142,7 @@ namespace PSkel{
 		float temp_wind = (-componenteVentoX * ((inValue - temperaturaNeighborX)/CELL_LENGTH)) -(componenteVentoY * ((inValue - temperaturaNeighborY)/CELL_LENGTH));
 		
 		output(i,j) = result + ((numNeighbor==4)?(temp_wind*cloud.deltaT):0.0f);
+        */
 	}	
 }
 
@@ -120,13 +195,14 @@ float CalculateDewPoint(float temperature_Kelvin, float pressure_mmHg)
 }
 
 int main(int argc, char **argv){
-	int linha, coluna, i, j, numero_iteracoes, raio_nuvem, menu_option, write_step, GPUBlockSize, numCPUThreads;
+	int linha, coluna, i, j, numero_iteracoes, raio_nuvem, menu_option, GPUBlockSizeX, GPUBlockSizeY, numCPUThreads;
 	float temperaturaAtmosferica, pressaoAtmosferica, pontoOrvalho, limInfPO, limSupPO, deltaT, GPUTime;
 	//float alturaNuvem;
-	if (argc != 8){
+    //int write_step;
+	if (argc != 9){
 		printf ("Wrong number of parameters.\n");
 		//printf ("Usage: cloudsim Numero_Iteraoes Linha Coluna Raio_Nuvem Temperatura_Atmosferica Altura_Nuvem Pressao_Atmosferica Delta_T GPUTIME GPUBLOCKS CPUTHREADS Menu_Option Write_Step\n");
-		printf ("Usage: cloudsim WIDTH HEIGHT ITERATIONS GPUTIME GPUBLOCKS CPUTHREADS OUTPUT_WRITE_FLAG\n");
+		printf ("Usage: cloudsim WIDTH HEIGHT ITERATIONS GPUTIME GPUBLOCK_X GPU_BLOCK_Y CPUTHREADS OUTPUT_WRITE_FLAG\n");
 		exit (-1);
 	}
 	//20 -3 5.0 700.0 0.001 1.0 32 12 0 10
@@ -135,9 +211,10 @@ int main(int argc, char **argv){
 	linha = atoi(argv[2]);
 	numero_iteracoes = atoi(argv[3]);
 	GPUTime = atof(argv[4]);
-	GPUBlockSize = atoi(argv[5]);
-	numCPUThreads = atoi(argv[6]);
-	menu_option = atoi(argv[7]);
+	GPUBlockSizeX = atoi(argv[5]);
+    GPUBlockSizeY = atoi(argv[6]);
+	numCPUThreads = atoi(argv[7]);
+	menu_option = atoi(argv[8]);
 	
 	raio_nuvem = 20; 				//atoi(argv[4]);
 	temperaturaAtmosferica = -3.0f; 	//atof(argv[5]);
@@ -216,10 +293,10 @@ int main(int argc, char **argv){
 			stencilCloud.runIterativeCPU(numero_iteracoes, numCPUThreads);
 	}
 	else if(GPUTime == 1.0){
-		stencilCloud.runIterativeGPU(numero_iteracoes, GPUBlockSize);
+		stencilCloud.runIterativeGPU(numero_iteracoes, GPUBlockSizeX, GPUBlockSizeY);
 	}
 	else{
-		stencilCloud.runIterativePartition(numero_iteracoes, GPUTime, numCPUThreads,GPUBlockSize);
+		//stencilCloud.runIterativePartition(numero_iteracoes, GPUTime, numCPUThreads,GPUBlockSize);
 	}
 	
 	hrt_stop(&timer);
