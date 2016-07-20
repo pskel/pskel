@@ -28,9 +28,11 @@ void stencilKernel(float *input,float *output, int width, int height, int T_MAX,
 	#pragma acc data copyin(input[0:width*height],wind_x[0:width*height],wind_y[0:width*height]) copyout(output[0:width*height])
     {
 	for(int t=0;t<T_MAX;t++){
-		#pragma acc parallel loop
+		#pragma acc kernels
+        {
+        #pragma acc loop independent
 		for(int j=0;j<height;j++){
-			#pragma acc loop
+            #pragma acc loop independent
 			for(int i=0;i<width;i++){
 				int numNeighbor = 0;
 				float sum = 0.0f;
@@ -109,13 +111,14 @@ void stencilKernel(float *input,float *output, int width, int height, int T_MAX,
 			}
 		}
 		//swap(output,input);	
-		#pragma acc parallel loop
+		#pragma acc loop independent
 		for(int j=0;j<height;j++){
-			#pragma acc loop
+			#pragma acc loop independent
 			for(int i=0;i<width;i++){
 				input[j*width+i] = output[j*width+i];
 			}
-		}	
+		}
+        }	
 	}
     }
 	//swap(output,input);
