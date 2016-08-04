@@ -1,3 +1,6 @@
 Exec_time	0.00473554
 Exec_time	0.00494209
 Exec_time	0.00475823
+Exec_time	0.00504496
+Exec_time	0.00473586
+Exec_time	0.00505827
