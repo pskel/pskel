@@ -5,19 +5,26 @@ OUTPUT_FLAG=0
 OPTIMUS=""
 OUTPUT_DIR=""
 EXEC="jacobi"
-TEST_DIR="./quadro"
+TEST_DIR="./tesla"
 BIN_ACC_KERNELS="../bin/jacobi_acc_kernels"
 BIN_ACC_PARALLEL="../bin/jacobi_acc_parallel"
-ITERATIONS=50
+BIN_PSKEL="../bin/jacobi_pskel"
+ITERATIONS=1
 
 ######TESTES DE TEMPO###########
 make acc_kernels -C ../apps/${EXEC}
 make acc_parallel -C ../apps/${EXEC}
+make pskel -C ../apps/${EXEC}
 OUTPUT_DIR="${TEST_DIR}/${EXEC}"
 #mkdir ${OUTPUT_DIR}
 
 #teste GPU a 100%
 VERBOSE=0
+GPU_PERCENT=1
+GPU_BLOCK_X=32
+GPU_BLOCK_Y=4
+CPU_THREADS=12
+
 for INPUT_SIZE in 512 1024 2048 4096 8192
 do
 	for ITERATION in {1..3..1}
@@ -28,7 +35,10 @@ do
 		${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1
         
-        ${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
+        	${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
+		sleep 1
+
+		${BIN_PSKEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS}  ${GPU_PERCENT}  ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_pskel_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1
 	done
 done

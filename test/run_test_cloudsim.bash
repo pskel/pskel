@@ -5,11 +5,11 @@ OUTPUT_FLAG=0
 OPTIMUS=""
 OUTPUT_DIR=""
 EXEC="cloudsim"
-TEST_DIR="./quadro"
+TEST_DIR="./tesla"
 BIN_ACC_KERNELS="../bin/cloudsim_acc_kernels"
 BIN_ACC_PARALLEL="../bin/cloudsim_acc_parallel"
 BIN_PSKEL="../bin/cloudsim_pskel"
-ITERATIONS=50
+ITERATIONS=1
 
 ######TESTES DE TEMPO###########
 make acc_kernels -C ../apps/${EXEC}

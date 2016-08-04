@@ -5,11 +5,11 @@ OUTPUT_FLAG=0
 OPTIMUS=""
 OUTPUT_DIR=""
 EXEC="gol"
-TEST_DIR="./quadro"
+TEST_DIR="./tesla"
 BIN_ACC_KERNELS="../bin/gol_acc_kernels"
 BIN_ACC_PARALLEL="../bin/gol_acc_parallel"
 BIN_PSKEL="../bin/gol_pskel"
-ITERATIONS=50
+ITERATIONS=1
 
 ######TESTES DE TEMPO###########
 make acc_kernels -C ../apps/${EXEC}
@@ -32,11 +32,11 @@ do
 		echo $"Running with INPUT_SIZE = ${INPUT_SIZE}"
 		echo "ITERATION #${ITERATION}"
         
-		#${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
-		#sleep 1
+		${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
+		sleep 1
         
-        	#${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
-		#sleep 1
+        	${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
+		sleep 1
 
 		${BIN_PSKEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${GPU_PERCENT} ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_pskel_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1

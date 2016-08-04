@@ -13,3 +13,6 @@ Initializing wind
 Generating initial cloud in center of inputGrid
 Starting simulation...
 Exec_time	0.310828
+Exec_time	0.320534
+Exec_time	0.315307
+Exec_time	0.312314

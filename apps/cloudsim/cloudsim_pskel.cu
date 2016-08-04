@@ -253,7 +253,7 @@ int main(int argc, char **argv){
 	omp_set_num_threads(numCPUThreads);
 
 	/* Inicialização da matriz de entrada com a temperatura ambiente */
-	#pragma omp parallel for private (i,j)
+	//#pragma omp parallel for private (i,j)
 	for (i = 0; i < linha; i++){		
 		for (j = 0; j < coluna; j++){
 			inputGrid(i,j) = temperaturaAtmosferica;
