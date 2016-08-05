@@ -1,0 +1,10 @@
+8 1024 2 50 1 16 16 (causa exceção).
+Resolvido retirando os arrays slice e cluster antes dos if.
+1024 1024 64 x x 16 16 (Não funciona, cluster 0 desaparece ou assert no portal)
+
+1024 1024 32 50 8 16 16 (Começa a bugar com exceções, por que?)
+
+
+1024 1024 32 500 5 16 16 (Funciona)
+1024 1024 32 50 5 16 16 (Funciona)
+
