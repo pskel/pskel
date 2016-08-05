@@ -113,8 +113,8 @@ int main(int argc,char **argv) {
   int itMod = atoi(argv[7]);
   
 
-  Array2D<int> partInput(height, width);
-  Array2D<int> output(height, width);
+  Array2D<int> partInput(width, height);
+  Array2D<int> output(width, height);
   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);
   // if(iterations == 0)  {
   stencil.runMPPA(cluster_id, nb_threads, nb_tiles, outteriterations, itMod);
