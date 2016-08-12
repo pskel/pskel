@@ -4,7 +4,7 @@
 
 #define PSKEL_MPPA
 #define MPPA_SLAVE
-#define DEBUG
+//#define DEBUG
 #define BARRIER_SYNC_MASTER "/mppa/sync/128:1"
 #define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
 

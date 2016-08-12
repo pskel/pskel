@@ -46,7 +46,7 @@ using namespace std;
   #include <ga/std_stream.h>
 #endif
 
-#define ARGC_SLAVE 9
+#define ARGC_SLAVE 11
 
 namespace PSkel{
 
@@ -164,7 +164,7 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 
 	char **argv_slave = (char**) malloc(sizeof (char*) * ARGC_SLAVE);
 	for (i = 0; i < ARGC_SLAVE - 1; i++)
-	  argv_slave[i] = (char*) malloc (sizeof (char) * 10);
+	  argv_slave[i] = (char*) malloc (sizeof (char) * 11);
 	 
 	sprintf(argv_slave[1], "%d", tilingWidth);
 	sprintf(argv_slave[2], "%d", tilingHeight);
@@ -172,8 +172,10 @@ void StencilBase<Array, Mask,Args>::spawn_slaves(const char slave_bin_name[], si
 	sprintf(argv_slave[5], "%d", iterations);
 	sprintf(argv_slave[6], "%d", outterIterations);
 	sprintf(argv_slave[7], "%d", itMod);
+	sprintf(argv_slave[8], "%d", this->input.getHeight());
+	sprintf(argv_slave[9], "%d", this->input.getHeight());
 
-	argv_slave[8] = NULL;
+	argv_slave[10] = NULL;
 
 	  
 	// Spawn slave processes
@@ -572,15 +574,15 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
     this->output.closeReadPortal();
 	this->output.mppaMasterCopy(this->input);
 	
-	#ifdef DEBUG
-	
- 	for(int h=0;h<this->output.getHeight();h++) {
-		for(int w=0;w<this->output.getWidth();w++) {
-			printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
-		}
-	}
-	
-	#endif
+  #ifdef DEBUG
+  
+  for(size_t h=0;h<this->output.getHeight();h++) {
+    for(size_t w=0;w<this->output.getWidth();w++) {
+      printf("FinalOutput(%d,%d):%f\n",h,w, output(h,w));
+    }
+  }
+  
+  #endif
 }
 #endif
 
@@ -677,9 +679,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			tmp.mppaAlloc(w,h,d);
 			inputTmp.mppaAlloc(w,h,d);
 			outputTmp.mppaAlloc(w,h,d);
-            printf("Kla");
 			inputTmp.portalReadAlloc(1, cluster_id);
-            printf("Klo");
 			mppa_barrier_wait(global_barrier);
 
 			#ifdef DEBUG
@@ -710,6 +710,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
             Array fTmp;
 			fTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
             finalArr.mppaClone(fTmp);
+
             printf("CoreHEIGHT and CoreWIDTH: %d, %d\n", coreHeightOffset, coreWidthOffset);
 
             int slaveBaseHeight = 0;

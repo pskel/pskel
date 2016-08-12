@@ -12,7 +12,7 @@
 #define PSKEL_MPPA
 #define MPPA_MASTER
 #define ARGC_SLAVE 4
-#define DEBUG
+//#define DEBUG
 #include "../../include/PSkel.h"
 
 using namespace std;
