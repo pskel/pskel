@@ -6,6 +6,7 @@ OPTIMUS         = optirun #remover este valor se não estiver em um sistema OPTI
 CUDA_LIB_PATH   = /usr/local/cuda-5.5/lib64
 CUDAFLAGS    	= -arch=sm_21 -O3 -m64 -lineinfo -Xcompiler -ftree-vectorize -Xcompiler -march=native -Xcompiler -mtune=native -Xcompiler -O3 
 ACCFLAGS	= -O3 -ta=tesla,managed -tp=sandybridge -Minfo=accel
+ACCFLAGS_M	= -O3 -ta=multicore -tp=sandybridge -Minfo=accel
 CXXFLAGS	= -O3 -w
 GENCODE		= -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\"
 OMP_TBB         = -fopenmp -lgomp -ltbb
@@ -19,7 +20,7 @@ ACC_LIBS	= -I${HR_TIME} -lrt -mp
 SRC_NAME        = jacobi
 BIN_DIR         = ../../bin/
 
-all: acc_parallel acc_kernels 
+all: pskel acc_parallel acc_multicore
 
 serial: ${SRC_NAME}_serial.cpp
 	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SRC_NAME}_serial ${SRC_NAME}_serial.cpp -Xcompiler ${OMP_TBB}
@@ -27,6 +28,9 @@ serial: ${SRC_NAME}_serial.cpp
 acc_parallel: ${SRC_NAME}_acc_parallel.cpp
 	${ACC} ${ACCFLAGS} -o  ${BIN_DIR}${SRC_NAME}_acc_parallel ${SRC_NAME}_acc_parallel.cpp ${ACC_LIBS}
 	
+acc_multicore: ${SRC_NAME}_acc_kernels.cpp
+	${ACC} ${ACCFLAGS_M} -o  ${BIN_DIR}${SRC_NAME}_acc_multicore ${SRC_NAME}_acc_kernels.cpp ${ACC_LIBS}
+
 acc_kernels: ${SRC_NAME}_acc_kernels.cpp
 	${ACC} ${ACCFLAGS} -o  ${BIN_DIR}${SRC_NAME}_acc_kernels ${SRC_NAME}_acc_kernels.cpp ${ACC_LIBS}
 
