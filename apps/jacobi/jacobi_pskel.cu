@@ -29,14 +29,15 @@ namespace PSkel{
 	
 	
 __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask,Arguments args, size_t i, size_t j){
-	//output(i,j) = 0.25 * (mask.get(0, input, i, j) + mask.get(1, input, i, j) +  mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
+	output(i,j) = 0.25f * ( mask.get(0, input, i, j) + mask.get(1, input, i, j) +  
+				mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
 						  ////mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
 						  
 	//output(i,j) = 0.2 * (input(i,j) + mask.get(0, input, i, j) + mask.get(1, input, i, j) + 
 	//					 mask.get(2, input, i, j) + mask.get(3, input, i, j));
 						 
-	output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) +
-                            input(i+1,j) - args.h);
+	//output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) +
+        //                    input(i+1,j) - args.h);
 		
 	}
 
