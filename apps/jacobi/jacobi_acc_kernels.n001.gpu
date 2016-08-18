@@ -1,0 +1,122 @@
+#include "cuda_runtime.h"
+#include "pgi_cuda_runtime.h"
+#include "jacobi_acc_kernels.n001.h"
+extern "C" __global__ __launch_bounds__(128) void
+_Z13stencilKernelPfS_iiiff_25_gpu(
+    int tc1,
+    int tc2,
+    signed char* __restrict__ p4/* input */,
+    signed char* p5/* output */,
+    int x2/* width */,
+    float x3/* beta */)
+{
+int _i_1, _i_2;
+int i25s;
+int e30;
+int e35;
+int e37;
+int j141;
+int j139;
+int e43;
+int et4;
+int et33;
+int et34;
+int et36;
+int et49;
+int et50;
+int et51;
+int et59;
+int et60;
+int et61;
+int et25;
+int et37;
+int et52;
+int et62;
+et4 = ((int)blockIdx.y)*(4);
+e35 = ((int)threadIdx.x)*(4);
+e30 = ((int)blockIdx.x)*(32);
+e37 = ((e30)*(4))+(e35);
+e43 = ((x2/* width */)*(((int)gridDim.y)*(4)))*(4);
+j139 = 0;
+j141 = 0;
+_i_1 = (et4)+((int)threadIdx.y);
+et33 = (x2/* width */)*(_i_1);
+et34 = (et33)*(4);
+et36 = (e37)+(et34);
+et49 = (x2/* width */)*((_i_1)+(-1));
+et50 = (et49)*(4);
+et51 = (e37)+(et50);
+et59 = (x2/* width */)*((_i_1)+(1));
+et60 = (et59)*(4);
+et61 = (e37)+(et60);
+_BB_11: ;
+i25s = 0;
+et25 = ((((int)threadIdx.y)-(tc2))+(et4))+(j141);
+et37 = (et36)+(j139);
+et52 = (et51)+(j139);
+et62 = (et61)+(j139);
+_BB_12: ;
+if( ((i25s)>=(tc1)))  goto _BB_13;
+if( (((j141)-(tc2))>=0)) goto _BB_13;
+if( ((et25)>=0)) goto _BB_13;
+if( ((((int)threadIdx.x)+(i25s))>=((tc1)-(((int)blockIdx.x)*(32)))))  goto _BB_13;
+_i_1 = (i25s)*(4);
+_i_2 = (et37)+(_i_1);
+*( float*)((p5/* output */)+((long long)(_i_2))) = (((*( float*)((p4/* input */)+((long long)((_i_2)+(-4)))))+((*( float*)((p4/* input */)+((long long)((_i_2)+(4)))))+((*( float*)((p4/* input */)+((long long)((et52)+(_i_1)))))+(*( float*)((p4/* input */)+((long long)((et62)+(_i_1))))))))-(x3/* beta */))*(2.50000000e-01f);
+_BB_13: ;
+i25s = (((int)gridDim.x)*(32))+(i25s);
+if( ((i25s)<(tc1)))  goto _BB_12;
+j139 = (j139)+(e43);
+j141 = (j141)+(((int)gridDim.y)*(4));
+if( (((j141)-(tc2))<0)) goto _BB_11;
+}
+extern "C" __global__ __launch_bounds__(128) void
+_Z13stencilKernelPfS_iiiff_35_gpu(
+    int tc3,
+    int tc4,
+    signed char* __restrict__ p4/* output */,
+    signed char* p5/* input */,
+    int x2/* width */)
+{
+int _i_1;
+int i24s;
+int e29;
+int e34;
+int e36;
+int j91;
+int j89;
+int e40;
+int et4;
+int et32;
+int et33;
+int et35;
+int et25;
+int et36;
+et4 = ((int)blockIdx.y)*(4);
+e34 = ((int)threadIdx.x)*(4);
+e29 = ((int)blockIdx.x)*(32);
+e36 = ((e29)*(4))+(e34);
+e40 = ((x2/* width */)*(((int)gridDim.y)*(4)))*(4);
+j89 = 0;
+j91 = 0;
+et32 = (x2/* width */)*((et4)+((int)threadIdx.y));
+et33 = (et32)*(4);
+et35 = (e36)+(et33);
+_BB_11: ;
+i24s = 0;
+et25 = ((((int)threadIdx.y)-(tc4))+(et4))+(j91);
+et36 = (et35)+(j89);
+_BB_12: ;
+if( ((i24s)>=(tc3)))  goto _BB_13;
+if( (((j91)-(tc4))>=0)) goto _BB_13;
+if( ((et25)>=0)) goto _BB_13;
+if( ((((int)threadIdx.x)+(i24s))>=((tc3)-(((int)blockIdx.x)*(32)))))  goto _BB_13;
+_i_1 = (et36)+((i24s)*(4));
+*( float*)((p5/* input */)+((long long)(_i_1))) = (*( float*)((p4/* output */)+((long long)(_i_1))));
+_BB_13: ;
+i24s = (((int)gridDim.x)*(32))+(i24s);
+if( ((i24s)<(tc3)))  goto _BB_12;
+j89 = (j89)+(e40);
+j91 = (j91)+(((int)gridDim.y)*(4));
+if( (((j91)-(tc4))<0)) goto _BB_11;
+}
