@@ -21,7 +21,7 @@ inline void stencilKernel(float* __restrict__ input, float* __restrict__ output,
 	for (int t = 0; t < T_MAX; t++){
 		#pragma acc parallel loop  
 		for (int y = 1; y < height - 1; y++){
-			#pragma acc vector
+			#pragma acc loop
 			for (int x = 1; x < width - 1; x++){
 				output[y*width+x] = 0.25f * (input[(y+1)*width + x] + input[(y-1)*width + x] +
 				                   	     input[y*width + (x+1)] + input[y*width + (x-1)] - beta);
@@ -32,7 +32,7 @@ inline void stencilKernel(float* __restrict__ input, float* __restrict__ output,
 		if(t>1 & t<T_MAX - 1){
 			#pragma acc parallel loop  
 			for (int y = 1; y < height - 1; y++){
-				#pragma acc vector
+				#pragma acc loop
 				for (int x = 1; x < width - 1; x++){
 					input[y*width+x] = output[y*width+x];
 				}

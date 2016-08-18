@@ -27,14 +27,18 @@ using namespace PSkel;
 #define TAM_VETOR_FILENAME  200
 
 struct Cloud{	
-	Args2D<float> wind_x, wind_y;
+	//Args2D<float> wind_x, wind_y;
+	Array2D<float> wind_x;
+	Array2D<float> wind_y;
 	float deltaT;
 	
 	Cloud(){};
 	
 	Cloud(int linha, int coluna){		
-		new (&wind_x) Args2D<float>(linha, coluna);
-		new (&wind_y) Args2D<float>(linha, coluna);
+		//new (&wind_x) Args2D<float>(linha, coluna);
+		//new (&wind_y) Args2D<float>(linha, coluna);
+		new (&wind_x) Array2D<float>(linha, coluna);
+		new (&wind_y) Array2D<float>(linha, coluna);
 	}
 };
 
@@ -98,8 +102,8 @@ namespace PSkel{
                           (inValue - input(i+1,j) );
                     numNeighbor = 4;
                     
-                    float xwind = 1; //cloud.wind_x(i,j);
-                    float ywind = 1; //cloud.wind_y(i,j);
+                    float xwind = cloud.wind_x(i,j);
+                    float ywind = cloud.wind_y(i,j);
                     int xfactor = (xwind>0)?1:-1;
                     int yfactor = (ywind>0)?1:-1;
 
@@ -212,7 +216,7 @@ int main(int argc, char **argv){
 	numero_iteracoes = atoi(argv[3]);
 	GPUTime = atof(argv[4]);
 	GPUBlockSizeX = atoi(argv[5]);
-    GPUBlockSizeY = atoi(argv[6]);
+    	GPUBlockSizeY = atoi(argv[6]);
 	numCPUThreads = atoi(argv[7]);
 	menu_option = atoi(argv[8]);
 	
@@ -267,7 +271,13 @@ int main(int argc, char **argv){
 			cloud.wind_y(i,j) = (WIND_Y_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;		
 		}
 	}
-
+	
+	//Forcing copy
+	cloud.wind_x.deviceAlloc();
+	cloud.wind_x.copyToDevice();
+	cloud.wind_y.deviceAlloc();
+	cloud.wind_y.copyToDevice();	
+					
 	/* Inicialização de uma nuvem no centro da matriz de entrada */
 	int y, x0 = linha/2, y0 = coluna/2;
 	srand(1);
