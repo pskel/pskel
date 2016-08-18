@@ -10,6 +10,8 @@
 #include <stdlib.h>
 
 #include "hr_time.h"
+#include <omp.h>
+#include <openacc.h>
 
 using namespace std;
 
@@ -49,13 +51,15 @@ void stencilKernel(int *input, int *output, int width, int height, int T_MAX){
 		}
         
         //swap
-        #pragma acc parallel loop independent
-		for(int j=0;j<height;j++){
-            #pragma acc loop independent
-			for(int i=0;i<width;i++){
-                input[j*width + i] = output[j*width + i];
-            }
-        }
+        if(t>1 && t<T_MAX - 1){
+			#pragma acc parallel loop independent
+			for(int j=0;j<height;j++){
+				#pragma acc loop independent
+				for(int i=0;i<width;i++){
+					input[j*width + i] = output[j*width + i];
+				}
+			}
+		}
 	}
     }
 }
