@@ -4,12 +4,14 @@
 
 #define PSKEL_MPPA
 #define MPPA_SLAVE
-//#define DEBUG
+// #define DEBUG
+// #define PRINT_OUT
+#define TIME_EXEC
+#define TIME_SEND
 #define BARRIER_SYNC_MASTER "/mppa/sync/128:1"
 #define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
 
 #include "../../include/PSkel.h"
-//#include "../../include/hr_time.h"
 
 using namespace std;
 using namespace PSkel;
@@ -23,9 +25,6 @@ struct Arguments
 
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
-    // if(h == 513 && w==127) {
-    // //   printf("Chamando...%d,%d\n", h,w);
-    // // }
     int numberA = 0;
     int numberI = 0;
     
@@ -112,7 +111,6 @@ int main(int argc,char **argv) {
   int outteriterations = atoi(argv[6]);
   int itMod = atoi(argv[7]);
   
-
   Array2D<int> partInput(width, height);
   Array2D<int> output(width, height);
   Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(partInput, output, mask, arg);

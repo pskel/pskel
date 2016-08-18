@@ -8,7 +8,11 @@
 
 #define PSKEL_MPPA
 #define MPPA_MASTER
-#define DEBUG
+// #define DEBUG
+//#define BUG_TEST
+// #define PRINT_OUT
+#define TIME_EXEC
+#define TIME_SEND
 #define ARGC_SLAVE 4
 #include "../../include/PSkel.h"
 
@@ -53,7 +57,7 @@ int main(int argc, char **argv){
 	for(int h=0;h<height;h++) {
 		for(int w=0;w<width;w++) {
 			inputGrid(h,w) = rand()%2;
-		    printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
+		    // printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
 		}
 	}
 
