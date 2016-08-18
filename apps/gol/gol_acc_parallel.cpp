@@ -88,6 +88,7 @@ int main(int argc, char **argv){
 	outputGrid = (int*) calloc(width*height,sizeof(int));
 
 	srand(123456789);
+	//#pragma omp parallel for
 	for(int j=1;j<height-1;j++) {
 		for(int i=1;i<width-1;i++) {
 			inputGrid[j*width + i] = rand()%2;

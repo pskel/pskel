@@ -16,7 +16,6 @@ void stencilKernel(float *input, float *output, int width, int height, int T_MAX
 	for (int t = 0; t < T_MAX; t++){
 		#pragma omp parallel for
 		for (int y = 1; y < height - 1; y++){
-    			#pragma omp simd
 			for (int x = 1; x < width - 1; x++){
                 		output[y*width+x] = 0.25f * (input[(y+1)*width + x] + input[(y-1)*width + x] +
 				                   	     input[y*width + (x+1)] + input[y*width + (x-1)] - beta);
