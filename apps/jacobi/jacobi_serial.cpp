@@ -8,29 +8,36 @@
 #include <cstdlib>
 #include <stdlib.h>
 
+#include <omp.h>
+#include "hr_time.h"
 using namespace std;
 
 void stencilKernel(float *input, float *output, int width, int height, int T_MAX,float alpha, float beta){
 	for (int t = 0; t < T_MAX; t++){
+		#pragma omp parallel for
 		for (int y = 1; y < height - 1; y++){
-    		for (int x = 1; x < width - 1; x++){
-                output[y*width+x] = alpha * input[y*width + x] +
-									beta * (input[(y+1)*width + x] + input[(y-1)*width + x] +
-											input[y*width + (x+1)] + input[y*width + (x-1)])
-									- 4 * beta * beta;
-    		}
-    	}   
+    			#pragma omp simd
+			for (int x = 1; x < width - 1; x++){
+                		output[y*width+x] = 0.25f * (input[(y+1)*width + x] + input[(y-1)*width + x] +
+				                   	     input[y*width + (x+1)] + input[y*width + (x-1)] - beta);
+
+						    //alpha * input[y*width + x] +
+						    //0.25f * (input[(y+1)*width + x] + input[(y-1)*width + x] +
+						    //				                   	     input[y*width + (x+1)] + input[y*width + (x-1)] - beta);
+    			}
+    		}   
     	
-    	//swap(output,input)
-    	for (int y = 1; y < height - 1; y++){
-    		for (int x = 1; x < width - 1; x++){
-				input[y*width+x] = output[y*width+x];
-			}
-		}
+    	swap(output,input);
+    	//#pragma omp parallel for
+    	//for (int y = 1; y < height - 1; y++){
+    	//	for (int x = 1; x < width - 1; x++){
+	//			input[y*width+x] = output[y*width+x];
+	//		}
+	//	}
 	}
 	//swap(output,input);
-	//if(T_MAX%2==0)
-	//   memcpy(input,output,width*height*sizeof(int));
+	if(T_MAX%2==0)
+	   memcpy(input,output,width*height*sizeof(int));
 }
 
 int main(int argc, char **argv){
@@ -53,11 +60,12 @@ int main(int argc, char **argv){
 	T_MAX = atoi (argv[3]);
 
 	alpha = 0.25/(float) width;
-    beta = 1.0/(float) height;
+    	beta = 1.0/(float) height;
 
 	inputGrid = (float*) malloc(width*height*sizeof(float));
 	outputGrid = (float*) malloc(width*height*sizeof(float));
 
+	#pragma omp parallel for
 	for(int j=0;j<height;j++) {
 		for(int i=0;i<width;i++) {
 			inputGrid[j*width + i] = 1. + i*0.1 + j*0.01;
@@ -65,7 +73,12 @@ int main(int argc, char **argv){
 	}
   
 	#pragma pskel stencil dim2d(width,height) inout(inputGrid, outputGrid) iterations(T_MAX) device(gpu)
+	hr_timer_t timer;
+	hrt_start(&timer);
+
 	stencilKernel(inputGrid, outputGrid,width,height,T_MAX,alpha,beta);
-  
+	
+	hrt_stop(&timer);
+	cout << "Exec_time\t" << hrt_elapsed_time(&timer) << endl;  
 	return 0;
 }

@@ -25,7 +25,7 @@ BIN_DIR         = ../../bin/
 all: pskel acc_parallel acc_multicore
 
 serial: ${SRC_NAME}_serial.cpp
-	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SRC_NAME}_serial ${SRC_NAME}_serial.cpp -Xcompiler ${OMP_TBB}
+	${CUDAC} ${CUDAFLAGS} -o ${BIN_DIR}${SRC_NAME}_serial ${SRC_NAME}_serial.cpp ${LIBS}
 
 acc_parallel: ${SRC_NAME}_acc_parallel.cpp
 	${ACC} ${ACCFLAGS_T} -o  ${BIN_DIR}${SRC_NAME}_acc_parallel ${SRC_NAME}_acc_parallel.cpp ${ACC_LIBS}
