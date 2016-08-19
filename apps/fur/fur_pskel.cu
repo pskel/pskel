@@ -41,7 +41,7 @@ int CalcSize(int level){
 namespace PSkel{
 	
 	
-__parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask,Arguments args, size_t i, size_t j){
+__parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask,Arguments arg, size_t h, size_t w){
 		int numberA = 0;
 		int numberI = 0;
 		for (int z = 0; z < mask.size; z++) {
@@ -118,17 +118,16 @@ int main(int argc, char **argv){
   	}
 	
 	Arguments args;
-	Arguments arg;
-	arg.power = power;
-	arg.internCircle = internCircle;
-	arg.externCircle = externCircle;
+	args.power = power;
+	args.internCircle = internCircle;
+	args.externCircle = externCircle;
 
 		
 	omp_set_num_threads(numCPUThreads);
 
 	/* initialize the first timesteps */
 	#pragma omp parallel for
-    for(size_t h = 0; h < inputGrid.getHeight(); h++){		
+    	for(size_t h = 0; h < inputGrid.getHeight(); h++){		
 		for(size_t w = 0; w < inputGrid.getWidth(); w++){
 			inputGrid(h,w) = rand()%2;
 		}
@@ -137,7 +136,7 @@ int main(int argc, char **argv){
 	hr_timer_t timer;
 	hrt_start(&timer);
     
-	Stencil2D<Array2D<float>, Mask2D<float>, Arguments> fur(inputGrid, outputGrid, mask, args);
+	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> fur(inputGrid, outputGrid, mask, args);
 	
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0)
@@ -153,7 +152,14 @@ int main(int argc, char **argv){
 		//	}
 		//#else
 			//cout<<"Running Iterative CPU"<<endl;
-			fur.runIterativeCPU(T_MAX, numCPUThreads);	
+			#ifdef PSKEL_PAPI
+				PSkelPAPI::papi_start(PSkelPAPI::RAPL,0);
+			#endif	
+				fur.runIterativeCPU(T_MAX, numCPUThreads);	
+
+			#ifdef PSKEL_PAPI
+				PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
+			#endif
 		//#endif
 	}
 	else if(GPUTime == 1.0){
