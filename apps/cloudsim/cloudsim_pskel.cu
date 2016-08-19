@@ -102,8 +102,8 @@ namespace PSkel{
                           (inValue - input(i+1,j) );
                     numNeighbor = 4;
                     
-                    float xwind = cloud.wind_x(i,j);
-                    float ywind = cloud.wind_y(i,j);
+                    float xwind = 1;//cloud.wind_x(i,j);
+                    float ywind = 1;//cloud.wind_y(i,j);
                     int xfactor = (xwind>0)?1:-1;
                     int yfactor = (ywind>0)?1:-1;
 
@@ -273,10 +273,10 @@ int main(int argc, char **argv){
 	}
 	
 	//Forcing copy
-	cloud.wind_x.deviceAlloc();
-	cloud.wind_x.copyToDevice();
-	cloud.wind_y.deviceAlloc();
-	cloud.wind_y.copyToDevice();	
+	//cloud.wind_x.deviceAlloc();
+	//cloud.wind_x.copyToDevice();
+	//cloud.wind_y.deviceAlloc();
+	//cloud.wind_y.copyToDevice();	
 					
 	/* Inicialização de uma nuvem no centro da matriz de entrada */
 	int y, x0 = linha/2, y0 = coluna/2;
@@ -303,6 +303,11 @@ int main(int argc, char **argv){
 			stencilCloud.runIterativeCPU(numero_iteracoes, numCPUThreads);
 	}
 	else if(GPUTime == 1.0){
+		//Forcing copy
+		cloud.wind_x.deviceAlloc();
+		cloud.wind_x.copyToDevice();
+		cloud.wind_y.deviceAlloc();
+		cloud.wind_y.copyToDevice();	
 		stencilCloud.runIterativeGPU(numero_iteracoes, GPUBlockSizeX, GPUBlockSizeY);
 	}
 	else{

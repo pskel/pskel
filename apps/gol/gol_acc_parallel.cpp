@@ -20,9 +20,9 @@ void stencilKernel(int *input, int *output, int width, int height, int T_MAX){
     {
 	for(int t=0;t<T_MAX;t++){
         #pragma acc parallel loop independent
-		for(int j=1;j<height-1;j++){
+		for(int j=0;j<height;j++){
             #pragma acc loop
-			for(int i=1;i<width-1;i++){
+			for(int i=0;i<width;i++){
                 
                 //int neighbors = input[(j)*width + (i+1)] + input[(j)*width + (i-1)] +
                 //                input[(j+1)*width + (i)] + input[(j-1)*width + (i)] +

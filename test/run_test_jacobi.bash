@@ -6,11 +6,10 @@ OPTIMUS=""
 OUTPUT_DIR=""
 EXEC="jacobi"
 TEST_DIR="./tesla2"
-BIN_ACC_KERNELS="../bin/cloudsim_acc_kernels"
-BIN_ACC_PARALLEL="../bin/cloudsim_acc_parallel"
-BIN_ACC_MULTICORE="../bin/cloudsim_acc_multicore"
-BIN_PSKEL="../bin/cloudsim_pskel"
-ITERATIONS=1
+BIN_ACC_KERNELS="../bin/jacobi_acc_kernels"
+BIN_ACC_PARALLEL="../bin/jacobi_acc_parallel"
+BIN_ACC_MULTICORE="../bin/jacobi_acc_multicore"
+BIN_PSKEL="../bin/jacobi_pskel"
 
 ######TESTES DE TEMPO###########
 make acc_kernels -C ../apps/${EXEC}
