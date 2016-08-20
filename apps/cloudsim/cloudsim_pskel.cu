@@ -47,54 +47,56 @@ namespace PSkel{
 		int numNeighbor = 0;
 		float sum = 0.0f;
 		float inValue = input(i,j);
-        float temp_wind = 0.0f;
-        int height=input.getHeight();
-        int width=input.getWidth();
+        	
+		//*
+		float temp_wind = 0.0f;
+		int height=input.getHeight();
+        	int width=input.getWidth();
         
-         if ( (j == 0) && (i == 0) ) {
+         	if ( (j == 0) && (i == 0) ) {
                     sum = (inValue - input(i+1,j) ) +
                           (inValue - input(i,j+1) );
                     numNeighbor = 2;
-                }	/*	Corner 2	*/
+                }	//	Corner 2	
                 else if ((j == 0) && (i == width-1)) {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i,j+1) );
                     numNeighbor = 2;
-                }	/*	Corner 3	*/
+                }	//	Corner 3	
                 else if ((j == height-1) && (i == width-1)) {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i,j-1) );
                     numNeighbor = 2;
-                }	/*	Corner 4	*/
+                }	//	Corner 4	
                 else if ((j == height-1) && (i == 0)) {
                     sum = (inValue - input(i,j-1) ) +
                           (inValue - input(i+1,j) );
                     numNeighbor = 2;
-                }	/*	Edge 1	*/
+                }	//	Edge 1	
                 else if (j == 0) {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i+1,j) ) +
                           (inValue - input(i,j+1) );
                     numNeighbor = 3;
-                }	/*	Edge 2	*/
+                }	//	Edge 2	
                 else if (i == width-1) {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i,j-1) ) +
                           (inValue - input(i,j+1) );
                     numNeighbor = 3;
-                }	/*	Edge 3	*/
+                }	//	Edge 3	
                 else if (j == height-1) {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i,j-1) ) +
                           (inValue - input(i+1,j) );
                     numNeighbor = 3;
-                }	/*	Edge 4	*/
+                }	//	Edge 4	
                 else if (i == 0) {
                     sum = (inValue - input(i,j-1) ) +
                           (inValue - input(i,j+1) ) +
                           (inValue - input(i+1,j) );
                     numNeighbor = 3;
-                }	/*	Inside the cloud  */
+                }	//	Inside the cloud  
                 else {
                     sum = (inValue - input(i-1,j) ) +
                           (inValue - input(i,j-1) ) +
@@ -102,8 +104,8 @@ namespace PSkel{
                           (inValue - input(i+1,j) );
                     numNeighbor = 4;
                     
-                    float xwind = 1;//cloud.wind_x(i,j);
-                    float ywind = 1;//cloud.wind_y(i,j);
+                    float xwind = cloud.wind_x(i,j);
+                    float ywind = cloud.wind_y(i,j);
                     int xfactor = (xwind>0)?1:-1;
                     int yfactor = (ywind>0)?1:-1;
 
@@ -121,7 +123,7 @@ namespace PSkel{
 				output(i,j) = result + temp_wind * cloud.deltaT;
 
 		/*
-        for( int m = 0; m < mask.size ; m++ ){
+        	for( int m = 0; m < mask.size ; m++ ){
 			float temperatura_vizinho = mask.get(m,input,i,j);
 			int factor = (temperatura_vizinho==0)?0:1;
 			sum += factor*(inValue - temperatura_vizinho);

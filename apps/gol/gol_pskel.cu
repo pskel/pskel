@@ -104,10 +104,10 @@ int main(int argc, char **argv){
 		
 	omp_set_num_threads(numCPUThreads);
 
-    srand(1234);
-    for(int h = 1; h < height-1; h++){		
-        for(int w = 1; w < width-1; w++){
-            inputGrid(h,w) = (rand()%2);            
+    	srand(1234);
+    	for(int h = 1; h < height-1; h++){		
+        	for(int w = 1; w < width-1; w++){
+            		inputGrid(h,w) = (rand()%2);            
             //outputGrid(i,j) =  inputGrid(i,j);
 		}
 	}	
@@ -119,19 +119,25 @@ int main(int argc, char **argv){
 	
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0)
-			PSkelPAPI::init(PSkelPAPI::CPU);
+			PSkelPAPI::init(PSkelPAPI::RAPL);
 	#endif	
 	
 	if(GPUTime == 0.0){
 		//jacobi.runIterativeCPU(T_MAX, numCPUThreads);
-		#ifdef PSKEL_PAPI
-			for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
-				//cout << "Running iteration " << i << endl;
-				stencil.runIterativeCPU(T_MAX, numCPUThreads, i);	
-			}
-		#else
+		//#ifdef PSKEL_PAPI
+		//	for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
+		//		//cout << "Running iteration " << i << endl;
+		//		stencil.runIterativeCPU(T_MAX, numCPUThreads, i);	
+		//	}
+		//#else
 			//cout<<"Running Iterative CPU"<<endl;
+		
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_start(PSkelPAPI::RAPL,0);
+		#endif
 			stencil.runIterativeCPU(T_MAX, numCPUThreads);	
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
 		#endif
 	}
 	else if(GPUTime == 1.0){
@@ -156,7 +162,7 @@ int main(int argc, char **argv){
 
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0){
-			PSkelPAPI::print_profile_values(PSkelPAPI::CPU);
+			PSkelPAPI::print_profile_values(PSkelPAPI::RAPL);
 			PSkelPAPI::shutdown();
 		}
 	#endif

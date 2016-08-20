@@ -90,7 +90,7 @@ int main(int argc, char **argv){
   	int externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
   	int size = internCircle + externCircle;
 	
-	
+	//cout<<"Size: "<<size<<endl;
 	Array2D<int> inputGrid(x_max, y_max);
 	Array2D<int> outputGrid(x_max, y_max);
 	Mask2D<int> mask(size);

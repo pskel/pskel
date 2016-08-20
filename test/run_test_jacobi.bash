@@ -10,18 +10,18 @@ BIN_ACC_KERNELS="../bin/jacobi_acc_kernels"
 BIN_ACC_PARALLEL="../bin/jacobi_acc_parallel"
 BIN_ACC_MULTICORE="../bin/jacobi_acc_multicore"
 BIN_PSKEL="../bin/jacobi_pskel"
-
+BIN_PAPI="../bin/jacobi_papi"
 ######TESTES DE TEMPO###########
-make acc_kernels -C ../apps/${EXEC}
-make acc_parallel -C ../apps/${EXEC}
-make acc_multicore -C ../apps/${EXEC}
-make pskel -C ../apps/${EXEC}
+#make acc_kernels -C ../apps/${EXEC}
+#make acc_parallel -C ../apps/${EXEC}
+#make acc_multicore -C ../apps/${EXEC}
+make papi -C ../apps/${EXEC}
 OUTPUT_DIR="${TEST_DIR}/${EXEC}"
 #mkdir ${OUTPUT_DIR}
 
 #teste GPU a 100%
 VERBOSE=0
-GPU_PERCENT=1
+GPU_PERCENT=0
 GPU_BLOCK_X=32
 GPU_BLOCK_Y=4
 CPU_THREADS=12
@@ -37,16 +37,16 @@ do
 		#${BIN_ACC_KERNELS} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_kernels_${INPUT_SIZE}_${ITERATIONS}.txt
 		#sleep 1
         
-        	${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
-		sleep 1
+        	#${BIN_ACC_PARALLEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_parallel_${INPUT_SIZE}_${ITERATIONS}.txt
+		#sleep 1
 
-		${BIN_ACC_MULTICORE} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_multicore_${INPUT_SIZE}_${ITERATIONS}.txt
-		sleep 1
+		#${BIN_ACC_MULTICORE} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_multicore_${INPUT_SIZE}_${ITERATIONS}.txt
+		#sleep 1
 
-		${BIN_PSKEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${GPU_PERCENT} ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_pskelgpu_${INPUT_SIZE}_${ITERATIONS}.txt
+		${BIN_PAPI} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} ${GPU_PERCENT} ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_papi_${INPUT_SIZE}_${ITERATIONS}.txt
 		sleep 1
 		
-		${BIN_PSKEL} ${INPUT_SIZE} ${INPUT_SIZE} ${ITERATIONS} 0 ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_pskelcpu_${INPUT_SIZE}_${ITERATIONS}.txt
+		${BIN_PAPI} ${INPUT_SIZE} ${INPUT_SIZE} 1 0 ${GPU_BLOCK_X} ${GPU_BLOCK_Y} ${CPU_THREADS} ${VERBOSE} &>> ${OUTPUT_DIR}/${EXEC}_papi_${INPUT_SIZE}_1.txt
 		sleep 1
 
 	done
