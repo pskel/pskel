@@ -48,14 +48,8 @@ namespace PSkelPAPI{
 	long long values_cpu[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {0};
 	
 	//PAPI Event Names
-    	char const *EventNameRAPL[NUM_EVENTS_RAPL] = {
-										"rapl:::PACKAGE_ENERGY:PACKAGE0",
-										"rapl:::DRAM_ENERGY:PACKAGE0",
-										"rapl:::PP0_ENERGY:PACKAGE0",
-										"rapl:::PACKAGE_ENERGY:PACKAGE1"
-										"rapl:::PP0_ENERGY:PACKAGE1",
-										"rapl:::DRAM_ENERGY:PACKAGE1"
-										};
+    	char const *EventNameRAPL[NUM_EVENTS_RAPL] = {"rapl:::PACKAGE_ENERGY:PACKAGE0","rapl:::PP0_ENERGY:PACKAGE0","rapl:::DRAM_ENERGY:PACKAGE0",
+						      "rapl:::PACKAGE_ENERGY:PACKAGE1","rapl:::PP0_ENERGY:PACKAGE1","rapl:::DRAM_ENERGY:PACKAGE1"};
 
 	//Events for Quadro 2000
 	#ifdef QUADRO
@@ -89,8 +83,7 @@ namespace PSkelPAPI{
 							};
 	#endif
 	
-	char const *EventNameGPU[MAX_EVENTS_GPU] = 
-								{"cuda:::device:0:inst_executed","cuda:::device:0:branch", "cuda:::device:0:divergent_branch","cuda:::device:0:l1_global_load_hit", "cuda:::device:0:l1_global_load_miss","cuda:::device:0:elapsed_cycles_sm","cuda:::device:0:active_cycles"};
+	char const *EventNameGPU[MAX_EVENTS_GPU] =	{"cuda:::device:0:inst_executed","cuda:::device:0:branch", "cuda:::device:0:divergent_branch","cuda:::device:0:l1_global_load_hit", "cuda:::device:0:l1_global_load_miss","cuda:::device:0:elapsed_cycles_sm","cuda:::device:0:active_cycles"};
 								
 								/*{"","","","","",""}
 								 ""
@@ -110,8 +103,8 @@ namespace PSkelPAPI{
 								*/
 							
 	
-	char *EventNameNVML[NUM_EVENTS_NVML];
-				
+	char const *EventNameNVML[NUM_EVENTS_NVML] = {"nvml:::Tesla_K20m:power"};
+
 	//Holds PAPI CODES
 	int events_rapl[NUM_EVENTS_RAPL];
 	int events_cpu[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {0}; 
@@ -127,7 +120,7 @@ namespace PSkelPAPI{
 	//Timing variables
 	long long before_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0};
 	long long after_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0};
-    double elapsed_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0.0};
+    	double elapsed_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0.0};
 
 	void NVML_init(){
 	
