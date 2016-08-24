@@ -123,7 +123,38 @@ namespace PSkelPAPI{
     	double elapsed_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0.0};
 
 	void NVML_init(){
-	
+ 		#ifdef PSKEL_PAPI_DEBUG
+                        printf("\nConverting nvml group events name to code...\n");
+                #endif
+
+                for( int i = 0; i < NUM_EVENTS_NVML; i++ ){
+                        retval = PAPI_event_name_to_code( (char *) EventNameNVML[i], &events_nvml[i] );
+                        if( retval != PAPI_OK ) {
+                                fprintf( stderr, "PAPI_event_name_to_code failed\n" );
+                                continue;
+                        }
+                        eventCountNVML++;
+                        #ifdef PSKEL_PAPI_DEBUG
+                                printf( "Name %s --- Code: %#x\n", EventNameNVML[i], events_nvml[i] );
+                        #endif
+		}
+
+		 /* if we did not find any valid events, just report test failed. */
+                if (eventCountNVML == 0) {
+                        printf( "Test FAILED: no valid NVML events found.\n");
+                                //exit(-1);
+                }
+                else{
+                    /* Create NVML EventSet */
+                    retval = PAPI_create_eventset( &EventSetNVML );
+                    if( retval != PAPI_OK )
+                        fprintf( stderr, "PAPI_create_eventset NVML failed with return value %d\n",retval );
+                        
+		    /* Add events to Events */
+                    retval = PAPI_add_events( EventSetNVML, events_nvml, eventCountNVML );
+                                                                                                                                                                                                                if( retval != PAPI_OK )
+                        fprintf( stderr, "PAPI_add_events NVML failed with return value %d\n",retval );
+        	}
 	}
 	
 	/* convert PAPI RAPL native events to PAPI code */

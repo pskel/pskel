@@ -230,6 +230,13 @@ int Mask3D<T>::setMaskRadius(Arrays array){
 template<typename T>
 Mask2D<T>::Mask2D(size_t size, T haloVal, size_t range) : MaskBase<T>(size,2,haloVal, range) {}
 
+template<typename T>
+Mask2D<T>::Mask2D(size_t size, int array[][2]): MaskBase<T>(size, 2, 0,0){
+	for(int i=0;i<size;i++){
+		this->set(i,array[i][0],array[i][1],(T)1);
+	}
+}
+	
 	
 template<typename T>
 void Mask2D<T>::set(size_t n, int h, int w, T weight){

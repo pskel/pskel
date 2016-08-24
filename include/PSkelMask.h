@@ -68,6 +68,8 @@ protected:
          * it is calculated as the maximum absolute value on the mask.
          **/
 	MaskBase(size_t size=0, size_t dimension=0, T haloVal=T(0), size_t range=0);
+	//template<size_t rows, size_t cols>
+	//MaskBase(size_t size, int (&array)[][]);
 public:
 	size_t size, dimension;
 	size_t range;
@@ -176,6 +178,8 @@ public:
          * it is calculated as the maximum absolute value on the mask.
          **/
 	Mask2D(size_t size=0, T haloVal=T(0), size_t range=0);
+	
+	Mask2D(size_t size, int array[][2]);
 	
 	/**
          * Set the mask information for accessing the n-th neighbor for a given element.

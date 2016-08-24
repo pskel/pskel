@@ -92,7 +92,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	mask.deviceMask = shared;
 	#endif
     
-	if(w>=0 && w<tilingWidth && h>=0 && h<tilingHeight){
+	if(w<tilingWidth && h<tilingHeight){
 	//if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}

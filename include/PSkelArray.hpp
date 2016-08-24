@@ -54,7 +54,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->depthOffset = 0;
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
-    	this->deviceArray = 0;
+    	this->deviceArray = NULL;
 	#endif
 	
 	if(size()>0) this->hostAlloc();
@@ -78,10 +78,10 @@ void ArrayBase<T>::deviceAlloc(){
 template<typename T>
 void ArrayBase<T>::deviceFree(){
 	#ifndef PSKEL_MANAGED
-	//if(this->deviceArray!=NULL){
+	if(this->deviceArray!=NULL){
 		cudaFree(this->deviceArray);
 		this->deviceArray = NULL;
-	//}
+	}
 	#endif
 }
 #endif
@@ -114,7 +114,7 @@ void ArrayBase<T>::hostAlloc(){
 	#ifdef PSKEL_MANAGED
 		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
 	#else
-	#ifdef PSKEL_CUDAX
+	#ifdef PSKEL_CUDA
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #else
@@ -132,7 +132,7 @@ void ArrayBase<T>::hostFree(){
 	#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#else
-	#ifdef PSKEL_CUDAX	
+	#ifdef PSKEL_CUDA	
 		gpuErrchk( cudaFreeHost(this->hostArray) );
 	#else
 		free(this->hostArray);
