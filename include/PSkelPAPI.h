@@ -48,14 +48,8 @@ namespace PSkelPAPI{
 	long long values_cpu[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {0};
 	
 	//PAPI Event Names
-    	char const *EventNameRAPL[NUM_EVENTS_RAPL] = {
-										"rapl:::PACKAGE_ENERGY:PACKAGE0",
-										"rapl:::DRAM_ENERGY:PACKAGE0",
-										"rapl:::PP0_ENERGY:PACKAGE0",
-										"rapl:::PACKAGE_ENERGY:PACKAGE1"
-										"rapl:::PP0_ENERGY:PACKAGE1",
-										"rapl:::DRAM_ENERGY:PACKAGE1"
-										};
+    	char const *EventNameRAPL[NUM_EVENTS_RAPL] = {"rapl:::PACKAGE_ENERGY:PACKAGE0","rapl:::PP0_ENERGY:PACKAGE0","rapl:::DRAM_ENERGY:PACKAGE0",
+						      "rapl:::PACKAGE_ENERGY:PACKAGE1","rapl:::PP0_ENERGY:PACKAGE1","rapl:::DRAM_ENERGY:PACKAGE1"};
 
 	//Events for Quadro 2000
 	#ifdef QUADRO
@@ -89,8 +83,7 @@ namespace PSkelPAPI{
 							};
 	#endif
 	
-	char const *EventNameGPU[MAX_EVENTS_GPU] = 
-								{"cuda:::device:0:inst_executed","cuda:::device:0:branch", "cuda:::device:0:divergent_branch","cuda:::device:0:l1_global_load_hit", "cuda:::device:0:l1_global_load_miss","cuda:::device:0:elapsed_cycles_sm","cuda:::device:0:active_cycles"};
+	char const *EventNameGPU[MAX_EVENTS_GPU] =	{"cuda:::device:0:inst_executed","cuda:::device:0:branch", "cuda:::device:0:divergent_branch","cuda:::device:0:l1_global_load_hit", "cuda:::device:0:l1_global_load_miss","cuda:::device:0:elapsed_cycles_sm","cuda:::device:0:active_cycles"};
 								
 								/*{"","","","","",""}
 								 ""
@@ -110,8 +103,8 @@ namespace PSkelPAPI{
 								*/
 							
 	
-	char *EventNameNVML[NUM_EVENTS_NVML];
-				
+	char const *EventNameNVML[NUM_EVENTS_NVML] = {"nvml:::Tesla_K20m:power"};
+
 	//Holds PAPI CODES
 	int events_rapl[NUM_EVENTS_RAPL];
 	int events_cpu[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {0}; 
@@ -127,10 +120,41 @@ namespace PSkelPAPI{
 	//Timing variables
 	long long before_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0};
 	long long after_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0};
-    double elapsed_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0.0};
+    	double elapsed_time[NUM_COMPONENTS][NUM_GROUPS_CPU] = {0.0};
 
 	void NVML_init(){
-	
+ 		#ifdef PSKEL_PAPI_DEBUG
+                        printf("\nConverting nvml group events name to code...\n");
+                #endif
+
+                for( int i = 0; i < NUM_EVENTS_NVML; i++ ){
+                        retval = PAPI_event_name_to_code( (char *) EventNameNVML[i], &events_nvml[i] );
+                        if( retval != PAPI_OK ) {
+                                fprintf( stderr, "PAPI_event_name_to_code failed\n" );
+                                continue;
+                        }
+                        eventCountNVML++;
+                        #ifdef PSKEL_PAPI_DEBUG
+                                printf( "Name %s --- Code: %#x\n", EventNameNVML[i], events_nvml[i] );
+                        #endif
+		}
+
+		 /* if we did not find any valid events, just report test failed. */
+                if (eventCountNVML == 0) {
+                        printf( "Test FAILED: no valid NVML events found.\n");
+                                //exit(-1);
+                }
+                else{
+                    /* Create NVML EventSet */
+                    retval = PAPI_create_eventset( &EventSetNVML );
+                    if( retval != PAPI_OK )
+                        fprintf( stderr, "PAPI_create_eventset NVML failed with return value %d\n",retval );
+                        
+		    /* Add events to Events */
+                    retval = PAPI_add_events( EventSetNVML, events_nvml, eventCountNVML );
+                                                                                                                                                                                                                if( retval != PAPI_OK )
+                        fprintf( stderr, "PAPI_add_events NVML failed with return value %d\n",retval );
+        	}
 	}
 	
 	/* convert PAPI RAPL native events to PAPI code */
