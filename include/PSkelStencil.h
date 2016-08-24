@@ -196,7 +196,22 @@ public:
 	 * \param[in] GPUBlockSize the block size used for the GPU processing the stencil kernel.
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
-	void runIterativeGPU(size_t iterations, size_t GPUBlockSizeX=0, size_t GPUBlockSizeY=0);
+	void runIterativeGPU(size_t iterations, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
+	#endif
+
+	#ifdef PSKEL_CUDA
+	/**
+	 * Executes in GPU and CPU multiple iterations of the stencil computation.
+	 * The input data is fractioned in two tiles by the gpuFactor.
+	 * The first fraction is processed by the GPU and the second by the CPU.
+	 * At each given iteration, except the first, the previous output is used as input.
+	 * \param[in] iterations the number of iterations to be computed.
+	 * \param[in] gpuFactor fraction of input data processed by the GPU.
+	 * \param[in] numThreads number of threads used by the CPU.
+	 * \param[in] GPUBlockSizeX the block size (x dimension) used for the GPU processing the stencil kernel.
+	 * \param[in] GPUBlockSizeY the block size (y dimension) used for the GPU processing the stencil kernel.
+	 **/
+	void runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
 	#endif
 
 	#ifdef PSKEL_CUDA
