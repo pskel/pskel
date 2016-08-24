@@ -216,7 +216,7 @@ int main(int argc, char **argv){
 
 	/* Inicialização da matriz de entrada com a temperatura ambiente */
 	//#pragma omp parallel for private (i,j)
-    cout<<"Initializing cloud"<<endl;
+    	//cout<<"Initializing cloud"<<endl;
 	for (i = 0; i < linha; i++){		
 		for (j = 0; j < coluna; j++){
 			inputGrid[i*coluna+j] = temperaturaAtmosferica;
@@ -225,7 +225,7 @@ int main(int argc, char **argv){
 	}
 		
 	/* Inicialização dos ventos Latitudinal(Wind_X) e Longitudinal(Wind_Y) */
-    cout<<"Initializing wind"<<endl;
+    	//cout<<"Initializing wind"<<endl;
 	for( i = 0; i < linha; i++ ){
 		for(j = 0; j < coluna; j++ ){			
 			wind_x[i*coluna+j] = (WIND_X_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;
@@ -234,7 +234,7 @@ int main(int argc, char **argv){
 	}
 
 	/* Inicialização de uma nuvem no centro da matriz de entrada */
-    cout<<"Generating initial cloud in center of inputGrid"<<endl;
+    	//cout<<"Generating initial cloud in center of inputGrid"<<endl;
 	int y, x0 = linha/2, y0 = coluna/2;
 	srand(1);
 	for(i = x0 - raio_nuvem; i < x0 + raio_nuvem; i++){
@@ -247,7 +247,7 @@ int main(int argc, char **argv){
 		}
 	}
 	
-    cout<<"Starting simulation..."<<endl;
+    	//cout<<"Starting simulation..."<<endl;
 	hr_timer_t timer;
 	hrt_start(&timer);
 	

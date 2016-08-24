@@ -29,14 +29,15 @@ namespace PSkel{
 	
 	
 __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask,Arguments args, size_t i, size_t j){
-	//output(i,j) = 0.25 * (mask.get(0, input, i, j) + mask.get(1, input, i, j) +  mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
+	output(i,j) = 0.25f * ( mask.get(0, input, i, j) + mask.get(1, input, i, j) +  
+				mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
 						  ////mask.get(2, input, i, j) + mask.get(3, input, i, j) - args.h );
 						  
 	//output(i,j) = 0.2 * (input(i,j) + mask.get(0, input, i, j) + mask.get(1, input, i, j) + 
 	//					 mask.get(2, input, i, j) + mask.get(3, input, i, j));
 						 
-	output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) +
-                            input(i+1,j) - args.h);
+	//output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) +
+        //                    input(i+1,j) - args.h);
 		
 	}
 
@@ -103,7 +104,7 @@ int main(int argc, char **argv){
 	
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0)
-			PSkelPAPI::init(PSkelPAPI::CPU);
+			PSkelPAPI::init(PSkelPAPI::RAPL);
 	#endif
 	
 	//stencil.runIterativePartition(T_MAX, 1.0-CPUTime, numCPUThreads, GPUBlockSize);
@@ -115,14 +116,21 @@ int main(int argc, char **argv){
 	
 	if(GPUTime == 0.0){
 		//jacobi.runIterativeCPU(T_MAX, numCPUThreads);
-		#ifdef PSKEL_PAPI
-			for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
+		//#ifdef PSKEL_PAPI
+		//	for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
 				//cout << "Running iteration " << i << endl;
-				jacobi.runIterativeCPU(T_MAX, numCPUThreads, i);	
-			}
-		#else
+		//		jacobi.runIterativeCPU(T_MAX, numCPUThreads, i);	
+		//	}
+		//#else
 			//cout<<"Running Iterative CPU"<<endl;
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_start(PSkelPAPI::RAPL,0);
+		#endif
+
 			jacobi.runIterativeCPU(T_MAX, numCPUThreads);	
+
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
 		#endif
 	}
 	else if(GPUTime == 1.0){
@@ -147,7 +155,7 @@ int main(int argc, char **argv){
 
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0){
-			PSkelPAPI::print_profile_values(PSkelPAPI::CPU);
+			PSkelPAPI::print_profile_values(PSkelPAPI::RAPL);
 			PSkelPAPI::shutdown();
 		}
 	#endif

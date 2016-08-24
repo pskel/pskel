@@ -26,15 +26,53 @@ namespace PSkel{
 	
 __parallel__ void stencilKernel(Array2D<bool> input, Array2D<bool> output,
                   Mask2D<bool> mask, short args, size_t i, size_t j){
-	int neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
-                     input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
-                     input(i,j-1)   + input(i,j+1) ; 
+    //int neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
+    //                 input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
+    //                 input(i,j-1)   + input(i,j+1) ; 
+
+    //int neighbors = mask.get(0,input,i,j) + mask.get(1,input,i,j) + mask.get(2,input,i,j) +
+    //	              mask.get(3,input,i,j) + mask.get(4,input,i,j) + mask.get(5,input,i,j) +
+    //		      mask.get(6,input,i,j) + mask.get(7,input,i,j);
+
                       
-            
-                    
+    
+    int neighbors = 0;
+    int height=input.getHeight();
+    int width=input.getWidth();
+    
+    if ( (j == 0) && (i == 0) ) { //	Corner 1	
+        neighbors = input(i+1,j) + input(i,j+1) + input (i+1,j+1);
+    }	//	Corner 2	
+    else if ((j == 0) && (i == width-1)) {
+        neighbors = input(i-1,j) + input(i,j+1) + input(i-1,j+1);
+    }	//	Corner 3	
+    else if ((j == height-1) && (i == width-1)) {
+        neighbors = input(i-1,j) + input(i,j-1) + input(i-1,j-1);
+    }	//	Corner 4	
+    else if ((j == height-1) && (i == 0)) {
+        neighbors = input(i,j-1) + input(i+1,j) + input(i+1,j-1);
+    }	//	Edge 1	
+    else if (j == 0) {
+        neighbors = input(i-1,j) + input(i+1,j) + input(i-1,j+1) + input(i,j+1) + input(i+1,j+1);
+    }	//	Edge 2	
+    else if (i == width-1) {
+        neighbors = input(i,j-1) +  input(i-1,j-1) + input(i-1,j) +  input(i-1,j+1) + input(i,j+1);
+    }	//Edge 3	
+    else if (j == height-1) {
+        neighbors = input(i-1,j-1) + input(i,j-1) + input(i+1,j-1) + input(i-1,j) + input(i+1,j);
+    }	//Edge 4
+    else if (i == 0) {
+        neighbors = input(i,j-1) + input(i+1,j-1) + input(i+1,j) + input(i,j+1) + input(i+1,j+1);
+    }	//Inside the grid
+    else {
+        neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
+                     input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
+                     input(i,j-1)   + input(i,j+1) ;
+    }
+                  
     output(i,j) = (neighbors == 3 || (input(i,j) == 1 && neighbors == 2))?1:0;
         
-	}
+    }
 }
 
 int main(int argc, char **argv){
@@ -66,10 +104,10 @@ int main(int argc, char **argv){
 		
 	omp_set_num_threads(numCPUThreads);
 
-    srand(1234);
-    for(int h = 1; h < height-1; h++){		
-        for(int w = 1; w < width-1; w++){
-            inputGrid(h,w) = (rand()%2);            
+    	srand(1234);
+    	for(int h = 1; h < height-1; h++){		
+        	for(int w = 1; w < width-1; w++){
+            		inputGrid(h,w) = (rand()%2);            
             //outputGrid(i,j) =  inputGrid(i,j);
 		}
 	}	
@@ -81,19 +119,25 @@ int main(int argc, char **argv){
 	
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0)
-			PSkelPAPI::init(PSkelPAPI::CPU);
+			PSkelPAPI::init(PSkelPAPI::RAPL);
 	#endif	
 	
 	if(GPUTime == 0.0){
 		//jacobi.runIterativeCPU(T_MAX, numCPUThreads);
-		#ifdef PSKEL_PAPI
-			for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
-				//cout << "Running iteration " << i << endl;
-				stencil.runIterativeCPU(T_MAX, numCPUThreads, i);	
-			}
-		#else
+		//#ifdef PSKEL_PAPI
+		//	for(unsigned int i=0;i<NUM_GROUPS_CPU;i++){
+		//		//cout << "Running iteration " << i << endl;
+		//		stencil.runIterativeCPU(T_MAX, numCPUThreads, i);	
+		//	}
+		//#else
 			//cout<<"Running Iterative CPU"<<endl;
+		
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_start(PSkelPAPI::RAPL,0);
+		#endif
 			stencil.runIterativeCPU(T_MAX, numCPUThreads);	
+		#ifdef PSKEL_PAPI
+			PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
 		#endif
 	}
 	else if(GPUTime == 1.0){
@@ -118,7 +162,7 @@ int main(int argc, char **argv){
 
 	#ifdef PSKEL_PAPI
 		if(GPUTime < 1.0){
-			PSkelPAPI::print_profile_values(PSkelPAPI::CPU);
+			PSkelPAPI::print_profile_values(PSkelPAPI::RAPL);
 			PSkelPAPI::shutdown();
 		}
 	#endif

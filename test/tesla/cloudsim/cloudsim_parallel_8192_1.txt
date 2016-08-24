@@ -1,0 +1,18 @@
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.663467
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.657583
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.640663
+Exec_time	0.650002
+Exec_time	0.641338
+Exec_time	0.652604

@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <string.h>
 
+#include <omp.h>
+#include <openacc.h>
 #include "hr_time.h"
 
 using namespace std;
@@ -24,9 +26,9 @@ using namespace std;
 #define DELTAPO       	0.5f
 #define TAM_VETOR_FILENAME  200
 
-void stencilKernel(float *input,float *output, int width, int height, int T_MAX,float *wind_x,float *wind_y,float deltaT){
+void stencilKernel(float* __restrict__ input,float* __restrict__ output, int width, int height, int T_MAX,float* __restrict__ wind_x,float* __restrict__ wind_y,float deltaT){
 	#pragma acc data copyin(input[0:width*height],wind_x[0:width*height],wind_y[0:width*height]) copyout(output[0:width*height])
-    {
+    	{
 	for(int t=0;t<T_MAX;t++){
 		#pragma acc parallel loop
 		for(int j=0;j<height;j++){
@@ -108,14 +110,17 @@ void stencilKernel(float *input,float *output, int width, int height, int T_MAX,
 				output[j*width+i] = result + temp_wind * deltaT;
 			}
 		}
+		
+		if(t>1 && t<T_MAX-1){
 		//swap(output,input);	
-		#pragma acc parallel loop
-		for(int j=0;j<height;j++){
-			#pragma acc loop
-			for(int i=0;i<width;i++){
-				input[j*width+i] = output[j*width+i];
-			}
-		}	
+			#pragma acc parallel loop
+			for(int j=0;j<height;j++){
+				#pragma acc loop
+				for(int i=0;i<width;i++){
+					input[j*width+i] = output[j*width+i];
+				}
+			}	
+		}
 	}
     }
 	//swap(output,input);
@@ -212,8 +217,7 @@ int main(int argc, char **argv){
 	//omp_set_num_threads(numCPUThreads);
 
 	/* Inicialização da matriz de entrada com a temperatura ambiente */
-	//#pragma omp parallel for private (i,j)
-    cout<<"Initializing cloud"<<endl;
+	#pragma omp parallel for private (i,j)   	
 	for (i = 0; i < linha; i++){		
 		for (j = 0; j < coluna; j++){
 			inputGrid[i*coluna+j] = temperaturaAtmosferica;
@@ -222,7 +226,7 @@ int main(int argc, char **argv){
 	}
 		
 	/* Inicialização dos ventos Latitudinal(Wind_X) e Longitudinal(Wind_Y) */
-    cout<<"Initializing wind"<<endl;
+    	//cout<<"Initializing wind"<<endl;
 	for( i = 0; i < linha; i++ ){
 		for(j = 0; j < coluna; j++ ){			
 			wind_x[i*coluna+j] = (WIND_X_BASE - DISTURB) + (float)rand()/RAND_MAX * 2 * DISTURB;
@@ -231,7 +235,7 @@ int main(int argc, char **argv){
 	}
 
 	/* Inicialização de uma nuvem no centro da matriz de entrada */
-    cout<<"Generating initial cloud in center of inputGrid"<<endl;
+    	//cout<<"Generating initial cloud in center of inputGrid"<<endl;
 	int y, x0 = linha/2, y0 = coluna/2;
 	srand(1);
 	for(i = x0 - raio_nuvem; i < x0 + raio_nuvem; i++){
@@ -244,7 +248,7 @@ int main(int argc, char **argv){
 		}
 	}
 	
-    cout<<"Starting simulation..."<<endl;
+    	//cout<<"Starting simulation..."<<endl;
 	hr_timer_t timer;
 	hrt_start(&timer);
 	

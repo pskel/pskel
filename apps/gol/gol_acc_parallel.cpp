@@ -10,6 +10,8 @@
 #include <stdlib.h>
 
 #include "hr_time.h"
+#include <omp.h>
+//#include <openacc.h>
 
 using namespace std;
 
@@ -18,14 +20,14 @@ void stencilKernel(int *input, int *output, int width, int height, int T_MAX){
     {
 	for(int t=0;t<T_MAX;t++){
         #pragma acc parallel loop independent
-		for(int j=1;j<height-1;j++){
+		for(int j=0;j<height;j++){
             #pragma acc loop
-			for(int i=1;i<width-1;i++){
+			for(int i=0;i<width;i++){
                 
-                int neighbors = input[(j)*width + (i+1)] + input[(j)*width + (i-1)] +
-                                input[(j+1)*width + (i)] + input[(j-1)*width + (i)] +
-                                input[(j+1)*width + (i+1)] + input[(j-1)*width + (i-1)] +
-                                input[(j+1)*width + (i-1)] + input[(j-1)*width + (i+1)];
+                //int neighbors = input[(j)*width + (i+1)] + input[(j)*width + (i-1)] +
+                //                input[(j+1)*width + (i)] + input[(j-1)*width + (i)] +
+                //                input[(j+1)*width + (i+1)] + input[(j-1)*width + (i-1)] +
+                //                input[(j+1)*width + (i-1)] + input[(j-1)*width + (i+1)];
                 
                 /*int neighbors = 0;
 				for(int y=-1;y<=1;y++){
@@ -36,6 +38,52 @@ void stencilKernel(int *input, int *output, int width, int height, int T_MAX){
 					}
 				}
                 */
+				int neighbors = 0;
+				if ( (j == 0) && (i == 0) ) { //	Corner 1	
+					neighbors = input[(j)*width + (i+1)] + input[(j+1)*width + (i)] + input[(j+1)*width + (i+1)];
+								//input(i+1,j) + input(i,j+1) + input (i+1,j+1);
+				}	//	Corner 2	
+				else if ((j == 0) && (i == width-1)) {
+					neighbors = input[(j)*width + (i-1)] + input[(j+1)*width + (i)] + input[(j+1)*width + (i-1)];
+								//input(i-1,j) + input(i,j+1) + input(i-1,j+1);
+				}	//	Corner 3	
+				else if ((j == height-1) && (i == width-1)) {
+					neighbors =	input[(j)*width + (i-1)] + input[(j-1)*width + (i)] + input[(j-1)*width + (i-1)];
+								//input(i-1,j) + input(i,j-1) + input(i-1,j-1);
+				}	//	Corner 4	
+				else if ((j == height-1) && (i == 0)) {
+					neighbors =	input[(j-1)*width + (i)] + input[(j)*width + (i+1)] + input[(j-1)*width + (i+1)];
+								//input(i,j-1) + input(i+1,j) + input(i+1,j-1);
+				}	//	Edge 1	
+				else if (j == 0) {
+					neighbors =	input[(j)*width + (i-1)] + input[(j)*width + (i+1)] + input[(j+1)*width + (i-1)] +
+								input[(j+1)*width + (i)] + input[(j+1)*width + (i+1)];
+								//input(i-1,j) + input(i+1,j) + input(i-1,j+1) + input(i,j+1) + input(i+1,j+1);
+				}	//	Edge 2	
+				else if (i == width-1) {
+					neighbors =	input[(j-1)*width + (i)] + input[(j-1)*width + (i-1)] + input[(j)*width + (i-1)] +
+								input[(j+1)*width + (i-1)] + input[(j+1)*width + (i)];
+								//input(i,j-1) +  input(i-1,j-1) + input(i-1,j) +  input(i-1,j+1) + input(i,j+1);
+				}	//Edge 3	
+				else if (j == height-1) {
+					neighbors =	input[(j-1)*width + (i-1)] + input[(j-1)*width + (i)] + input[(j-1)*width + (i+1)] +
+								input[(j)*width + (i-1)] + input[(j)*width + (i+1)];
+								//input(i-1,j-1) + input(i,j-1) + input(i+1,j-1) + input(i-1,j) + input(i+1,j);
+				}	//Edge 4
+				else if (i == 0) {
+					neighbors =	input[(j-1)*width + (i)] + input[(j-1)*width + (i+1)] + input[(j)*width + (i+1)] +
+								input[(j+1)*width + (i)] + input[(j+1)*width + (i+1)];
+								//input(i,j-1) + input(i+1,j-1) + input(i+1,j) + input(i,j+1) + input(i+1,j+1);
+				}	//Inside the grid
+				else {
+					neighbors = input[(j-1)*width + (i-1)] + input[(j-1)*width + (i)] + input[(j-1)*width + (i+1)] +
+								input[(j)*width + (i-1)] + input[(j)*width + (i+1)] +
+								input[(j+1)*width + (i-1)] + input[(j+1)*width + (i)] + input[(j+1)*width + (i+1)];
+								//input(i-1,j-1) + input(i-1,j) + input(i-1,j+1) + input(i+1,j-1) + input(i+1,j) +
+								//input(i+1,j+1) + input(i,j-1)   + input(i,j+1) ;
+				}
+
+                
                 output[j*width + i] = (neighbors == 3 || (input[j*width + i] == 1 && neighbors == 2))?1:0;
 				
                 /*if(neighbors == 3 || (input[j*width + i] == 1 && neighbors == 2)){
@@ -49,13 +97,15 @@ void stencilKernel(int *input, int *output, int width, int height, int T_MAX){
 		}
         
         //swap
-        #pragma acc parallel loop independent
-		for(int j=0;j<height;j++){
-            #pragma acc loop independent
-			for(int i=0;i<width;i++){
-                input[j*width + i] = output[j*width + i];
-            }
-        }
+        if(t>1 && t<T_MAX - 1){
+			#pragma acc parallel loop independent
+			for(int j=0;j<height;j++){
+				#pragma acc loop independent
+				for(int i=0;i<width;i++){
+					input[j*width + i] = output[j*width + i];
+				}
+			}
+		}
 	}
     }
 }
@@ -84,6 +134,7 @@ int main(int argc, char **argv){
 	outputGrid = (int*) calloc(width*height,sizeof(int));
 
 	srand(123456789);
+	//#pragma omp parallel for
 	for(int j=1;j<height-1;j++) {
 		for(int i=1;i<width-1;i++) {
 			inputGrid[j*width + i] = rand()%2;
