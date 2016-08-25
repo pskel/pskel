@@ -87,8 +87,11 @@ template<typename T>
 Args2D<T>::Args2D(int _width,int _height){
 	width = _width;
 	height = _height;
-	gpuErrchk( cudaHostAlloc((void **) &hostArray, width*height*sizeof(T), cudaHostAllocWriteCombined | cudaHostAllocMapped) );
-	gpuErrchk( cudaHostGetDevicePointer(&deviceArray, hostArray, 0) );
+    //gpuErrchk( cudaDeviceReset() );
+    //gpuErrchk( cudaSetDeviceFlags(cudaDeviceMapHost) );
+	
+    gpuErrchk( cudaHostAlloc((void **) &hostArray, width*height*sizeof(T), cudaHostAllocWriteCombined  | cudaHostAllocMapped) );
+	gpuErrchk( cudaHostGetDevicePointer((void **) &deviceArray, (void *) hostArray, 0) );
 }
 	
 template<typename T>
