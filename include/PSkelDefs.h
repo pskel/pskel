@@ -58,3 +58,7 @@
 #endif
 
 #endif
+
+#ifdef DEBUG
+//	namespace PSkel{hr_timer_t PSkelTimer;}
+#endif

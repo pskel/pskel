@@ -413,6 +413,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 			{
 				#pragma omp section         
 				{//begin GPU
+					printf("%f Running GPU iterations\n",omp_get_wtime());
 					gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
 					
 					inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
@@ -427,11 +428,12 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					
 					//CUDA kernel execution
 					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
+					printf("%f Finished GPU iterations\n",omp_get_wtime());
 				}//end GPU section
 				
 				#pragma omp section
 				{//begin CPU
-					//printf("%f Running CPU iterations\n",omp_get_wtime());
+					printf("%f Running CPU iterations\n",omp_get_wtime());
 					cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					
 					inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
@@ -440,25 +442,26 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					//inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					//outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 
-					Array inputCopy;
-					inputCopy.hostClone(inputCPU);
+					//Array inputCopy;
+					//inputCopy.hostClone(inputCPU);
 					for(size_t it = 0; it<iterations; it++){
 						if(it%2==0){
 							#ifdef PSKEL_TBB
 								this->runTBB(inputCopy, outputCPU, numThreads);
 							#else
-								this->runOpenMP(inputCopy, outputCPU, numThreads);
+								this->runOpenMP(inputCPU, outputCPU, numThreads);
 							#endif
 						}else {
 							#ifdef PSKEL_TBB
-								this->runTBB(outputCPU, inputCopy, numThreads);
+								this->runTBB(outputCPU, inputCPU, numThreads);
 							#else
-								this->runOpenMP(outputCPU, inputCopy, numThreads);
+								this->runOpenMP(outputCPU, inputCPU, numThreads);
 							#endif
 						}
 					}//end for
-					if((iterations%2)==0) outputCPU.hostMemCopy(inputCopy);
-					inputCopy.hostFree();
+					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
+					//inputCopy.hostFree();
+					printf("%f Finished CPU iterations\n",omp_get_wtime());
 				}//end CPU section
 			}//end parallel omp sections
 			if(iterations%2==0)
@@ -667,7 +670,7 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, 
 }
 #endif
 
-#ifdef PSKEL_CUDA
+#ifdef PSKEL_CUDA_GA
 struct TilingGPUGeneticEvaluationFunction{
     size_t iterations;
     size_t height;
@@ -971,8 +974,10 @@ Stencil2D<Array,Mask,Args>::~Stencil2D(){
 
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
-	for (int h = 0; h < in.getHeight(); h++){
-	for (int w = 0; w < in.getWidth(); w++){
+	size_t height = in.getHeight();
+	size_t width = in.getWidth();
+	for (size_t h = 0; h < height; h++){
+	for (size_t w = 0; w < width; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }

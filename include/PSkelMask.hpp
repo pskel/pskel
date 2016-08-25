@@ -232,7 +232,7 @@ Mask2D<T>::Mask2D(size_t size, T haloVal, size_t range) : MaskBase<T>(size,2,hal
 
 template<typename T>
 Mask2D<T>::Mask2D(size_t size, int array[][2]): MaskBase<T>(size, 2, 0,0){
-	for(int i=0;i<size;i++){
+	for(size_t i=0;i<size;i++){
 		this->set(i,array[i][0],array[i][1],(T)1);
 	}
 }

@@ -57,9 +57,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
     	this->deviceArray = NULL;
 	#endif
 	
-	if(size()>0) this->hostAlloc();
-	
-	
+	if(size()>0) this->hostAlloc();	
 }
 
 #ifdef PSKEL_CUDA
@@ -123,6 +121,10 @@ void ArrayBase<T>::hostAlloc(){
 	#endif
 		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
 		//memset(this->hostArray, 0, size()*sizeof(T));
+		//
+	#ifdef DEBUG
+		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
+	#endif
 	}
 }
 	
@@ -180,7 +182,7 @@ __device__ __forceinline__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_
 #endif
 
 template<typename T>
-T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
+__host__ __forceinline__  T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 	return this->hostArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
 }
 
@@ -206,6 +208,11 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
 	this->hostArray = array.hostArray;
+
+	#if DEBUG
+		printf("Array of address %p sliced with offset (%d,%d,%d) starting at address %p\n",
+		 (void*)&(array.hostArray),this->widthOffset,this->heightOffset,this->depthOffset,(void*)&(this->hostGet(0,0,0)));
+	#endif
 }
 
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
@@ -230,6 +237,10 @@ void ArrayBase<T>::hostClone(Arrays array){
 	
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostMemCopy(Arrays array){
+	#ifdef DEBUG
+		hr_timer_t timer;
+		hrt_start(&timer);
+	#endif
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		memcpy(this->hostArray, array.hostArray, size()*sizeof(T));
 	}else{
@@ -240,6 +251,10 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
                         this->hostGet(i,j,k)=array.hostGet(i,j,k);
 		}}}
 	}
+	#ifdef DEBUG
+		hrt_stop(&timer);
+		printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),hrt_elapsed_time(&timer));
+	#endif
 }
 
 #ifdef PSKEL_CUDA
