@@ -1,0 +1,27 @@
+
+--------------------------------------------------------------------------------
+rapl:::PACKAGE_ENERGY:PACKAGE0              6.494461 J	(Average Power 26.2W)
+rapl:::PP0_ENERGY:PACKAGE0                  3.570251 J	(Average Power 14.4W)
+rapl:::DRAM_ENERGY:PACKAGE0                 0.905731 J	(Average Power 3.7W)
+rapl:::PACKAGE_ENERGY:PACKAGE1              5.990982 J	(Average Power 24.2W)
+rapl:::PP0_ENERGY:PACKAGE1                  3.096313 J	(Average Power 12.5W)
+rapl:::DRAM_ENERGY:PACKAGE1                 0.594299 J	(Average Power 2.4W)
+Exec_time	0.265008
+
+--------------------------------------------------------------------------------
+rapl:::PACKAGE_ENERGY:PACKAGE0              6.498917 J	(Average Power 26.2W)
+rapl:::PP0_ENERGY:PACKAGE0                  3.572220 J	(Average Power 14.4W)
+rapl:::DRAM_ENERGY:PACKAGE0                 0.912079 J	(Average Power 3.7W)
+rapl:::PACKAGE_ENERGY:PACKAGE1              5.991425 J	(Average Power 24.2W)
+rapl:::PP0_ENERGY:PACKAGE1                  3.098633 J	(Average Power 12.5W)
+rapl:::DRAM_ENERGY:PACKAGE1                 0.591934 J	(Average Power 2.4W)
+Exec_time	0.263397
+
+--------------------------------------------------------------------------------
+rapl:::PACKAGE_ENERGY:PACKAGE0              6.469025 J	(Average Power 26.2W)
+rapl:::PP0_ENERGY:PACKAGE0                  3.554306 J	(Average Power 14.4W)
+rapl:::DRAM_ENERGY:PACKAGE0                 0.908386 J	(Average Power 3.7W)
+rapl:::PACKAGE_ENERGY:PACKAGE1              5.968643 J	(Average Power 24.1W)
+rapl:::PP0_ENERGY:PACKAGE1                  3.086258 J	(Average Power 12.5W)
+rapl:::DRAM_ENERGY:PACKAGE1                 0.586395 J	(Average Power 2.4W)
+Exec_time	0.262757

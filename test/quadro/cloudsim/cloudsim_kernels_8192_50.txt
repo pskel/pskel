@@ -1,0 +1,42 @@
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Out of memory allocating 268435456 bytes of device memory
+total/free CUDA memory: 1073414144/244244480
+Present table dump for device[1]: NVIDIA Tesla GPU 0, compute capability 2.1
+host:0x7f7b7b766010 device:0xb210e0000 size:268435456 presentcount:1+0 line:29 name:wind_y
+host:0x7f7b8b767010 device:0xb110e0000 size:268435456 presentcount:1+0 line:29 name:wind_x
+host:0x7f7bab769010 device:0xb010e0000 size:268435456 presentcount:1+0 line:29 name:input
+allocated block device:0xb010e0000 size:268435456 thread:1
+allocated block device:0xb110e0000 size:268435456 thread:1
+allocated block device:0xb210e0000 size:268435456 thread:1
+call to cuMemAlloc returned error 2: Out of memory
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Out of memory allocating 268435456 bytes of device memory
+total/free CUDA memory: 1073414144/244244480
+Present table dump for device[1]: NVIDIA Tesla GPU 0, compute capability 2.1
+host:0x7fbd1ba83010 device:0xb210e0000 size:268435456 presentcount:1+0 line:29 name:wind_y
+host:0x7fbd2ba84010 device:0xb110e0000 size:268435456 presentcount:1+0 line:29 name:wind_x
+host:0x7fbd4ba86010 device:0xb010e0000 size:268435456 presentcount:1+0 line:29 name:input
+allocated block device:0xb010e0000 size:268435456 thread:1
+allocated block device:0xb110e0000 size:268435456 thread:1
+allocated block device:0xb210e0000 size:268435456 thread:1
+call to cuMemAlloc returned error 2: Out of memory
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Out of memory allocating 268435456 bytes of device memory
+total/free CUDA memory: 1073414144/244244480
+Present table dump for device[1]: NVIDIA Tesla GPU 0, compute capability 2.1
+host:0x7f69c8286010 device:0xb210e0000 size:268435456 presentcount:1+0 line:29 name:wind_y
+host:0x7f69d8287010 device:0xb110e0000 size:268435456 presentcount:1+0 line:29 name:wind_x
+host:0x7f69f8289010 device:0xb010e0000 size:268435456 presentcount:1+0 line:29 name:input
+allocated block device:0xb010e0000 size:268435456 thread:1
+allocated block device:0xb110e0000 size:268435456 thread:1
+allocated block device:0xb210e0000 size:268435456 thread:1
+call to cuMemAlloc returned error 2: Out of memory

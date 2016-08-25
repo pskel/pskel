@@ -1,0 +1,10 @@
+Exec_time	0.58957
+Exec_time	0.655788
+Exec_time	0.602491
+Exec_time	0.658938
+Exec_time	0.606778
+Exec_time	0.656938
+Exec_time	0.613075
+Exec_time	0.660075
+Exec_time	0.614139
+Exec_time	0.658765

@@ -1,0 +1,18 @@
+./run_test_cloudsim.bash: line 35: ../bin/cloudsim_acc_kernels: No such file or directory
+./run_test_cloudsim.bash: line 35: ../bin/cloudsim_acc_kernels: No such file or directory
+./run_test_cloudsim.bash: line 35: ../bin/cloudsim_acc_kernels: No such file or directory
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.328596
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.311803
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.31236

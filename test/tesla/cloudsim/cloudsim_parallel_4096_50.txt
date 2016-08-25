@@ -1,0 +1,18 @@
+./run_test_cloudsim.bash: line 38: ../bin/cloudsim_acc_parallel: No such file or directory
+./run_test_cloudsim.bash: line 38: ../bin/cloudsim_acc_parallel: No such file or directory
+./run_test_cloudsim.bash: line 38: ../bin/cloudsim_acc_parallel: No such file or directory
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.513019
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.513094
+Initializing cloud
+Initializing wind
+Generating initial cloud in center of inputGrid
+Starting simulation...
+Exec_time	0.513378
