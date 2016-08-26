@@ -32,6 +32,10 @@
 #ifndef PSKEL_ARRAY_HPP
 #define PSKEL_ARRAY_HPP
 
+#define VALUE_TO_STRING(x) #x
+#define VALUE(x) VALUE_TO_STRING(x)
+#define VAR_NAME_VALUE(var) #var "="  VALUE(var)
+
 #include <cstring>
 #include <omp.h>
 
@@ -50,28 +54,33 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->depthOffset = 0;
 	this->hostArray = 0;
 	#ifdef PSKEL_CUDA
-    this->deviceArray = 0;
+    	this->deviceArray = NULL;
 	#endif
-	if(size()>0) this->hostAlloc();
+	
+	if(size()>0) this->hostAlloc();	
 }
 
 #ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::deviceAlloc(){
+	#ifndef PSKEL_MANAGED
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
 		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
+	#endif
 }
 #endif
 
 #ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::deviceFree(){
-	//if(this->deviceArray!=NULL){
+	#ifndef PSKEL_MANAGED
+	if(this->deviceArray!=NULL){
 		cudaFree(this->deviceArray);
 		this->deviceArray = NULL;
-	//}
+	}
+	#endif
 }
 #endif
 
@@ -94,27 +103,45 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 	this->hostAlloc();
 }
 
+//TODO When using CUDA, a page-locked memory is allocated. Verify the diference
+//in performance between cudaMallocHost and cudaHostAlloc and its flags.
+//It seems that Cloudsim CPU Performance is worst with cudaMallocHost.
 template<typename T>
 void ArrayBase<T>::hostAlloc(){
 	if(this->hostArray==NULL){
-        #ifdef PSKEL_CUDA
+	#ifdef PSKEL_MANAGED
+		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
+	#else
+	#ifdef PSKEL_CUDA
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #else
             this->hostArray = (T*) calloc(size(), sizeof(T));
         #endif
+	#endif
 		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
 		//memset(this->hostArray, 0, size()*sizeof(T));
+		//
+	#ifdef DEBUG
+		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
+	#endif
 	}
 }
 	
 template<typename T>
 void ArrayBase<T>::hostFree(){
-	//if(this->hostArray!=NULL){
+	if(this->hostArray!=NULL){
+	#ifdef PSKEL_MANAGED
+		cudaFree(this->hostArray);
+	#else
+	#ifdef PSKEL_CUDA	
+		gpuErrchk( cudaFreeHost(this->hostArray) );
+	#else
 		free(this->hostArray);
-		//cudaFreeHost(this->hostArray);
-		this->hostArray = NULL;
-	//}
+	#endif	
+	#endif
+	this->hostArray = NULL;
+	}
 }
 
 template<typename T>
@@ -155,7 +182,7 @@ __device__ __forceinline__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_
 #endif
 
 template<typename T>
-T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
+__host__ __forceinline__  T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 	return this->hostArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
 }
 
@@ -181,6 +208,11 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
 	this->hostArray = array.hostArray;
+
+	#if DEBUG
+		printf("Array of address %p sliced with offset (%d,%d,%d) starting at address %p\n",
+		 (void*)&(array.hostArray),this->widthOffset,this->heightOffset,this->depthOffset,(void*)&(this->hostGet(0,0,0)));
+	#endif
 }
 
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
@@ -205,6 +237,10 @@ void ArrayBase<T>::hostClone(Arrays array){
 	
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostMemCopy(Arrays array){
+	#ifdef DEBUG
+		hr_timer_t timer;
+		hrt_start(&timer);
+	#endif
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		memcpy(this->hostArray, array.hostArray, size()*sizeof(T));
 	}else{
@@ -215,11 +251,16 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
                         this->hostGet(i,j,k)=array.hostGet(i,j,k);
 		}}}
 	}
+	#ifdef DEBUG
+		hrt_stop(&timer);
+		printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),hrt_elapsed_time(&timer));
+	#endif
 }
 
 #ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::copyToDevice(){
+	#ifndef PSKEL_MANAGED
 	if(size()==realSize()){
 		gpuErrchk ( cudaMemcpy(deviceArray, hostArray, size()*sizeof(T), cudaMemcpyHostToDevice) );
 	}else if(depth==realDepth && width==realWidth){
@@ -242,12 +283,14 @@ void ArrayBase<T>::copyToDevice(){
 		gpuErrchk ( cudaMemcpy(deviceArray, copyPtr, size()*sizeof(T), cudaMemcpyHostToDevice) );
 		cudaFreeHost(copyPtr);
 	}
+	#endif
 }
 #endif
 
 #ifdef PSKEL_CUDA
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::copyFromDevice(Arrays array){
+	#ifndef PSKEL_MANAGED
 	if(array.size()==realSize()){
 		gpuErrchk ( cudaMemcpy(hostArray, array.deviceArray, array.size()*sizeof(T),cudaMemcpyDeviceToHost) );
 	}else if(array.depth==realDepth && array.width==realWidth){
@@ -270,6 +313,7 @@ void ArrayBase<T>::copyFromDevice(Arrays array){
 		}}}
 		cudaFreeHost(copyPtr);
 	}
+	#endif
 }
 #endif
 
@@ -348,10 +392,14 @@ Array2D<T>::Array2D(size_t width, size_t height) : ArrayBase<T>(width,height,1){
 
 template<typename T>
 T & Array2D<T>::operator()(size_t h, size_t w) const {
+	#ifdef PSKEL_MANAGED
+		return this->hostGet(h,w,0);
+	#else
 	#ifdef __CUDA_ARCH__
 		return this->deviceGet(h,w,0);
 	#else
 		return this->hostGet(h,w,0);
+	#endif
 	#endif
 }
 

@@ -72,8 +72,15 @@ runtime details.
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 #endif
+
+#ifdef DEBUG
+#include "hr_time.h"
+#endif
 #include <omp.h>
-//#include <papi.h>
+
+#ifdef PSKEL_PAPI
+	#include  "PSkelPAPI.h"
+#endif
 
 #include "PSkelDefs.h"
 #include "PSkelArray.h"

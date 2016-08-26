@@ -92,7 +92,8 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	mask.deviceMask = shared;
 	#endif
     
-	if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
+	if(w<tilingWidth && h<tilingHeight){
+	//if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}
 }
@@ -189,14 +190,14 @@ void StencilBase<Array, Mask,Args>::runGPU(size_t GPUBlockSizeX, size_t GPUBlock
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runTilingGPU(size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t GPUBlockSize){
-	if(GPUBlockSize==0){
+void StencilBase<Array, Mask,Args>::runTilingGPU(size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	if(GPUBlockSizeX==0){
 		int device;
 		cudaGetDevice(&device);
 		cudaDeviceProp deviceProperties;
 		cudaGetDeviceProperties(&deviceProperties, device);
 		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
-		GPUBlockSize = deviceProperties.warpSize;
+		GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
 		//int minGridSize, blockSize;
 		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
 		//GPUBlockSize = blockSize;
@@ -234,7 +235,7 @@ void StencilBase<Array, Mask,Args>::runTilingGPU(size_t tilingWidth, size_t tili
 		tmp.hostAlloc(tiling.width, tiling.height, tiling.depth);
 		//this->setGPUInputDataIterative(inputCopy, output, innerIterations, widthOffset, heightOffset, depthOffset, tilingWidth, tilingHeight, tilingDepth);
 		//CUDA kernel execution
-		this->runIterativeTilingCUDA(inputTile, outputTile, tiling, GPUBlockSize);
+		this->runIterativeTilingCUDA(inputTile, outputTile, tiling, GPUBlockSizeX, GPUBlockSizeY);
 		tmp.copyFromDevice(outputTile);
 		Array coreTmp;
 		Array coreOutput;
@@ -366,16 +367,131 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 }
 #endif
 
-#ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t innerIterations, size_t GPUBlockSize){
-	if(GPUBlockSize==0){
+void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
+	if(GPUBlockSizeX==0){
 		int device;
 		cudaGetDevice(&device);
 		cudaDeviceProp deviceProperties;
 		cudaGetDeviceProperties(&deviceProperties, device);
 		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
-		GPUBlockSize = deviceProperties.warpSize;
+		GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
+		//int minGridSize, blockSize;
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
+		//GPUBlockSize = blockSize;
+		//cout << "GPUBlockSize: "<<GPUBlockSize<<endl;
+		//int maxActiveBlocks;
+  		//cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks, stencilTilingCU, GPUBlockSize, 0);
+		//float occupancy = (maxActiveBlocks * GPUBlockSize / deviceProperties.warpSize) / 
+                //    (float)(deviceProperties.maxThreadsPerMultiProcessor / 
+                //            deviceProperties.warpSize);
+		//printf("Launched blocks of size %d. Theoretical occupancy: %f\n", GPUBlockSize, occupancy);
+	}
+	mask.deviceAlloc();
+	mask.copyToDevice();
+
+	StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
+	Array inputGPU;
+	Array outputGPU;
+	Array tmp;
+	Array inputCPU;
+	Array outputCPU;
+	if(this->input.getHeight()==1){
+		
+	}
+	else{
+		size_t gpuHeight = ceil(this->input.getHeight()*gpuFactor);
+		size_t cpuHeight = this->input.getHeight()-gpuHeight;
+		if(cpuHeight==0) 
+			this->runIterativeGPU(iterations, GPUBlockSizeX,GPUBlockSizeY);
+		else if(gpuHeight==0) 
+			this->runIterativeCPU(iterations, numThreads);
+		else{
+			#pragma omp parallel sections
+			{
+				#pragma omp section         
+				{//begin GPU
+					printf("%f Running GPU iterations\n",omp_get_wtime());
+					gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+					
+					inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+					
+					outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+
+					inputGPU.deviceAlloc();
+					inputGPU.copyToDevice();
+					
+					outputGPU.deviceAlloc();
+					tmp.hostAlloc(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+					
+					//CUDA kernel execution
+					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
+					printf("%f Finished GPU iterations\n",omp_get_wtime());
+				}//end GPU section
+				
+				#pragma omp section
+				{//begin CPU
+					printf("%f Running CPU iterations\n",omp_get_wtime());
+					cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					
+					inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+					
+					outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+					//inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					//outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+
+					//Array inputCopy;
+					//inputCopy.hostClone(inputCPU);
+					for(size_t it = 0; it<iterations; it++){
+						if(it%2==0){
+							#ifdef PSKEL_TBB
+								this->runTBB(inputCopy, outputCPU, numThreads);
+							#else
+								this->runOpenMP(inputCPU, outputCPU, numThreads);
+							#endif
+						}else {
+							#ifdef PSKEL_TBB
+								this->runTBB(outputCPU, inputCPU, numThreads);
+							#else
+								this->runOpenMP(outputCPU, inputCPU, numThreads);
+							#endif
+						}
+					}//end for
+					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
+					//inputCopy.hostFree();
+					printf("%f Finished CPU iterations\n",omp_get_wtime());
+				}//end CPU section
+			}//end parallel omp sections
+			if(iterations%2==0)
+				tmp.copyFromDevice(inputGPU);
+			else
+				tmp.copyFromDevice(outputGPU);	
+			Array coreTmp;
+			Array coreOutput;
+			coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			coreOutput.hostMemCopy(coreTmp);
+			tmp.hostFree();
+		}//end if partitioned
+	}//end if input.getHeight()
+	inputGPU.deviceFree();
+	outputGPU.deviceFree();
+	mask.deviceFree();
+	//cudaDeviceSynchronize();
+}
+
+#ifdef PSKEL_CUDA
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t innerIterations, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	if(GPUBlockSizeX==0){
+		int device;
+		cudaGetDevice(&device);
+		cudaDeviceProp deviceProperties;
+		cudaGetDeviceProperties(&deviceProperties, device);
+		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
+		GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
 		//int minGridSize, blockSize;
 		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
 		//GPUBlockSize = blockSize;
@@ -425,7 +541,7 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 			if(it%2==0){
 				inputTile.copyToDevice();
 				//CUDA kernel execution
-				this->runIterativeTilingCUDA(inputTile, outputTile, tiling, GPUBlockSize);
+				this->runIterativeTilingCUDA(inputTile, outputTile, tiling, GPUBlockSizeX, GPUBlockSizeY);
 				if(subIterations%2==0){
 					tmp.copyFromDevice(inputTile);
 				}else{
@@ -441,7 +557,7 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 			}else{
 				outputTile.copyToDevice();
 				//CUDA kernel execution
-				this->runIterativeTilingCUDA(outputTile, inputTile, tiling, GPUBlockSize);
+				this->runIterativeTilingCUDA(outputTile, inputTile, tiling, GPUBlockSizeX, GPUBlockSizeY);
 				if(subIterations%2==0){
 					tmp.copyFromDevice(outputTile);
 				}else{
@@ -486,9 +602,9 @@ void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, int GPUBlockSiz
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array, Mask> tiling, size_t GPUBlockSize){
-	dim3 DimBlock(GPUBlockSize,GPUBlockSize, 1);
-	dim3 DimGrid((in.getWidth() - 1)/GPUBlockSize + 1, (in.getHeight() - 1)/GPUBlockSize + 1, 1);
+void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array, Mask> tiling, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	dim3 DimBlock(GPUBlockSizeX,GPUBlockSizeY, 1);
+	dim3 DimGrid((in.getWidth() - 1)/GPUBlockSizeX + 1, (in.getHeight() - 1)/GPUBlockSizeY + 1, 1);
 	//dim3 DimBlock(GPUBlockSize,GPUBlockSize, 1);
 	//dim3 DimGrid((in.getWidth() - 1)/GPUBlockSize + 1, (in.getHeight() - 1)/GPUBlockSize + 1, 1);
 	size_t maskRange = this->mask.getRange();
@@ -554,7 +670,7 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, 
 }
 #endif
 
-#ifdef PSKEL_CUDA
+#ifdef PSKEL_CUDA_GA
 struct TilingGPUGeneticEvaluationFunction{
     size_t iterations;
     size_t height;
@@ -858,8 +974,10 @@ Stencil2D<Array,Mask,Args>::~Stencil2D(){
 
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
-	for (int h = 0; h < in.getHeight(); h++){
-	for (int w = 0; w < in.getWidth(); w++){
+	size_t height = in.getHeight();
+	size_t width = in.getWidth();
+	for (size_t h = 0; h < height; h++){
+	for (size_t w = 0; w < width; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
@@ -867,9 +985,11 @@ void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
 template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThreads){
 	omp_set_num_threads(numThreads);
+	size_t height = in.getHeight();
+	size_t width = in.getWidth();
 	#pragma omp parallel for
-	for (int h = 0; h < in.getHeight(); h++){
-	for (int w = 0; w < in.getWidth(); w++){
+	for (size_t h = 0; h < height; h++){
+	for (size_t w = 0; w < width; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
