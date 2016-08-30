@@ -1,0 +1,19 @@
+A aplicação Fur, primeiramente proposta por Alan Turing, modela a formação de padrões sobre a pele dos animais, tais como as listras em uma zebra, os pontos em um leopardo, e os blobs em uma girafa. O modelo foi inventado como uma possível forma de explicar que, mesmo que os animais possam parecer ter padrões completamente diferentes, as regras subjacentes à formação desses padrões são os mesmas e apenas alguns dos parâmetros são ligeiramente diferentes.
+
+Nessa aplicação, a pele do animal é modelada por uma matriz quadrada de células de pigmento que podem estar em um dos dois estados: colorida ('D') ou não-colorida ('U'). O estado das células alternam entre D e U durante a execução da aplicação. 
+
+As células D secretam ativadores (A) e inibidores (I). Ativadores fazem uma célula central se tornar colorida; inibidores, por outro lado, fazem uma célula central se tornar não colorida. 
+
+Cada célula, seja ela colorida ou não, é considerada como o centro da sua vizinhança. A sua vizinhança é formada por um círculo interno de raio RI no qual as células coloridas irão contribuir como ativadores para a célula central e um círculo externo de raio RE onde as células coloridas irão contribuir como inibidores para a célula central. Por simplicidade considera-se que RI=RE. Isto é, quando RI=1 haverá 1 nível interno e um nível externo, de 8 e 16 elementos respectivamente; quando RI=2 haverão 2 níveis internos (24 elementos) e 2 níveis externos (56 elementos).
+
+A lógica para determinar se uma célula central deve ser colorida ou não é a seguinte: se a potência dos ativadores for maior do que a potência dos inibidores, então a célula central se tornará colorida. Se a potência dos inibidores for maior que a dos ativadores, a célula central se tornará não-colorida. Nos casos em que as potências dos ativadores e inibidores forem iguais a cor da célula permanece inalterada.
+
+Uma variável W controla a relação entre a potência dos inibidores e ativadores. Caso W seja maior do que 1 a potência dos inibidores terá um maior peso que a dos ativadores (por exemplo, se W=2, então os inibidores são 2x mais potentes que os ativadores).
+
+Para determinar a coloração de uma célula central, é feita uma contagem das células A (An) e I (In) e então a seguinte equação é computada: C = An - W * In. Então, a célula central (C) será:
+
+* Colorida (D), se C for > 0;
+* Não-colorida (U), se C for < 0;
+* Inalterada, se C = 0.
+
+Como a aplicação Fur é iterativa, em cada iteração todas as células da matriz quadrada são avaliadas e sua coloração é obtida através da regra mostrada anteriormente. A aplicação termina quando o número de iterações especificado é alcançado.

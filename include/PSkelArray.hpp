@@ -120,7 +120,7 @@ void ArrayBase<T>::mppaAlloc(){
 	if(this->mppaArray==NULL){
 		this->mppaArray = (T*) calloc(this->size(), sizeof(T));
 		assert(this->mppaArray!= NULL);
-		#ifdef DEBUG
+		#if defined (DEBUG) || defined (BUG_TEST)
 			#ifdef MPPA_MASTER
 				std::cout<<"MASTER: Allocating "<<this->size()*sizeof(T)<<" bytes starting on address "<<&(this->mppaArray)<<std::endl;
 			#else
@@ -134,7 +134,6 @@ void ArrayBase<T>::mppaAlloc(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::mppaAlloc(size_t width, size_t height, size_t depth){
-	printf("allocated\n");
 	this->width = width;
 	this->height = height;
 	this->depth = depth;
@@ -154,7 +153,7 @@ void ArrayBase<T>::mppaAlloc(size_t width, size_t height, size_t depth){
 template<typename T>
 void ArrayBase<T>::mppaFree(){
 	//if(this->mppaArray!=NULL){
-	#ifdef DEBUG
+	#if defined (DEBUG) || defined (BUG_TEST)
 		#ifdef MPPA_MASTER
 			std::cout<<"MASTER: Deallocating "<<this->size()*sizeof(T)<<" bytes of address "<<&(this->mppaArray)<<std::endl;
 		#else

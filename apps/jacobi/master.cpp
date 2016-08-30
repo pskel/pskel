@@ -8,7 +8,11 @@
 
 #define PSKEL_MPPA
 #define MPPA_MASTER
-#define DEBUG
+// #define DEBUG
+//#define BUG_TEST
+// #define PRINT_OUT
+#define TIME_EXEC
+#define TIME_SEND
 #define ARGC_SLAVE 4
 #include "../../include/PSkel.h"
 

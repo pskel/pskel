@@ -12,8 +12,13 @@
 #define PSKEL_MPPA
 #define MPPA_MASTER
 #define ARGC_SLAVE 4
-//#define DEBUG
+// #define DEBUG
+//#define BUG_TEST
+// #define PRINT_OUT
+#define TIME_EXEC
+#define TIME_SEND
 #include "../../include/PSkel.h"
+
 
 using namespace std;
 using namespace PSkel;

@@ -1,1 +1,0 @@
-cmd_output/build/master := /usr/local/k1tools/bin/k1-g++ -o output/build/master   output/build/master_build/master.cpp.o output/build/master_build/__/__/include/interface_mppa.cpp.o   -mcore=k1io -mboard=developer -L/home/podesta/TesteMPPA/apps/fur/output/lib/io/  -lmppaipc -lmppaipc   -mos=rtems 

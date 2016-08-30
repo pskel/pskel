@@ -12,44 +12,45 @@ output/build/slave_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-nodeos/include/machine/_default_types.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/types.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/common.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/types.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/types.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/types.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/types.h \
  /usr/local/k1tools/k1-nodeos/include/sys/_types.h \
  /usr/local/k1tools/k1-nodeos/include/sys/lock.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/hal_user.h \
  /usr/local/k1tools/k1-nodeos/include/builtin_k1.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/types.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cache.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/cache.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/types.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/registers.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/cache.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/cache.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/types.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/registers.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/cache.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/scall_no.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/scall_no.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/scall_no.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/scall_no.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/scall_no.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/syscall.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/syscall.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/syscall.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/syscall.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/syscall.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/assert.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/assert.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/assert.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/assert.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/assert.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/atomic.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/atomic.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/cache.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/cpu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/cpu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/io.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/io.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/atomic.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/atomic.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/cache.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/cpu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/cpu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/io.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/io.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/atomic.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/context.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/context.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/context.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/context.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/common/context.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/context.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cpu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/cpu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/cpu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/memory_coherency.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/memory_coherency.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/memory_coherency.h \
- /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.1/include/stddef.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/memory_coherency.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/memory_coherency.h \
+ /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.3/include/stddef.h \
  /usr/local/k1tools/k1-nodeos/include/machine/types.h \
  /usr/local/k1tools/k1-nodeos/include/sys/features.h \
  /usr/local/k1tools/k1-nodeos/include/sys/sched.h \
@@ -59,49 +60,66 @@ output/build/slave_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-nodeos/include/sched.h \
  /usr/local/k1tools/k1-nodeos/include/stdio.h \
  /usr/local/k1tools/k1-nodeos/include/_ansi.h \
- /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.1/include/stdarg.h \
+ /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.3/include/stdarg.h \
  /usr/local/k1tools/k1-nodeos/include/sys/stdio.h \
  /usr/local/k1tools/k1-nodeos/include/stdlib.h \
  /usr/local/k1tools/k1-nodeos/include/machine/stdlib.h \
  /usr/local/k1tools/k1-nodeos/include/alloca.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/hal.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/device_cluster.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/device_helper.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/board/boot_args.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/board/common/boot_args.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/board/common/boot_args.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/board/clocks.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/board/mppa256_rtl_simulation_platform/clocks.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/board/rtl_simulation_platform/clocks.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/cnoc.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/cnoc.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/common/cnoc.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/types.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/node/cnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/devices/cluster/cnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/cnoc.bostan.cluster.dev \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/device_inttype.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/devices/cluster/trace.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/trace.bostan.dev \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/common/cnoc.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/io.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/io.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/io.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cpu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/event.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/event.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/event.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/event.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/event.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/mp.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/mp.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/mp.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/dsu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/common/dsu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/mp.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/mp.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/cnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/common/cnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/types.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/io.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cpu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/event.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/mp.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/dsu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/node/dsu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/devices/cluster/debug.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/debug.bostan.dev \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/dsu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/common/dsu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/dnoc.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/dnoc.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/io.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/common/dnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/node/dnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/devices/cluster/dnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/dnoc.bostan.cluster.dev \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/common/dnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/dnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/io.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/common/dnoc.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cache.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/scall_no.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/syscall.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/assert.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/common/dnoc.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/dsu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/dsu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/axi_if.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr_front_end.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr_constants.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr_ctrlr.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr_phy.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ddr_pll.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ecc.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ftu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/gic.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/gic_base.h \
@@ -110,58 +128,66 @@ output/build/slave_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/gpt.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/i2c_master.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/i2c_slave.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/mpfe.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/pcie.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/power_ctrl.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/power_ctrl.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/cnoc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/node/power_ctrl.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/devices/cluster/pwr_ctrl.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/devices/pwr_ctrl.bostan.cluster.dev \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/power_ctrl.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/cnoc.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/types.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/io.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/cpu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/power.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/power.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/event.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/power.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/power.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/event.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/idle.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/idle.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/power_id.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/cluster/node/power_id.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/cluster/node/power_id.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/cluster/node/power_id.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/power_id.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/reorder_core.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/rmw_core.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/power.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/power_id.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/softirq.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/sysctl.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/uart.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/spi.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ufc.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/ethernet.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/interlaken.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/hal/cluster/trng.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/diagnostic.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/diagnostic.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/diagnostic.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/diagnostic.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/diagnostic.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/event.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/interrupt.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/interrupt.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/interrupt.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/interrupt.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/interrupt.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/io.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/legacy.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/legacy.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/interrupt.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/timer.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/timer.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/power.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/trap.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/trap.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/legacy.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/legacy.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/interrupt.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/timer.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/timer.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/power.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/trap.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/trap.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/legacy.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/mmu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/mmu.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/mmu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/mmu.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/mmu.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/mp.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/optimize.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/optimize.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/optimize.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/optimize.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/optimize.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/power.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/timer.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/timer.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/timer.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/tlb.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/tlb.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/common/tlb.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/tlb.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/common/core/tlb.h \
  /usr/local/k1tools/k1-nodeos/include/HAL/hal/core/trap.h \
- /usr/local/k1tools/k1-nodeos/include/HAL/machine/core/k1dp/trap.h \
+ /usr/local/k1tools/k1-nodeos/include/HAL/machine/mppa_v12/core/k1bdp/trap.h \
  /usr/local/k1tools/k1-nodeos/include/pthread.h \
  /usr/local/k1tools/k1-nodeos/include/time.h \
  /usr/local/k1tools/k1-nodeos/include/machine/time.h \
@@ -174,7 +200,7 @@ output/build/slave_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-nodeos/include/stdint.h \
  ../../include/interface_mppa.h \
  /usr/local/k1tools/k1-nodeos/include/mppaipc.h \
- /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.1/include/stdbool.h \
+ /usr/local/k1tools/lib/gcc/k1-nodeos/4.9.3/include/stdbool.h \
  /usr/local/k1tools/k1-nodeos/include/strings.h \
  /usr/local/k1tools/k1-nodeos/include/locale.h \
  /usr/local/k1tools/k1-nodeos/include/inttypes.h \

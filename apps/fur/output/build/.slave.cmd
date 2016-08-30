@@ -1,1 +1,0 @@
-cmd_output/build/slave := /usr/local/k1tools/bin/k1-g++ -o output/build/slave   output/build/slave_build/slave.cpp.o output/build/slave_build/__/__/include/interface_mppa.cpp.o   -mcore=k1dp -mboard=developer -L/home/deives/pskel/apps/fur/output/lib/cluster/  -lmppaipc -lmppaipc  -mos=nodeos -fopenmp -lgomp -lm -I../../lib/ 
