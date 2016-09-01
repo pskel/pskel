@@ -442,20 +442,20 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					//inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					//outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 
-					//Array inputCopy;
-					//inputCopy.hostClone(inputCPU);
+					Array inputCopy;
+					inputCopy.hostClone(inputCPU);
 					for(size_t it = 0; it<iterations; it++){
 						if(it%2==0){
 							#ifdef PSKEL_TBB
 								this->runTBB(inputCopy, outputCPU, numThreads);
 							#else
-								this->runOpenMP(inputCPU, outputCPU, numThreads);
+								this->runOpenMP(inputCopy, outputCPU, numThreads);
 							#endif
 						}else {
 							#ifdef PSKEL_TBB
-								this->runTBB(outputCPU, inputCPU, numThreads);
+								this->runTBB(outputCPU, inputCopy, numThreads);
 							#else
-								this->runOpenMP(outputCPU, inputCPU, numThreads);
+								this->runOpenMP(outputCPU, inputCopy, numThreads);
 							#endif
 						}
 					}//end for

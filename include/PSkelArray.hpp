@@ -112,7 +112,7 @@ void ArrayBase<T>::hostAlloc(){
 	#ifdef PSKEL_MANAGED
 		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
 	#else
-	#ifdef PSKEL_CUDA
+	#ifdef PSKEL_CUDAX
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #else
@@ -134,7 +134,7 @@ void ArrayBase<T>::hostFree(){
 	#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#else
-	#ifdef PSKEL_CUDA	
+	#ifdef PSKEL_CUDAX	
 		gpuErrchk( cudaFreeHost(this->hostArray) );
 	#else
 		free(this->hostArray);
