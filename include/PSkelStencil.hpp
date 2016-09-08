@@ -76,7 +76,7 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 }
 
 template<typename T1, typename T2, class Args>
-__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, int maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
+__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
 	#ifdef PSKEL_SHARED_MASK
@@ -94,7 +94,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 }
 
 template<typename T1, typename T2, class Args>
-__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
+__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
 	#ifdef PSKEL_SHARED_MASK
@@ -104,7 +104,8 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	__syncthreads();
 	mask.deviceMask = shared;
 	#endif
-	if(w>=widthOffset && w<(widthOffset+tilingWidth) && h>=heightOffset && h<(heightOffset+tilingHeight) ){
+    /* Ignores all borders except the lower one */
+	if(w>=(widthOffset+maskRange) && w<(widthOffset+tilingWidth-maskRange) && h>=(heightOffset+maskRange) && h<(heightOffset+tilingHeight) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}
 }
@@ -454,7 +455,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 							#endif
 						}
 					}//end for
-					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
+					if((iterations%2)==0) outputCPU.hostMemCopy(inputCopy);
 					inputCopy.hostFree();
 					//printf("%f Finished CPU iterations\n",omp_get_wtime());
 				}//end CPU section
@@ -651,13 +652,13 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, 
 			#ifdef PSKEL_SHARED_MASK
 			stencilTilingCU<<<DimGrid, DimBlock, (this->mask.size*this->mask.dimension)>>>(in, out, this->mask, this->args, widthOffset, heightOffset, depthOffset, width, height, depth);
 			#else
-			stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, widthOffset, heightOffset, depthOffset, width, height, depth);
+			stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, maskRange, widthOffset, heightOffset, depthOffset, width, height, depth);
 			#endif
 		}else{
 			#ifdef PSKEL_SHARED_MASK
 			stencilTilingCU<<<DimGrid, DimBlock, (this->mask.size*this->mask.dimension)>>>(out, in, this->mask, this->args, widthOffset, heightOffset, depthOffset, width, height, depth);
 			#else
-			stencilTilingCU<<<DimGrid, DimBlock>>>(out, in, this->mask, this->args, widthOffset, heightOffset, depthOffset, width, height, depth);
+			stencilTilingCU<<<DimGrid, DimBlock>>>(out, in, this->mask, this->args, maskRange, widthOffset, heightOffset, depthOffset, width, height, depth);
 			#endif
 		}
 		gpuErrchk( cudaPeekAtLastError() );
