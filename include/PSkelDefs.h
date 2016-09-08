@@ -38,6 +38,8 @@
 
 #include <stdio.h>
 
+#define MIN(x,y) (x < y ? x : y)
+
 #ifdef PSKEL_CUDA
  #include <cuda.h>
  #include <cuda_runtime_api.h>

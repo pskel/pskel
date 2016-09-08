@@ -984,12 +984,25 @@ void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThread
 	omp_set_num_threads(numThreads);
 	size_t height = in.getHeight();
 	size_t width = in.getWidth();
-    size_t maskRange = this->mask.getRange();
+    	size_t maskRange = this->mask.getRange();
+	#ifdef CACHE_BLOCK
+	const size_t TH = 16;
+	const size_t TW = 16;
+	#pragma omp parallel for
+	for(size_t hh = maskRange; hh < height-maskRange;hh+=TH){
+	for(size_t ww = maskRange; ww < width-maskRange; ww+=TW){
+		for(size_t h = hh; h < MIN(hh+TH,height-maskRange);h++){
+		for(size_t w = ww; w < MIN(ww+TW,width-maskRange);w++){
+			stencilKernel(in,out,this->mask, this->args,h,w);
+		}}
+	}}	
+	#else
 	#pragma omp parallel for
 	for (size_t h = maskRange; h < height-maskRange; h++){
 	for (size_t w = maskRange; w < width-maskRange; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
+	#endif
 }
 
 #ifdef PSKEL_TBB
