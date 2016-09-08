@@ -39,11 +39,6 @@
 #include <iostream>
 using namespace std;
 
-#ifdef PSKEL_CUDA
-  #include <ga/ga.h>
-  #include <ga/std_stream.h>
-#endif
-
 namespace PSkel{
 
 #ifdef PSKEL_CUDA
@@ -92,8 +87,8 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	mask.deviceMask = shared;
 	#endif
     
-	if(w<tilingWidth && h<tilingHeight){
-	//if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
+	//if(w<tilingWidth && h<tilingHeight){
+	if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}
 }
@@ -413,7 +408,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 			{
 				#pragma omp section         
 				{//begin GPU
-					printf("%f Running GPU iterations\n",omp_get_wtime());
+					//printf("%f Running GPU iterations\n",omp_get_wtime());
 					gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
 					
 					inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
@@ -428,12 +423,12 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					
 					//CUDA kernel execution
 					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
-					printf("%f Finished GPU iterations\n",omp_get_wtime());
+					//printf("%f Finished GPU iterations\n",omp_get_wtime());
 				}//end GPU section
 				
 				#pragma omp section
 				{//begin CPU
-					printf("%f Running CPU iterations\n",omp_get_wtime());
+					//printf("%f Running CPU iterations\n",omp_get_wtime());
 					cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					
 					inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
@@ -460,8 +455,8 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 						}
 					}//end for
 					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
-					//inputCopy.hostFree();
-					printf("%f Finished CPU iterations\n",omp_get_wtime());
+					inputCopy.hostFree();
+					//printf("%f Finished CPU iterations\n",omp_get_wtime());
 				}//end CPU section
 			}//end parallel omp sections
 			if(iterations%2==0)
@@ -588,12 +583,13 @@ template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, int GPUBlockSizeX, int GPUBlockSizeY){
 	dim3 DimBlock(GPUBlockSizeX, GPUBlockSizeY, 1);
 	dim3 DimGrid((in.getWidth() - 1)/GPUBlockSizeX + 1, (in.getHeight() - 1)/GPUBlockSizeY + 1, in.getDepth());
+    size_t maskRange = mask.getRange();
 
 	//#ifdef PSKEL_SHARED_MASK
         //stencilTilingCU<<<DimGrid, DimBlock, (this->mask.size*this->mask.dimension)>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
 	//#else
         //stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
-        stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, mask.getRange(),in.getWidth(),in.getHeight(),in.getDepth());
+        stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args,maskRange,in.getWidth(),in.getHeight(),in.getDepth());
 	//#endif
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
@@ -670,7 +666,7 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingCUDA(Array in, Array out, 
 }
 #endif
 
-#ifdef PSKEL_CUDA_GA
+#ifdef PSKEL_GA
 struct TilingGPUGeneticEvaluationFunction{
     size_t iterations;
     size_t height;
@@ -987,9 +983,10 @@ void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t numThread
 	omp_set_num_threads(numThreads);
 	size_t height = in.getHeight();
 	size_t width = in.getWidth();
+    size_t maskRange = this->mask.getRange();
 	#pragma omp parallel for
-	for (size_t h = 0; h < height; h++){
-	for (size_t w = 0; w < width; w++){
+	for (size_t h = maskRange; h < height-maskRange; h++){
+	for (size_t w = maskRange; w < width-maskRange; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
