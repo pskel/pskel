@@ -1012,15 +1012,19 @@ struct TBBStencil2D{
 	Array output;
 	Mask mask;
 	Args args;
+	size_t maskRange;
+	size_t width;
 	TBBStencil2D(Array input, Array output, Mask mask, Args args){
 		this->input = input;
 		this->output = output;
 		this->mask = mask;
 		this->args = args;
+		this->maskRange = mask.getRange();
+		this->width = input.getWidth();
 	}
 	void operator()(tbb::blocked_range<int> r)const{
 		for (int h = r.begin(); h != r.end(); h++){
-		for (int w = 0; w < this->input.getWidth(); w++){
+		for (int w = maskRange; w < this->width-maskRange; w++){
 			stencilKernel(this->input,this->output,this->mask, this->args,h,w);
 		}}
 	}
@@ -1030,7 +1034,8 @@ template<class Array, class Mask, class Args>
 void Stencil2D<Array,Mask,Args>::runTBB(Array in, Array out, size_t numThreads){
 	TBBStencil2D<Array, Mask, Args> tbbstencil(in, out, this->mask, this->args);
 	tbb::task_scheduler_init init(numThreads);
-	tbb::parallel_for(tbb::blocked_range<int>(0, in.getHeight()), tbbstencil);
+	size_t maskRange = this->mask.getRange();
+	tbb::parallel_for(tbb::blocked_range<int>(maskRange, in.getHeight()-maskRange), tbbstencil);
 }
 #endif
 
