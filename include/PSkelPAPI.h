@@ -61,7 +61,7 @@ namespace PSkelPAPI{
 								{"PAPI_L3_TCA",  "PAPI_L3_TCM", "PAPI_L3_LDM", "",            ""},
 								{"PAPI_TOT_CYC", "PAPI_TOT_INS","PAPI_RES_STL","PAPI_REF_CYC","PAPI_FP_OPS"}
 							};
-	#elif XEON
+	#elif TESLA
 	char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
 								{"PAPI_TOT_INS", "PAPI_VEC_SP", "PAPI_LD_INS", "PAPI_SR_INS", "",            ""},
 								{"PAPI_TOT_INS", "PAPI_FP_INS", "PAPI_FDV_INS","",            "",            ""},
