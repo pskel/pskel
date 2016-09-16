@@ -59,6 +59,131 @@ namespace PSkel{
 //********************************************************************************************
 // Kernels CUDA. Chama o kernel implementado pelo usuario
 //********************************************************************************************
+/*template<typename T>
+struct SharedMemory
+{
+    // Should never be instantiated.
+    // We enforce this at compile time.
+    __device__ T* GetPointer( void )
+    {
+        extern __device__ void error( void );
+        error();
+        return NULL;
+    }
+};
+
+// specializations for types we use
+template<>
+struct SharedMemory<float>
+{
+    size_t width;
+    size_t range;
+    extern __shared__ float sh_float[];
+    __device__ float* GetPointer(size_t blockWidth, size_t maskRange){
+        width = BlockWidth;
+        range = maskRange;
+        // printf( "sh_float=%p\n", sh_float );
+        return sh_float;
+    }
+    
+    __device__ float get(size_t h, size_t w){
+		return sh_float[(h+range)*(width+2*range)+(w+range)];
+	}
+};
+*/
+__device__ size_t ToGlobalRow( int gidRow, int lszRow, int lidRow ){
+    return gidRow * lszRow + lidRow;
+}
+
+__device__ size_t ToGlobalCol( int gidCol, int lszCol, int lidCol ){
+    return gidCol * lszCol + lidCol;
+}
+
+__device__ int ToFlatIdx( int row, int col, int rowWidth ){
+    // assumes input coordinates and dimensions are logical (without halo)
+    // and a halo width of 1
+    return (row+1)*(rowWidth + 2) + (col+1);
+}
+
+/*
+template<typename T1, typename T2, class Args>
+__global__ void StencilKernel(Array2D<T> input, Array2D<T> output, Args, args, int alignment, int nStripItems){
+    // determine our location in the coordinate system
+    // see the comment in operator() at the definition of the dimGrid
+    // and dimBlock dim3s to understand why .x == row and .y == column.
+    int gidRow = blockIdx.x;
+    int gidCol = blockIdx.y;
+    // int gszRow = gridDim.x;
+    int gszCol = gridDim.y;
+    int lidRow = threadIdx.x;
+    int lidCol = threadIdx.y;
+    int lszRow = nStripItems;
+    int lszCol = blockDim.y;
+
+    // determine our logical global data coordinates (without halo)
+    int gRow = ToGlobalRow( gidRow, lszRow, lidRow );
+    int gCol = ToGlobalCol( gidCol, lszCol, lidCol );
+
+    // determine pitch of rows (without halo)
+    int nCols = gszCol * lszCol + 2;     // assume halo is there for computing padding
+    int nPaddedCols = nCols + (((nCols % alignment) == 0) ? 0 : (alignment - (nCols % alignment)));
+    int gRowWidth = nPaddedCols - 2;    // remove the halo
+
+    // Copy my global data item to a shared local buffer.
+    // That local buffer is passed to us.
+    // We assume it is large enough to hold all the data computed by
+    // our thread block, plus a halo of width 1.
+    SharedMemory<T> shobj;
+    T* sh = shobj.GetPointer();
+    int lRowWidth = lszCol;
+    for( int i = 0; i < (lszRow + 2); i++ )
+    {
+        int lidx = ToFlatIdx( lidRow - 1 + i, lidCol, lRowWidth );
+        int gidx = ToFlatIdx( gRow - 1 + i, gCol, gRowWidth );
+        sh[lidx] = data[gidx];
+    }
+
+    // Copy the "left" and "right" halo rows into our local memory buffer.
+    // Only two threads are involved (first column and last column).
+    if( lidCol == 0 ){
+        for( int i = 0; i < (lszRow + 2); i++ ){
+            int lidx = ToFlatIdx(lidRow - 1 + i, lidCol - 1, lRowWidth );
+            int gidx = ToFlatIdx(gRow - 1 + i, gCol - 1, gRowWidth );
+            sh[lidx] = data[gidx];
+        }
+    } else if( lidCol == (lszCol - 1) ){
+        for( int i = 0; i < (lszRow + 2); i++ ) {
+            int lidx = ToFlatIdx(lidRow - 1 + i, lidCol + 1, lRowWidth );
+            int gidx = ToFlatIdx(gRow - 1 + i, gCol + 1, gRowWidth );
+            sh[lidx] = data[gidx];
+        }
+    }
+
+    // let all those loads finish
+    __syncthreads();
+
+    // do my part of the smoothing operation
+    for( int i = 0; i < lszRow; i++ ) {
+        int cidx  = ToFlatIdx( lidRow     + i, lidCol    , lRowWidth );
+        int nidx  = ToFlatIdx( lidRow - 1 + i, lidCol    , lRowWidth );
+        int sidx  = ToFlatIdx( lidRow + 1 + i, lidCol    , lRowWidth );
+        int eidx  = ToFlatIdx( lidRow     + i, lidCol + 1, lRowWidth );
+        int widx  = ToFlatIdx( lidRow     + i, lidCol - 1, lRowWidth );
+        int neidx = ToFlatIdx( lidRow - 1 + i, lidCol + 1, lRowWidth );
+        int seidx = ToFlatIdx( lidRow + 1 + i, lidCol + 1, lRowWidth );
+        int nwidx = ToFlatIdx( lidRow - 1 + i, lidCol - 1, lRowWidth );
+        int swidx = ToFlatIdx( lidRow + 1 + i, lidCol - 1, lRowWidth );
+
+        T centerValue = sh[cidx];
+        T cardinalValueSum = sh[nidx] + sh[sidx] + sh[eidx] + sh[widx];
+        T diagonalValueSum = sh[neidx] + sh[seidx] + sh[nwidx] + sh[swidx];
+
+        newData[ToFlatIdx(gRow + i, gCol, gRowWidth)] = wCenter * centerValue +
+                wCardinal * cardinalValueSum +
+                wDiagonal * diagonalValueSum;
+    }
+}*/
+
 
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,Args args, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
@@ -79,17 +204,38 @@ template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
-	#ifdef PSKEL_SHARED_MASK
-	extern __shared__ int shared[];
-  	if(threadIdx.x<(mask.size*mask.dimension))
-		shared[threadIdx.x] = mask.deviceMask[threadIdx.x];
-	__syncthreads();
-	mask.deviceMask = shared;
-	#endif
-    
-	//if(w<tilingWidth && h<tilingHeight){
 	if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
+		#ifdef PSKEL_SHARED
+		//extern __shared__ int shared[];
+		//if(threadIdx.x<(mask.size*mask.dimension))
+		//	shared[threadIdx.x] = mask.deviceMask[threadIdx.x];
+		//__syncthreads();
+		//mask.deviceMask = shared;
+		//#endif
+		SharedMemory<T1> shobj;
+		T1* shared = shobj.GetPointer(blockDim.x,maskRange);
+		/*
+		if(threadIdx.x < maskRange){
+			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h-maskRange,w);
+		}
+		if(threadIdx.y < maskRange){
+			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w-maskRange);
+		}
+		if(threadIdx.x > blockDim.x-maskRange){
+			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h+maskRange,w);
+		}
+		if(threadIdx.y > blockDim.y-maskRange){
+			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w+maskRange);
+		}
+		*/
+		size_t index = (threadIdx.y+maskRange)*(blockDim.x+2*maskRange)+(threadIdx.x+maskRange);
+		//printf("%d position\n",index);
+		shared[index] = input(h,w);
+		syncthreads();
+		stencilKernel(input, output, shared, args, h, w, threadIdx.x, threadIdx.y);
+		#else
 		stencilKernel(input, output, mask, args, h, w);
+		#endif
 	}
 }
 
@@ -97,12 +243,24 @@ template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
+	
 	#ifdef PSKEL_SHARED_MASK
-	extern __shared__ int shared[];
-  	if(threadIdx.x<(mask.size*mask.dimension))
-		shared[threadIdx.x] = mask.deviceMask[threadIdx.x];
+	SharedMemory<T1> shared;
+	T1* shared = shared.GetPointer();
+	if(threadIdx.x < maskRange){
+		shared[(threadIdx.x-maskRange)*blockDim.x+threadIdx.y] = input(h-maskRange,w);
+	}
+	if(threadIdx.y < maskRange){
+		shared[threadIdx.x*blockDim.x+(threadIdx.y-maskRange)] = input(h,w-maskRange);
+	}
+	if(threadIdx.x > blockDim.x-maskRange){
+		shared[(threadIdx.x+maskRange)*blockDim.x+threadIdx.y] = input(h+maskRange,w);
+	}
+	if(threadIdx.y > blockDim.y-maskRange){
+		shared[threadIdx.x*blockDim.x+(threadIdx.y+maskRange)] = input(h,w+maskRange);
+	}
+	shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w);
 	__syncthreads();
-	mask.deviceMask = shared;
 	#endif
     /* Ignores all borders except the lower one */
 	if(w>=(widthOffset+maskRange) && w<(widthOffset+tilingWidth-maskRange) && h>=(heightOffset+maskRange) && h<(heightOffset+tilingHeight) ){
@@ -581,17 +739,18 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, int GPUBlockSizeX, int GPUBlockSizeY){
+void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
 	dim3 DimBlock(GPUBlockSizeX, GPUBlockSizeY, 1);
 	dim3 DimGrid((in.getWidth() - 1)/GPUBlockSizeX + 1, (in.getHeight() - 1)/GPUBlockSizeY + 1, in.getDepth());
     size_t maskRange = mask.getRange();
 
-	//#ifdef PSKEL_SHARED_MASK
-        //stencilTilingCU<<<DimGrid, DimBlock, (this->mask.size*this->mask.dimension)>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
-	//#else
+	#ifdef PSKEL_SHARED
+		size_t sharedSize = sizeof(float)*(GPUBlockSizeX+2*maskRange)*(GPUBlockSizeY+2*maskRange);
+        stencilTilingCU<<<DimGrid, DimBlock,sharedSize>>>(in, out, this->mask, this->args, maskRange, in.getWidth(),in.getHeight(),in.getDepth());
+	#else
         //stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
         stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args,maskRange,in.getWidth(),in.getHeight(),in.getDepth());
-	//#endif
+	#endif
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 }

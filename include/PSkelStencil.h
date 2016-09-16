@@ -51,6 +51,58 @@
 
 namespace PSkel{
 
+template<typename T>
+struct SharedMemory
+{
+    size_t width;
+    size_t range;
+    // Should never be instantiated.
+    // We enforce this at compile time.
+    __device__ T* GetPointer( void )
+    {
+        extern __device__ void error( void );
+        error();
+        return NULL;
+    }
+    
+    __device__ T* get(size_t, size_t);
+};
+
+// specializations for types we use
+template<>
+struct SharedMemory<float>
+{
+	size_t width;
+    size_t range;
+    
+    __device__ float* GetPointer(){
+        extern __shared__ float sh_float[];
+        // printf( "sh_float=%p\n", sh_float );
+        return sh_float;
+    }
+    
+    __device__ float* GetPointer(size_t blockWidth, size_t maskRange){
+        width = blockWidth;
+        range = maskRange;
+        extern __shared__ float sh_float[];
+        // printf( "sh_float=%p\n", sh_float );
+        return sh_float;
+    }
+    
+    __device__ float get(size_t h, size_t w){
+		float* sh = this->GetPointer();
+		printf("value: %f\n",sh[(h+range)*(width+2*range)+(w+range)]);
+		return sh[(h+range)*(width+2*range)+(w+range)];
+	}
+	
+};
+
+//template<typename T>
+//__device__ T getShared(SharedMemory<T> shared, size_t h, size_t w){
+//	return shared[(h+shared.range)*(shared.width+2*shared.range)+(w+shared.range)];
+//}
+
+
 //*******************************************************************************************
 // Stencil Kernels that must be implemented by the users.
 //*******************************************************************************************
@@ -79,8 +131,14 @@ __parallel__ void stencilKernel(Array<T1> input, Array<T1> output, Mask<T2> mask
  * \param[in] h height index for the current element to be processed.
  * \param[in] w width index for the current element to be processed.
  **/
+
+#ifdef PSKEL_SHARED
+template<typename T1, typename T2, class Args>
+__parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, T1* shared, Args args, size_t h, size_t w, size_t tx, size_t ty);
+#else
 template<typename T1, typename T2, class Args>
 __parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, Mask2D<T2> mask, Args args, size_t h, size_t w);
+#endif
 
 /**
  * Function signature of the stencil kernel for processing 3-dimensional arrays.
@@ -113,13 +171,13 @@ protected:
 	Args args;
 	Mask mask;
 
-	virtual void runSeq(Array in, Array out) = 0;
+	//virtual void runSeq(Array in, Array out) = 0;
 	#ifdef PSKEL_TBB
-	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
+	//virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
-	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	//virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
 	#ifdef PSKEL_CUDA
-	void runCUDA(Array,Array,int,int);
+	void runCUDA(Array,Array,size_t,size_t);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
 	#endif
 public:

@@ -115,13 +115,10 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
 	#ifdef PSKEL_CUDA
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             cudaMemset(this->hostArray, 0, size()*sizeof(T));
-        #else
+    #else
             this->hostArray = (T*) calloc(size(), sizeof(T));
-        #endif
+    #endif
 	#endif
-		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
-		//memset(this->hostArray, 0, size()*sizeof(T));
-		//
 	#ifdef DEBUG
 		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
 	#endif
