@@ -66,7 +66,7 @@ void ArrayBase<T>::deviceAlloc(){
 	#ifndef PSKEL_MANAGED
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
-		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
+		cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 	#endif
 }
@@ -115,9 +115,9 @@ void ArrayBase<T>::hostAlloc(){
 	#ifdef PSKEL_CUDAX
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
-        #else
-            this->hostArray = (T*) calloc(size(), sizeof(T));
-        #endif
+    #else
+           this->hostArray = (T*) calloc(size(), sizeof(T));
+    #endif
 	#endif
 		//gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
 		//memset(this->hostArray, 0, size()*sizeof(T));
