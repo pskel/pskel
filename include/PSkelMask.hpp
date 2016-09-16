@@ -112,7 +112,7 @@ __host__ __device__ size_t MaskBase<T>::size() const{
 }
 */
 template<typename T>
-T MaskBase<T>::getWeight(size_t n){
+__forceinline__ __host__ __device__ T MaskBase<T>::getWeight(size_t n) {
 	#ifdef __CUDA_ARCH__
 		return deviceWeight[n];
 	#else
@@ -265,7 +265,7 @@ void Mask2D<T>::set(size_t n, int h,int w){
 }
 */	
 template<typename T> template<typename V>
-T Mask2D<T>::get(size_t n, Array2D<V> array, size_t h, size_t w){
+__forceinline__ __host__ __device__ T Mask2D<T>::get(size_t n, Array2D<V> array, size_t h, size_t w){
 	#ifdef __CUDA_ARCH__
 		h += this->deviceMask[this->dimension*n];
 		w += this->deviceMask[this->dimension*n+1];
