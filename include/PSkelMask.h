@@ -110,7 +110,13 @@ public:
 	 * \return the weight of the specified element.
 	 **/
 	__device__ __host__ T getWeight(size_t n);
-		
+	
+	
+	__device__ T* GetSharedPointer( void ){
+        extern __device__ void error( void );
+        error();
+        return NULL;
+    }	
 };
 
 

@@ -212,8 +212,10 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 		//__syncthreads();
 		//mask.deviceMask = shared;
 		//#endif
-		SharedMemory<T1> shobj;
-		T1* shared = shobj.GetPointer(blockDim.x,maskRange);
+		//SharedMemory<T1> shobj;
+		//T1* shared = mask.GetPointer(blockDim.x,maskRange);
+		T1* shared = mask.GetSharedPointer();
+		size_t index;
 		/*
 		if(threadIdx.x < maskRange){
 			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h-maskRange,w);
@@ -228,10 +230,51 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 			shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w+maskRange);
 		}
 		*/
-		size_t index = (threadIdx.y+maskRange)*(blockDim.x+2*maskRange)+(threadIdx.x+maskRange);
+		//Copy the left and right halo rows into shared shared memory
+		if(threadIdx.x == 0){ //first col of the block
+			for(size_t i=0;i<maskRange;i++){
+				index = (threadIdx.y+i)*(blockDim.x+2*maskRange)+(threadIdx.x);
+				shared[index] = input(h,w-1);
+				//printf("blx %d bly %d tx %d ty %d: index: %d\n",blockDim.x,blockDim.y,threadIdx.x,threadIdx.y,index);
+			}
+		}
+		else if(threadIdx.x == blockDim.x-1){ //last col of the block
+			for(size_t i=1;i<=maskRange;i++){
+				index = (threadIdx.y+i)*(blockDim.x+2*maskRange)+(threadIdx.x+maskRange+i);
+				//printf("blx %d bly %d tx %d ty %d: index: %d\n",blockDim.x,blockDim.y,threadIdx.x,threadIdx.y,index);
+				shared[index] = input(h,w+1);
+			}
+		}
+		if(threadIdx.y == 0){ //first row of the block
+			for(size_t i=0;i<maskRange;i++){
+				index = (threadIdx.y)*(blockDim.x+2*maskRange)+(threadIdx.x+i);
+				//printf("blx %d bly %d tx %d ty %d: index: %d\n",blockDim.x,blockDim.y,threadIdx.x,threadIdx.y,index);
+				shared[index] = input(h-1,w);
+			}
+		}
+		if(threadIdx.y == blockDim.y-1){//last row of the block
+			for(size_t i=1;i<=maskRange;i++){
+				index = (threadIdx.y+maskRange+i)*(blockDim.x+2*maskRange)+(threadIdx.x+i);
+				//printf("blx %d bly %d tx %d ty %d: index: %d\n",blockDim.x,blockDim.y,threadIdx.x,threadIdx.y,index);
+				shared[index] = input(h+1,w);
+			}
+		}		
+		
+		index = (threadIdx.y+maskRange)*(blockDim.x+2*maskRange)+(threadIdx.x+maskRange);
 		//printf("%d position\n",index);
 		shared[index] = input(h,w);
-		syncthreads();
+		__syncthreads();
+		
+		/*
+		if(threadIdx.x==0 && threadIdx.y==0){
+			for(size_t j = 0;j<(blockDim.y+2*maskRange);j++){
+				for(size_t i = 0;i<(blockDim.x+2*maskRange);i++){
+					index = j*(blockDim.x+2*maskRange)+i;
+					printf("id (%d,%d) %d value %f \n",index, shared[index]);
+				}
+			}
+		}*/
+			
 		stencilKernel(input, output, shared, args, h, w, threadIdx.x, threadIdx.y);
 		#else
 		stencilKernel(input, output, mask, args, h, w);
@@ -245,8 +288,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
 	
 	#ifdef PSKEL_SHARED_MASK
-	SharedMemory<T1> shared;
-	T1* shared = shared.GetPointer();
+	T1* shared = mask.GetSharedPointer();
 	if(threadIdx.x < maskRange){
 		shared[(threadIdx.x-maskRange)*blockDim.x+threadIdx.y] = input(h-maskRange,w);
 	}
