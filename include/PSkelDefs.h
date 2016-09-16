@@ -43,7 +43,8 @@
 #ifdef PSKEL_CUDA
  #include <cuda.h>
  #include <cuda_runtime_api.h>
- #define __parallel__ __device__ __host__ __attribute__((always_inline)) __forceinline__
+ #define __forceinline __device__ __host__ __attribute__((always_inline)) __forceinline__
+ #define __parallel__  __forceinline
  #define gpuErrchk(ans) { gpuAssert(((cudaError_t)ans), __FILE__, __LINE__,true); }
  inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=false){
 	if(code!=cudaSuccess){
@@ -54,9 +55,9 @@
 #else
  #define __device__
  #define __host__
- #define __parallel__ inline
-
- #define __forceinline__ inline
+ #define __forceinline __attribute__((always_inline)) inline
+ #define __forceinline__ __forceinline
+ #define __parallel__ __forceinline
 #endif
 
 #endif
