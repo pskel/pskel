@@ -404,7 +404,8 @@ __forceinline__ __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t 
 		*/
 		return this->deviceArray[h*this->width+w];
 	#else
-		return this->hostGet(h,w,0);
+		//return this->hostGet(h,w,0);
+		return this->hostArray[ ((h+this->heightOffset)*this->realWidth + (w+this->widthOffset))];
 	#endif
 	#endif
 }
