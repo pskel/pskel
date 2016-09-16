@@ -56,15 +56,21 @@ private:
 	//variables that hold the real boundaries (total allocated data.)
 	size_t realWidth, realHeight, realDepth;
 	//variables that hold the "virtual" array boundaries (important for sliced arrays.)
-	size_t width, height,depth;
+	//size_t width, height,depth;
 	//offsets for the sliced array.
 	size_t widthOffset, heightOffset, depthOffset;
+
+protected:
+	
+	//variables that hold the "virtual" array boundaries (important for sliced arrays.)
+	size_t width, height,depth;
+	
 	//host and device (GPU memory) pointers
 	T *hostArray;
 	#ifdef PSKEL_CUDA
 	T *deviceArray;
 	#endif
-protected:
+
 	#ifdef PSKEL_CUDA
 	/**
          * Access a specific element of the array allocated in the device memory.

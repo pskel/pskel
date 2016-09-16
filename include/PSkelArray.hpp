@@ -62,11 +62,11 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 
 #ifdef PSKEL_CUDA
 template<typename T>
-void ArrayBase<T>::deviceAlloc(){
+__forceinline__ void ArrayBase<T>::deviceAlloc(){
 	#ifndef PSKEL_MANAGED
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
-		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
+		cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 	#endif
 }
@@ -74,7 +74,7 @@ void ArrayBase<T>::deviceAlloc(){
 
 #ifdef PSKEL_CUDA
 template<typename T>
-void ArrayBase<T>::deviceFree(){
+__forceinline__ void ArrayBase<T>::deviceFree(){
 	#ifndef PSKEL_MANAGED
 	if(this->deviceArray!=NULL){
 		cudaFree(this->deviceArray);
@@ -107,14 +107,14 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 //in performance between cudaMallocHost and cudaHostAlloc and its flags.
 //It seems that Cloudsim CPU Performance is worst with cudaMallocHost.
 template<typename T>
-void ArrayBase<T>::hostAlloc(){
+__forceinline__ void ArrayBase<T>::hostAlloc(){
 	if(this->hostArray==NULL){
 	#ifdef PSKEL_MANAGED
 		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
 	#else
-	#ifdef PSKEL_CUDAX
+	#ifdef PSKEL_CUDA
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
-            //cudaMemset(this->hostArray, 0, size()*sizeof(T));
+            cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #else
             this->hostArray = (T*) calloc(size(), sizeof(T));
         #endif
@@ -129,12 +129,12 @@ void ArrayBase<T>::hostAlloc(){
 }
 	
 template<typename T>
-void ArrayBase<T>::hostFree(){
+__forceinline__ void ArrayBase<T>::hostFree(){
 	if(this->hostArray!=NULL){
 	#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#else
-	#ifdef PSKEL_CUDAX	
+	#ifdef PSKEL_CUDA
 		gpuErrchk( cudaFreeHost(this->hostArray) );
 	#else
 		free(this->hostArray);
@@ -145,44 +145,44 @@ void ArrayBase<T>::hostFree(){
 }
 
 template<typename T>
-size_t ArrayBase<T>::getWidth() const{
+__forceinline__ __host__ __device__ size_t ArrayBase<T>::getWidth() const{
 	return width;
 }
 	
 template<typename T>
-size_t ArrayBase<T>::getHeight() const{
+__forceinline__ __host__ __device__ size_t ArrayBase<T>::getHeight() const{
 	return height;
 }
 
 template<typename T>
-size_t ArrayBase<T>::getDepth() const{
+__forceinline__ __host__ __device__ size_t ArrayBase<T>::getDepth() const{
 	return depth;
 }
 	
 template<typename T>
-size_t ArrayBase<T>::memSize() const{
+__forceinline__ size_t ArrayBase<T>::memSize() const{
 	return size()*sizeof(T);
 }
 
 template<typename T>
-size_t ArrayBase<T>::size() const{
+__forceinline__ size_t ArrayBase<T>::size() const{
 	return height*width*depth;
 }
 
 template<typename T>
-size_t ArrayBase<T>::realSize() const{
+__forceinline__ size_t ArrayBase<T>::realSize() const{
 	return realHeight*realWidth*realDepth;
 }
 
 #ifdef PSKEL_CUDA
 template<typename T>
-__device__ __forceinline__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_t d) const {
+__forceinline__ __device__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_t d) const {
 	return this->deviceArray[(h*width+w)*depth+d];
 }
 #endif
 
 template<typename T>
-__host__ __forceinline__  T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
+__forceinline__  __host__ T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 	return this->hostArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
 }
 
@@ -346,7 +346,7 @@ void ArrayBase<T>::copyToHost(){
 #endif
 
 template<typename T>
-ArrayBase<T>::operator bool() const {
+__forceinline__ __host__ __device__ ArrayBase<T>::operator bool() const {
 	#ifdef __CUDA_ARCH__
 	return(this->deviceArray!=NULL);
 	#else
@@ -372,9 +372,12 @@ template<typename T>
 Array3D<T>::Array3D(size_t width, size_t height, size_t depth) : ArrayBase<T>(width,height,depth){}
 
 template<typename T>
-T & Array3D<T>::operator()(size_t h,size_t w,size_t d) const {
+__forceinline__ __host__ __device__ T & Array3D<T>::operator()(size_t h,size_t w,size_t d) const {
 	#ifdef __CUDA_ARCH__
-		return this->deviceGet(h,w,d);
+		/* TODO deviceGet is not inlining!
+		 return this->deviceGet(h,w,d);
+		*/  
+		return this->deviceArray[(h*width+w)*depth+d];
 	#else
 		return this->hostGet(h,w,d);
 	#endif
@@ -391,12 +394,15 @@ template<typename T>
 Array2D<T>::Array2D(size_t width, size_t height) : ArrayBase<T>(width,height,1){}
 
 template<typename T>
-T & Array2D<T>::operator()(size_t h, size_t w) const {
+__forceinline__ __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t w) const {
 	#ifdef PSKEL_MANAGED
 		return this->hostGet(h,w,0);
 	#else
 	#ifdef __CUDA_ARCH__
-		return this->deviceGet(h,w,0);
+		/* TODO deviceGet is not inlining!
+		return this->deviceGet(h,w,0); 
+		*/
+		return this->deviceArray[h*this->width+w];
 	#else
 		return this->hostGet(h,w,0);
 	#endif
@@ -414,9 +420,12 @@ template<typename T>
 Array<T>::Array(size_t size) : ArrayBase<T>(size,1,1){}
 
 template<typename T>
-T & Array<T>::operator()(size_t w) const {
+__forceinline__ __host__ __device__ T & Array<T>::operator()(size_t w) const {
 	#ifdef __CUDA_ARCH__
-		return this->deviceGet(0,w,0);
+		/* TODO deviceGet is not inlining!
+ 		* return this->deviceGet(0,w,0);
+ 		*/
+		return this->deviceArray[w];
 	#else
 		return this->hostGet(0,w,0);
 	#endif
