@@ -120,6 +120,29 @@ __forceinline__ __host__ __device__ T MaskBase<T>::getWeight(size_t n) {
 	#endif
 }
 
+// specializations for types we use
+template<>
+__device__ float* MaskBase<float>::GetSharedPointer(){
+	extern __shared__ float sh_float[];
+	// printf( "sh_float=%p\n", sh_float );
+	return sh_float;
+}
+
+template<>
+__device__ int* MaskBase<int>::GetSharedPointer(){
+	extern __shared__ int sh_int[];
+	// printf( "sh_float=%p\n", sh_float );
+	return sh_int;
+}
+
+
+template<>
+__device__ bool* MaskBase<bool>::GetSharedPointer(){
+	extern __shared__ bool sh_bool[];
+	// printf( "sh_float=%p\n", sh_float );
+	return sh_bool;
+}
+
 //*******************************************************************************************
 // MASK3D
 //*******************************************************************************************
