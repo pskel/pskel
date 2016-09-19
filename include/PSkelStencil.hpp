@@ -202,9 +202,9 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
-	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
-	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
-	if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
+	//size_t w = blockIdx.x*blockDim.x+threadIdx.x;
+	//size_t h = blockIdx.y*blockDim.y+threadIdx.y;
+	//if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
 		#ifdef PSKEL_SHARED
 		//extern __shared__ int shared[];
 		//if(threadIdx.x<(mask.size*mask.dimension))
@@ -277,9 +277,9 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 			
 		stencilKernel(input, output, shared, args, h, w, threadIdx.x, threadIdx.y);
 		#else
-		stencilKernel(input, output, mask, args, h, w);
+		//stencilKernel(input, output, mask, args, h, w);
 		#endif
-	}
+	//}
 }
 
 template<typename T1, typename T2, class Args>
