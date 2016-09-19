@@ -301,9 +301,9 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 #else
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
-	//size_t w = blockIdx.x*blockDim.x+threadIdx.x;
-	//size_t h = blockIdx.y*blockDim.y+threadIdx.y;
-	//if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
+	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
+	size_t h = blockIdx.y*blockDim.y+threadIdx.y;
+	if(w>=maskRange && w<(tilingWidth-maskRange) && h>=maskRange && h<(tilingHeight-maskRange) ){
 		#ifdef PSKEL_SHARED
 		//extern __shared__ int shared[];
 		//if(threadIdx.x<(mask.size*mask.dimension))
@@ -376,9 +376,9 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 			
 		stencilKernel(input, output, shared, args, h, w, threadIdx.x, threadIdx.y);
 		#else
-		//stencilKernel(input, output, mask, args, h, w);
+		stencilKernel(input, output, mask, args, h, w);
 		#endif
-	//}
+	}
 }
 #endif
 
@@ -405,7 +405,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w);
 	__syncthreads();
 	#endif
-    // Ignores all borders except the lower one
+     	//Ignores all borders except the lower one
 	if(w>=(widthOffset+maskRange) && w<(widthOffset+tilingWidth-maskRange) && h>=(heightOffset+maskRange) && h<(heightOffset+tilingHeight) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}
@@ -659,13 +659,16 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t py
     size_t blockCols = input.getWidth()  /smallBlockCol+((input.getWidth() % smallBlockCol==0)?0:1);
     size_t blockRows = input.getHeight() /smallBlockRow+((input.getHeight()% smallBlockRow==0)?0:1);
     dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 dimGrid(blockCols, blockRows);  
+    dim3 dimGrid(blockCols, blockRows);
+
+    printf("pyramidHeight: %d\ngridSize: [%d, %d]\nborder:[%d, %d]\nblockGrid:[%d, %d]\ntargetBlock:[%d, %d]\n",\
+           pyramidHeight, input.getWidth(), input.getHeight(), borderCols, borderRows, blockCols, blockRows, smallBlockCol, smallBlockRow);  
 
 	for(size_t t = 0; t<iterations; t+=pyramidHeight){
 		size_t it = MIN(pyramidHeight, iterations-t);
 		if((it%2)==0)
-			stencilTilingCU<<<dimGrid, dimBlock>>>(this->input, this->output, this->mask, this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
-		else stencilTilingCU<<<dimGrid, dimBlock>>>(this->output, this->input, this->mask, this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
+			stencilTilingCU<<<dimGrid, dimBlock>>>(this->input, this->output, this->mask,this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
+		else stencilTilingCU<<<dimGrid, dimBlock>>>(this->output, this->input, this->mask,this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
 	}
 	if((iterations%2)==1)
 		output.copyToHost();
