@@ -209,12 +209,12 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 
 extern __shared__ float sh_input[];
 template<typename T1, typename T2, class Args>
-__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
+__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t timeTileSize, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
   // Determine our start position
-    int offsetI = blockIdx.y * (blockDim.y-2*(TIME_TILE_SIZE-1)) + threadIdx.y;
-    offsetI -= TIME_TILE_SIZE-1;
-    int offsetJ = blockIdx.x * (blockDim.x-2*(TIME_TILE_SIZE-1)) + threadIdx.x;
-    offsetJ -= TIME_TILE_SIZE-1;
+    int offsetI = blockIdx.y * (blockDim.y-2*(timeTileSize-1)) + threadIdx.y;
+    offsetI -= timeTileSize-1;
+    int offsetJ = blockIdx.x * (blockDim.x-2*(timeTileSize-1)) + threadIdx.x;
+    offsetJ -= timeTileSize-1;
     
     #ifdef DEBUG
     printf("STEP 1 - offset %d %d\n",offsetI,offsetJ);
@@ -229,7 +229,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
     #endif
     __syncthreads();
   
-    for(int t = 0; t < TIME_TILE_SIZE-1; ++t) {
+    for(int t = 0; t < timeTileSize-1; ++t) {
 		//stencilComputation
 		//printf("Computing it %d\n",t);
 		/*T1 l = ((offsetI-1 >= 0) && (offsetI-1 <= (blockDim.y-1)) &&
@@ -276,10 +276,10 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
         __syncthreads();
 	}
 	
-	if(threadIdx.x >= (TIME_TILE_SIZE-1) &&
-     threadIdx.x <= (blockDim.x-1-(TIME_TILE_SIZE-1)) &&
+	if(threadIdx.x >= (timeTileSize-1) &&
+     threadIdx.x <= (blockDim.x-1-(timeTileSize-1)) &&
      threadIdx.y >= (TIME_TILE_SIZE-1) &&
-     threadIdx.y <= (blockDim.y-1-(TIME_TILE_SIZE-1))) {
+     threadIdx.y <= (blockDim.y-1-(timeTileSize-1))) {
     output(offsetI,offsetJ) = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
     #ifdef DEBUG
     printf("STEP 5 - output(%d,%d) = %f\n",output(offsetI,offsetJ));
@@ -741,15 +741,15 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t py
 	
 	/*Howelinsk method */
 	dim3 dimGrid(input.getWidth() / GPUBlockSizeX, input.getHeight() / GPUBlockSizeY);
-	dim3 dimBlock(GPUBlockSizeX + 2*(TIME_TILE_SIZE-1), GPUBlockSizeY + 2*(TIME_TILE_SIZE-1));
+	dim3 dimBlock(GPUBlockSizeX + 2*(pyramidHeight-1), GPUBlockSizeY + 2*(pyramidHeight-1));
 	const int sharedMemSize = dimBlock.x * dimBlock.y * sizeof(float); //need to get this size from somewhere
 	
 	
-	for(size_t t = 0; t<iterations; t+=TIME_TILE_SIZE){
+	for(size_t t = 0; t<iterations; t+=pyramidHeight){
 		//size_t it = MIN(pyramidHeight, iterations-t);
 		if((t%2)==0)
-			stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->input, this->output, this->mask, this->args,maskRange,input.getWidth(),input.getHeight(),input.getDepth());
-		else stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->output, this->input, this->mask, this->args,maskRange,input.getWidth(),input.getHeight(),input.getDepth());
+			stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->input, this->output, this->mask, this->args,maskRange,pyramidHeight,input.getWidth(),input.getHeight(),input.getDepth());
+		else stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->output, this->input, this->mask, this->args,maskRange,pyramidHeight,input.getWidth(),input.getHeight(),input.getDepth());
 	}
 	if((iterations%2)==1)
 		output.copyToHost();
