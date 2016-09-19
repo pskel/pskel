@@ -133,13 +133,12 @@ __parallel__ void stencilKernel(Array<T1> input, Array<T1> output, Mask<T2> mask
  * \param[in] w width index for the current element to be processed.
  **/
 
-#ifdef PSKEL_SHARED
+template<typename T1, class Args>
+__parallel__ void stencilKernel(T1 input[BLOCK_SIZE][BLOCK_SIZE], T1 output[BLOCK_SIZE][BLOCK_SIZE], Args args, size_t ty, size_t tx);
+
 template<typename T1, typename T2, class Args>
-__parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, T1* shared, Args args, size_t h, size_t w, size_t tx, size_t ty);
-#else
-template<typename T1, typename T2, class Args>
-__parallel__ void stencilKernel(Array2D<T1> &input, Array2D<T1> &output, Mask2D<T2> &mask, Args &args, size_t h, size_t w);
-#endif
+__parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, Mask2D<T2> mask, Args args, size_t h, size_t w);
+
 
 /**
  * Function signature of the stencil kernel for processing 3-dimensional arrays.
@@ -255,7 +254,8 @@ public:
 	 * \param[in] GPUBlockSize the block size used for the GPU processing the stencil kernel.
 	 * if GPUBlockSize is 0, the block size is automatically chosen.
 	 **/
-	void runIterativeGPU(size_t iterations, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
+	void runIterativeGPU(size_t iterations, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
+	void runIterativeGPU(size_t iterations, size_t pyramidHeight, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
 	#endif
 
 	#ifdef PSKEL_CUDA

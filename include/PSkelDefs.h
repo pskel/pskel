@@ -38,9 +38,11 @@
 
 #include <stdio.h>
 
-#define MIN(x,y) (x < y ? x : y)
+#define MIN(a, b) ((a)<=(b) ? (a) : (b))
 
 #ifdef PSKEL_CUDA
+ #define BLOCK_SIZE 32
+ #define IN_RANGE(x, min, max)   ((x)>=(min) && (x)<=(max))
  #include <cuda.h>
  #include <cuda_runtime_api.h>
  #define __forceinline __device__ __attribute__((always_inline)) __forceinline__

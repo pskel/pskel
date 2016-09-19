@@ -37,6 +37,7 @@
 #include <iostream>
 
 #include <iostream>
+
 using namespace std;
 
 namespace PSkel{
@@ -91,6 +92,7 @@ struct SharedMemory<float>
 	}
 };
 */
+/*
 __device__ size_t ToGlobalRow( int gidRow, int lszRow, int lidRow ){
     return gidRow * lszRow + lidRow;
 }
@@ -104,6 +106,7 @@ __device__ int ToFlatIdx( int row, int col, int rowWidth ){
     // and a halo width of 1
     return (row+1)*(rowWidth + 2) + (col+1);
 }
+*/
 
 /*
 template<typename T1, typename T2, class Args>
@@ -200,6 +203,102 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 	}
 }
 
+/* Shared memory kernel development */
+#ifdef PSKEL_SHARED
+template<typename T1, typename T2, class Args>
+__global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t iteration, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth, size_t border_cols, size_t border_rows){
+	//size_t w = blockIdx.x*blockDim.x+threadIdx.x;
+	//size_t h = blockIdx.y*blockDim.y+threadIdx.y;
+	__shared__ T1 sh_input[BLOCK_SIZE][BLOCK_SIZE];
+	__shared__ T1 sh_output[BLOCK_SIZE][BLOCK_SIZE]; //temporary output
+	
+	int bx = blockIdx.x;
+	int by = blockIdx.y;
+
+	int tx=threadIdx.x;
+	int ty=threadIdx.y;
+	
+	 // calculate the small block size
+	int small_block_rows = BLOCK_SIZE-iteration*2;//EXPAND_RATE
+	int small_block_cols = BLOCK_SIZE-iteration*2;//EXPAND_RATE
+
+	// calculate the boundary for the block according to 
+	// the boundary of its small block
+	int blkY = small_block_rows*by-border_rows;
+	int blkX = small_block_cols*bx-border_cols;
+	int blkYmax = blkY+BLOCK_SIZE-1;
+	int blkXmax = blkX+BLOCK_SIZE-1;
+	
+	// calculate the global thread coordination
+	int yidx = blkY+ty;
+	int xidx = blkX+tx;
+
+	// load data if it is within the valid input range
+	int loadYidx=yidx;
+	int loadXidx=xidx;
+	//int index = loadYidx*tilingWidth + loadXidx;
+	
+	if(IN_RANGE(loadYidx, 0, tilingHeight-1) && IN_RANGE(loadXidx, 0, tilingWidth-1)){
+		sh_input[ty][tx] = input(loadYidx,loadXidx);  // Load the temperature data from global memory to shared memory
+		//power_on_cuda[ty][tx] = power[index];// Load the power data from global memory to shared memory
+	}
+	__syncthreads();
+	
+	// effective range within this block that falls within 
+	// the valid range of the input data
+	// used to rule out computation outside the boundary.
+	int validYmin = (blkY < 0) ? -blkY : 0;
+	int validYmax = (blkYmax > tilingHeight-1) ? BLOCK_SIZE-1-(blkYmax-tilingHeight+1) : BLOCK_SIZE-1;
+	int validXmin = (blkX < 0) ? -blkX : 0;
+	int validXmax = (blkXmax > tilingWidth-1) ? BLOCK_SIZE-1-(blkXmax-tilingWidth+1) : BLOCK_SIZE-1;
+	
+	/* Offset, need to check how this will be implemented. Get function maybe?
+	int N = ty-1;
+	int S = ty+1;
+	int W = tx-1;
+	int E = tx+1;
+	
+	N = (N < validYmin) ? validYmin : N;
+	S = (S > validYmax) ? validYmax : S;
+	W = (W < validXmin) ? validXmin : W;
+	E = (E > validXmax) ? validXmax : E;
+	*/
+	
+	bool computed;
+	for (int i=0; i<iteration ; i++){ 
+		computed = false;
+		if( IN_RANGE(tx, i+1, BLOCK_SIZE-i-2) &&  \
+			IN_RANGE(ty, i+1, BLOCK_SIZE-i-2) &&  \
+			IN_RANGE(tx, validXmin, validXmax) && \
+			IN_RANGE(ty, validYmin, validYmax) ) {
+			computed = true;
+			//stencilKernel(sh_input, sh_output, args, ty, tx);
+			//stencilKernel(sh_input, sh_output, args, ty, tx);
+			sh_output[ty][tx] = 0.25f * (sh_input[ty][tx-1] + sh_input[ty][tx+1] + sh_input[ty-1][tx] + sh_input[ty+1][tx] - args.h);
+			
+			/* Stencil computation
+			temp_t[ty][tx] =   temp_on_cuda[ty][tx] + step_div_Cap * (power_on_cuda[ty][tx] + 
+				 (temp_on_cuda[S][tx] + temp_on_cuda[N][tx] - 2.0*temp_on_cuda[ty][tx]) * Ry_1 + 
+				 (temp_on_cuda[ty][E] + temp_on_cuda[ty][W] - 2.0*temp_on_cuda[ty][tx]) * Rx_1 + 
+				 (amb_temp - temp_on_cuda[ty][tx]) * Rz_1);
+			*/
+		}
+		__syncthreads();
+		if(i==iteration-1)
+			break;
+		if(computed)	 //Assign the computation range
+			sh_input[ty][tx]= sh_output[ty][tx];
+		__syncthreads();
+	}
+
+	// update the global memory
+	// after the last iteration, only threads coordinated within the 
+	// small block perform the calculation and switch on ``computed''
+	if (computed){
+	  output(loadYidx,loadXidx) = sh_output[ty][tx];		
+	}
+}
+#else
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
@@ -281,7 +380,9 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 		#endif
 	}
 }
+#endif
 
+/*
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
@@ -304,12 +405,12 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 	shared[threadIdx.x*blockDim.x+threadIdx.y] = input(h,w);
 	__syncthreads();
 	#endif
-    /* Ignores all borders except the lower one */
+    // Ignores all borders except the lower one
 	if(w>=(widthOffset+maskRange) && w<(widthOffset+tilingWidth-maskRange) && h>=(heightOffset+maskRange) && h<(heightOffset+tilingHeight) ){
 		stencilKernel(input, output, mask, args, h, w);
 	}
 }
-
+*/
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> mask,Args args, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
 	size_t w = blockIdx.x*blockDim.x+threadIdx.x;
@@ -519,6 +620,62 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	if((iterations%2)==0) output.hostMemCopy(inputCopy);
 	inputCopy.hostFree();
 }
+
+
+#ifdef PSKEL_CUDA
+/*Shared memory development*/
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t pyramidHeight,size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	if(GPUBlockSizeX==0){
+		int device;
+		cudaGetDevice(&device);
+		cudaDeviceProp deviceProperties;
+		cudaGetDeviceProperties(&deviceProperties, device);
+		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
+		GPUBlockSizeX = deviceProperties.warpSize;
+		//int minGridSize, blockSize;
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
+		//GPUBlockSize = blockSize;
+		//cout << "GPUBlockSize: "<<GPUBlockSize<<endl;
+		//int maxActiveBlocks;
+  		//cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks, stencilTilingCU, GPUBlockSize, 0);
+		//float occupancy = (maxActiveBlocks * GPUBlockSize / deviceProperties.warpSize) / 
+                //    (float)(deviceProperties.maxThreadsPerMultiProcessor / 
+                //            deviceProperties.warpSize);
+		//printf("Launched blocks of size %d. Theoretical occupancy: %f\n", GPUBlockSize, occupancy);
+	}
+	input.deviceAlloc();
+	input.copyToDevice();
+	mask.deviceAlloc();
+	mask.copyToDevice();
+	output.deviceAlloc();
+	size_t maskRange = mask.getRange();
+
+	#define EXPAND_RATE 2// add one iteration will extend the pyramid base by 2 per each borderline
+    size_t borderCols = (pyramidHeight)*EXPAND_RATE/2;
+    size_t borderRows = (pyramidHeight)*EXPAND_RATE/2;
+    size_t smallBlockCol = BLOCK_SIZE-(pyramidHeight)*EXPAND_RATE;
+    size_t smallBlockRow = BLOCK_SIZE-(pyramidHeight)*EXPAND_RATE;
+    size_t blockCols = input.getWidth()  /smallBlockCol+((input.getWidth() % smallBlockCol==0)?0:1);
+    size_t blockRows = input.getHeight() /smallBlockRow+((input.getHeight()% smallBlockRow==0)?0:1);
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 dimGrid(blockCols, blockRows);  
+
+	for(size_t t = 0; t<iterations; t+=pyramidHeight){
+		size_t it = MIN(pyramidHeight, iterations-t);
+		if((it%2)==0)
+			stencilTilingCU<<<dimGrid, dimBlock>>>(this->input, this->output, this->mask, this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
+		else stencilTilingCU<<<dimGrid, dimBlock>>>(this->output, this->input, this->mask, this->args,maskRange,it,input.getWidth(),input.getHeight(),input.getDepth(),borderCols,borderRows);
+	}
+	if((iterations%2)==1)
+		output.copyToHost();
+	else output.copyFromDevice(input);
+	input.deviceFree();
+	mask.deviceFree();
+	output.deviceFree();
+}
+#endif
+
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>

@@ -124,7 +124,7 @@ T MaskBase<T>::getWeight(size_t n){
 template<>
 __device__ float* MaskBase<float>::GetSharedPointer(){
 	extern __shared__ float sh_float[];
-	// printf( "sh_float=%p\n", sh_float );
+	printf( "sh_float=%p\n", sh_float );
 	return sh_float;
 }
 
