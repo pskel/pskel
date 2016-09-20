@@ -208,6 +208,7 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 #define TIME_TILE_SIZE 2
 
 extern __shared__ float sh_input[];
+
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t timeTileSize, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
   // Determine our start position
@@ -248,12 +249,42 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
                  (offsetJ+1 >= 0) && (offsetJ+1 <= (blockDim.x-1)))
                  ? sh_input[offsetI*blockDim.y+offsetJ+1] : 0.0f;
 		*/
+		
 		T1 l = (threadIdx.y > 0) ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
 		T1 r = (threadIdx.y < blockDim.y-1) ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
 		T1 t = (threadIdx.x > 0) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
 		T1 b = (threadIdx.x < blockDim.x-1) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
+		#ifdef JACOBI_KERNEL
+		T1 val = 0.25f * (l+r+t+b-args.h);
+		#else
+		#ifdef CLOUDSIM_KERNEL
+		T1 c = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+		float xwind = args.wind_x(offsetI,offsetJ);
+        float ywind = args.wind_y(offsetI,offsetJ);
+        int xfactor = (xwind>0)?1:-1;
+        int yfactor = (ywind>0)?1:-1;
+	
+        T1 sum =  4*c - (l+r+b+t);
+         
+        float temperaturaNeighborX = sh_input[threadIdx.y*blockDim.y+threadIdx.x+xfactor];
+       	float temperaturaNeighborY = sh_input[(threadIdx.y+yfactor)*blockDim.y+threadIdx.x];
+        
+        float componenteVentoY = yfactor * ywind;
+     	float componenteVentoX = xfactor * xwind;
+        
+        float temp_wind = (-componenteVentoX * ((c - temperaturaNeighborX)*10.0f)) -
+                          ( componenteVentoY * ((c - temperaturaNeighborY)*10.0f));
+                          
+        float temperatura_conducao = -0.0243f*(sum * 0.25f) * args.deltaT;
+        float result = c + temperatura_conducao;
+        T1 val = result + temp_wind * args.deltaT;
+		#else 
+		#ifdef GOL_KERNEL
 		
-		T1 val = 0.25f * (l+r+t+b);
+		#endif
+		#endif
+		#endif
+		
 		#ifdef DEBUG
 		printf("STEP 3 - val: %f\n",val);
 		#endif
