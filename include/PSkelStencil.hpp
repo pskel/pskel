@@ -93,7 +93,8 @@ struct SharedMemory<float>
 };
 */
 /*
-__device__ size_t ToGlobalRow( int gidRow, int lszRow, int lidRow ){
+__device__ size_t Tonvcc -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\" -m64 -lineinfo -Xcompiler -ftree-vectorize -Xcompiler -march=native -Xcompiler -mtune=native -Xcompiler -O3  -o ../../bin/cloudsim_pskel_shared cloudsim_pskel.cu -Xcompiler -fopenmp -lgomp -I../../pskel/include -I/home/alyson/galib247/ -L/home/alyson/galib247/ga -lga -lm  -Xptxas -v --keep --keep-dir nvcc -DPSKEL_SHARED
+GlobalRow( int gidRow, int lszRow, int lidRow ){
     return gidRow * lszRow + lidRow;
 }
 
