@@ -206,7 +206,7 @@ __global__ void stencilTilingCU(Array<T1> input,Array<T1> output,Mask<T2> mask,A
 
 /* Shared memory kernel development */
 #ifdef PSKEL_SHARED
-#define TIME_TILE_SIZE 2
+//#define TIME_TILE_SIZE 2
 
 extern __shared__ float sh_input[];
 
@@ -262,28 +262,37 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 		T1 c = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
 		float xwind = ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
     			       (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? args.wind_x(offsetI,offsetJ) : 0.0f;
-        	float ywind =  ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
-                               (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? args.wind_y(offsetI,offsetJ) : 0.0f;
-        	int xfactor = (xwind>0)?1:-1;
-        	int yfactor = (ywind>0)?1:-1;
-	
-        	T1 sum =  4*c - (l+r+b+t);
-         
-        	float temperaturaNeighborX = (threadIdx.x > 0 && threadIdx.x < blockDim.x-1) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+xfactor] : 0.0f;
-       		float temperaturaNeighborY = (threadIdx.y > 0 && threadIdx.y < blockDim.y-1) ? sh_input[(threadIdx.y+yfactor)*blockDim.y+threadIdx.x] : 0.0f;
-        
-        	float componenteVentoY = yfactor * ywind;
-     		float componenteVentoX = xfactor * xwind;
-        
-        	float temp_wind = (-componenteVentoX * ((c - temperaturaNeighborX)*10.0f)) -
-                          ( componenteVentoY * ((c - temperaturaNeighborY)*10.0f));
-                          
-        	float temperatura_conducao = -0.0243f*(sum * 0.25f) * args.deltaT;
-        	float result = c + temperatura_conducao;
-        	T1 val = result + temp_wind * args.deltaT;
+        float ywind =  ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
+                           (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? args.wind_y(offsetI,offsetJ) : 0.0f;
+        int xfactor = (xwind>0)?1:-1;
+        int yfactor = (ywind>0)?1:-1;
+
+        T1 sum =  4*c - (l+r+b+t);
+     
+        float temperaturaNeighborX = (threadIdx.x > 0 && threadIdx.x < blockDim.x-1) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+xfactor] : 0.0f;
+        float temperaturaNeighborY = (threadIdx.y > 0 && threadIdx.y < blockDim.y-1) ? sh_input[(threadIdx.y+yfactor)*blockDim.y+threadIdx.x] : 0.0f;
+    
+        float componenteVentoY = yfactor * ywind;
+        float componenteVentoX = xfactor * xwind;
+    
+        float temp_wind = (-componenteVentoX * ((c - temperaturaNeighborX)*10.0f)) -
+                      ( componenteVentoY * ((c - temperaturaNeighborY)*10.0f));
+                      
+        float temperatura_conducao = -0.0243f*(sum * 0.25f) * args.deltaT;
+        float result = c + temperatura_conducao;
+        T1 val = result + temp_wind * args.deltaT;
 		#else 
 		#ifdef GOL_KERNEL
-		
+        T1 c = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+        T1 tl = (threadIdx.y > 0 && threadIdx.x > 0) ? sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+        T1 tr = (threadIdx.y < blockDim.y-1 && threadIdx.y < blockDim.x-1) ? 
+                 sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
+        T1 bl = (threadIdx.y > 0 && threadIdx.x < blockDim.x-1) ? 
+                 sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
+        T1 br = (threadIdx.y < blockDim.y-1 && threadIdx.x > 0) ? 
+                 sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+		T1 sum = l+r+b+t+tl+tr+bl+br;
+        T1 val = (sum == 3.0f || (c == 1.0f && sum == 2.0f))?1.0f:0.0f;
 		#endif
 		#endif
 		#endif
@@ -310,14 +319,12 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
         __syncthreads();
 	}
 	
-	if(threadIdx.x >= (timeTileSize-1) &&
-     threadIdx.x <= (blockDim.x-1-(timeTileSize-1)) &&
-     threadIdx.y >= (TIME_TILE_SIZE-1) &&
-     threadIdx.y <= (blockDim.y-1-(timeTileSize-1))) {
-    output(offsetI,offsetJ) = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
-    #ifdef PSKEL_DEBUG
-    printf("STEP 5 - output(%d,%d) = %f\n",output(offsetI,offsetJ));
-    #endif
+	if(threadIdx.x >= (timeTileSize-1) && threadIdx.x <= (blockDim.x-1-(timeTileSize-1)) &&
+       threadIdx.y >= (timeTileSize-1) && threadIdx.y <= (blockDim.y-1-(timeTileSize-1))) {
+        output(offsetI,offsetJ) = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+        #ifdef PSKEL_DEBUG
+        printf("STEP 5 - output(%d,%d) = %f\n",output(offsetI,offsetJ));
+        #endif
 	}
 }
 /* This is not better than naive pskel
