@@ -52,15 +52,13 @@ namespace PSkel{
  **/
 template<typename T>
 class ArrayBase{
-private:
+protected:
 	//variables that hold the real boundaries (total allocated data.)
 	size_t realWidth, realHeight, realDepth;
 	//variables that hold the "virtual" array boundaries (important for sliced arrays.)
 	//size_t width, height,depth;
 	//offsets for the sliced array.
 	size_t widthOffset, heightOffset, depthOffset;
-
-protected:
 	
 	//variables that hold the "virtual" array boundaries (important for sliced arrays.)
 	size_t width, height,depth;
