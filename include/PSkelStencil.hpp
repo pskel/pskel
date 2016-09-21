@@ -237,24 +237,36 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
     for(int t = 0; t < timeTileSize; t++) {
 		//stencilComputation
 		//printf("Computing it %d\n",t);
-		T1 l = ((threadIdx.y-1 >= 0) && (threadIdx.y-1 <= (blockDim.y-1)) && (threadIdx.x >= 0) && (threadIdx.x <= (blockDim.x-1)))
-                 ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
+		T1 l = ((threadIdx.y-1 >= 0) 
+             //&& (threadIdx.y-1 <= (blockDim.y-1)) 
+             //&& (threadIdx.x >= 0) 
+             //&& (threadIdx.x <= (blockDim.x-1))
+                ) ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
                  
-		T1 r = ((threadIdx.y+1 >= 0) && (threadIdx.y+1 <= (blockDim.y-1)) && (threadIdx.x >= 0) && (threadIdx.x <= (blockDim.x-1)))
-                 ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
+		T1 r = (//(threadIdx.y+1 >= 0) &&
+               (threadIdx.y+1 <= (blockDim.y-1))
+            //&& (threadIdx.x >= 0) 
+            //&& (threadIdx.x <= (blockDim.x-1))
+                ) ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
                  
-		T1 t = ((threadIdx.y >= 0) && (threadIdx.y <= (blockDim.y-1)) && (threadIdx.x-1 >= 0) && (threadIdx.x-1 <= (blockDim.x-1)))
-                 ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
+		T1 t = (//(threadIdx.y >= 0) 
+             //&& (threadIdx.y <= (blockDim.y-1)) &&
+              (threadIdx.x-1 >= 0) 
+             //&& (threadIdx.x-1 <= (blockDim.x-1))
+                ) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
                  
-		T1 b = ((threadIdx.y >= 0) && (threadIdx.y <= (blockDim.y-1)) && (threadIdx.x+1 >= 0) && (threadIdx.x+1 <= (blockDim.x-1)))
-                 ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
+		T1 b = (//(threadIdx.y >= 0) 
+             //&& (threadIdx.y <= (blockDim.y-1)) 
+             //&& (threadIdx.x+1 >= 0) &&
+               (threadIdx.x+1 <= (blockDim.x-1))
+                ) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
 		
 		/*
 		T1 l = (threadIdx.y >= t) ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
 		T1 r = (threadIdx.y < blockDim.y-t) ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
 		T1 t = (threadIdx.x >= t) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
 		T1 b = (threadIdx.x < blockDim.x-t) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
-                */
+        */
 		#ifdef JACOBI_KERNEL
 		T1 val = 0.25f * (l+r+t+b-args.h);
 		#else
