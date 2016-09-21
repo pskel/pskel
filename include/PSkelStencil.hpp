@@ -213,9 +213,9 @@ extern __shared__ float sh_input[];
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t timeTileSize, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
   // Determine our start position
-    int offsetI = blockIdx.y * (blockDim.y-2*(timeTileSize-1)) + threadIdx.y;
+    size_t offsetI = blockIdx.y * (blockDim.y-2*(timeTileSize-1)) + threadIdx.y;
     offsetI -= timeTileSize-1;
-    int offsetJ = blockIdx.x * (blockDim.x-2*(timeTileSize-1)) + threadIdx.x;
+    size_t offsetJ = blockIdx.x * (blockDim.x-2*(timeTileSize-1)) + threadIdx.x;
     offsetJ -= timeTileSize-1;
     
     #ifdef PSKEL_DEBUG
@@ -233,7 +233,9 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
   
     for(int t = 0; t < timeTileSize-1; ++t) {
 		//stencilComputation
-		//printf("Computing it %d\n",t);
+		#ifdef PSKEL_DEBUG
+		printf("[%d,%d] Computing it %d\n",threadIdx.x,threadIdx.y,t);
+		#endif
 		/*T1 l = ((offsetI-1 >= 0) && (offsetI-1 <= (blockDim.y-1)) &&
                  (offsetJ >= 0) && (offsetJ <= (blockDim.x-1)))
                  ? sh_input[(offsetI-1)*blockDim.y+offsetJ] : 0.0f;
@@ -323,7 +325,7 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
        threadIdx.y >= (timeTileSize-1) && threadIdx.y <= (blockDim.y-1-(timeTileSize-1))) {
         output(offsetI,offsetJ) = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
         #ifdef PSKEL_DEBUG
-        printf("STEP 5 - output(%d,%d) = %f\n",output(offsetI,offsetJ));
+        printf("STEP 5 - output(%d,%d) = %f\n",offsetI,offsetJ,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
         #endif
 	}
 }
@@ -524,7 +526,6 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
      	//Ignores all borders except the lower one
 	if(w>=(widthOffset+maskRange) && w<(widthOffset+tilingWidth-maskRange) && h>=(heightOffset+maskRange) && h<(heightOffset+tilingHeight) ){
 		stencilKernel(input, output, mask, args, h, w);
-	}
 }
 */
 template<typename T1, typename T2, class Args>
@@ -796,6 +797,11 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t py
 	dim3 dimBlock(GPUBlockSizeX + 2*(pyramidHeight-1), GPUBlockSizeY + 2*(pyramidHeight-1));
 	const int sharedMemSize = dimBlock.x * dimBlock.y * sizeof(float); //need to get this size from somewhere
 	
+	#ifdef PSKEL_DEBUG
+	printf("timeTileSize: %d\ngridSize: [%d, %d]\nblockSize:[%d, %d]\n",pyramidHeight,dimGrid.x,dimGrid.y,dimBlock.x,dimBlock.y);  
+	#endif
+
+
 	
 	for(size_t t = 0; t<iterations; t+=pyramidHeight){
 		//size_t it = MIN(pyramidHeight, iterations-t);
