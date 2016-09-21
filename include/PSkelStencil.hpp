@@ -213,72 +213,72 @@ extern __shared__ float sh_input[];
 template<typename T1, typename T2, class Args>
 __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> mask,Args args, size_t maskRange, size_t timeTileSize, size_t tilingWidth, size_t tilingHeight, size_t tilingDepth){
   // Determine our start position
-    size_t offsetI = blockIdx.y * (blockDim.y-2*(timeTileSize-1)) + threadIdx.y;
-    offsetI -= timeTileSize-1;
-    size_t offsetJ = blockIdx.x * (blockDim.x-2*(timeTileSize-1)) + threadIdx.x;
-    offsetJ -= timeTileSize-1;
+    //int offsetI = blockIdx.y * (blockDim.y-2*(timeTileSize-1)) + threadIdx.y;
+    int offsetI = blockIdx.y * blockDim.y + threadIdx.y - timeTileSize;
+    //offsetI -= timeTileSize-1;
+    //int offsetJ = blockIdx.x * (blockDim.x-2*(timeTileSize-1)) + threadIdx.x;
+    int offsetJ = blockIdx.x * blockDim.x + threadIdx.x - timeTileSize;
+    //offsetJ -= timeTileSize-1;
+
     
     #ifdef PSKEL_DEBUG
     printf("STEP 1 - offset %d %d\n",offsetI,offsetJ);
     #endif
     //__shared__ T1 sh_input[(BLOCK_SIZE + 2*(TIME_TILE_SIZE-1))*(BLOCK_SIZE + 2*(TIME_TILE_SIZE-1))];
   
-    sh_input[threadIdx.y*blockDim.y+threadIdx.x] = ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
-    (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? input(offsetI,offsetJ) : sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+    sh_input[threadIdx.y*blockDim.y+threadIdx.x] = ((offsetI >= 0) && (offsetI < tilingHeight) &&
+    (offsetJ >= 0) && (offsetJ < tilingWidth)) ? input(offsetI,offsetJ) : 0.0f;
     
     #ifdef PSKEL_DEBUG
-    printf("STEP 2 - sh_intput[%d] = %f\n",threadIdx.y*blockDim.y+threadIdx.x,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
+    //printf("STEP 2 - sh_intput[%d] = %f\n",threadIdx.y*blockDim.y+threadIdx.x,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
     #endif
     __syncthreads();
   
-    for(int t = 0; t < timeTileSize-1; ++t) {
+    for(int t = 0; t < timeTileSize; t++) {
 		//stencilComputation
-		#ifdef PSKEL_DEBUG
-		printf("[%d,%d] Computing it %d\n",threadIdx.x,threadIdx.y,t);
-		#endif
-		/*T1 l = ((offsetI-1 >= 0) && (offsetI-1 <= (blockDim.y-1)) &&
-                 (offsetJ >= 0) && (offsetJ <= (blockDim.x-1)))
-                 ? sh_input[(offsetI-1)*blockDim.y+offsetJ] : 0.0f;
+		//printf("Computing it %d\n",t);
+		T1 l = ((threadIdx.y-1 >= 0) && (threadIdx.y-1 <= (blockDim.y-1)) && (threadIdx.x >= 0) && (threadIdx.x <= (blockDim.x-1)))
+                 ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
                  
-		T1 r = ((offsetI+1 >= 0) && (offsetI+1 <= (blockDim.y-1)) &&
-                 (offsetJ >= 0) && (offsetJ <= (blockDim.x-1)))
-                 ? sh_input[(offsetI+1)*blockDim.y+offsetJ] : 0.0f;
+		T1 r = ((threadIdx.y+1 >= 0) && (threadIdx.y+1 <= (blockDim.y-1)) && (threadIdx.x >= 0) && (threadIdx.x <= (blockDim.x-1)))
+                 ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
                  
-		T1 t = ((offsetI >= 0) && (offsetI <= (blockDim.y-1)) &&
-                 (offsetJ-1 >= 0) && (offsetJ-1 <= (blockDim.x-1)))
-                 ? sh_input[offsetI*blockDim.y+offsetJ-1] : 0.0f;
+		T1 t = ((threadIdx.y >= 0) && (threadIdx.y <= (blockDim.y-1)) && (threadIdx.x-1 >= 0) && (threadIdx.x-1 <= (blockDim.x-1)))
+                 ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
                  
-		T1 b = ((offsetI >= 0) && (offsetI <= (blockDim.y-1)) &&
-                 (offsetJ+1 >= 0) && (offsetJ+1 <= (blockDim.x-1)))
-                 ? sh_input[offsetI*blockDim.y+offsetJ+1] : 0.0f;
-		*/
+		T1 b = ((threadIdx.y >= 0) && (threadIdx.y <= (blockDim.y-1)) && (threadIdx.x+1 >= 0) && (threadIdx.x+1 <= (blockDim.x-1)))
+                 ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
 		
-		T1 l = (threadIdx.y > 0) ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
-		T1 r = (threadIdx.y < blockDim.y-1) ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
-		T1 t = (threadIdx.x > 0) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
-		T1 b = (threadIdx.x < blockDim.x-1) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
+		/*
+		T1 l = (threadIdx.y >= t) ? sh_input[(threadIdx.y-1)*blockDim.y+threadIdx.x] : 0.0f;
+		T1 r = (threadIdx.y < blockDim.y-t) ? sh_input[(threadIdx.y+1)*blockDim.y+threadIdx.x] : 0.0f;
+		T1 t = (threadIdx.x >= t) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x-1] : 0.0f;
+		T1 b = (threadIdx.x < blockDim.x-t) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+1] : 0.0f;
+                */
 		#ifdef JACOBI_KERNEL
 		T1 val = 0.25f * (l+r+t+b-args.h);
 		#else
 		#ifdef CLOUDSIM_KERNEL
 		T1 c = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
-		float xwind = ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
-    			       (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? args.wind_x(offsetI,offsetJ) : 0.0f;
-        float ywind =  ((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
-                           (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? args.wind_y(offsetI,offsetJ) : 0.0f;
+		float xwind = ((offsetI >= 0) && (offsetI < (tilingHeight)) &&
+    			       (offsetJ >= 0) && (offsetJ < (tilingWidth))) ? args.wind_x(offsetI,offsetJ) : 0.0f;
+        float ywind = ((offsetI >= 0) && (offsetI < (tilingHeight)) &&
+                       (offsetJ >= 0) && (offsetJ < (tilingWidth))) ? args.wind_y(offsetI,offsetJ) : 0.0f;
         int xfactor = (xwind>0)?1:-1;
         int yfactor = (ywind>0)?1:-1;
 
         T1 sum =  4*c - (l+r+b+t);
      
-        float temperaturaNeighborX = (threadIdx.x > 0 && threadIdx.x < blockDim.x-1) ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+xfactor] : 0.0f;
-        float temperaturaNeighborY = (threadIdx.y > 0 && threadIdx.y < blockDim.y-1) ? sh_input[(threadIdx.y+yfactor)*blockDim.y+threadIdx.x] : 0.0f;
+        float temperaturaNeighborX = (threadIdx.x > 0 && threadIdx.x < blockDim.x-1) 
+                                    ? sh_input[threadIdx.y*blockDim.y+threadIdx.x+xfactor] : 0.0f;
+        float temperaturaNeighborY = (threadIdx.y > 0 && threadIdx.y < blockDim.y-1) 
+                                    ? sh_input[(threadIdx.y+yfactor)*blockDim.y+threadIdx.x] : 0.0f;
     
         float componenteVentoY = yfactor * ywind;
         float componenteVentoX = xfactor * xwind;
     
         float temp_wind = (-componenteVentoX * ((c - temperaturaNeighborX)*10.0f)) -
-                      ( componenteVentoY * ((c - temperaturaNeighborY)*10.0f));
+                          ( componenteVentoY * ((c - temperaturaNeighborY)*10.0f));
                       
         float temperatura_conducao = -0.0243f*(sum * 0.25f) * args.deltaT;
         float result = c + temperatura_conducao;
@@ -286,21 +286,48 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 		#else 
 		#ifdef GOL_KERNEL
         T1 c = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
-        T1 tl = (threadIdx.y > 0 && threadIdx.x > 0) ? sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
-        T1 tr = (threadIdx.y < blockDim.y-1 && threadIdx.y < blockDim.x-1) ? 
+        /*T1 tl = ((offsetI-1 >= 0) && (offsetI-1 <= (blockDim.y-1)) && (offsetJ-1 >= 0) && (offsetJ-1 <= (blockDim.x-1)))
+                ? sh_input[(offsetI-1)*blockDim.y+(offsetJ-1)] : 0.0f;
+                 
+		T1 tr = ((offsetI+1 >= 0) && (offsetI+1 <= (blockDim.y-1)) && (offsetJ+1 >= 0) && (offsetJ+1 <= (blockDim.x-1)))
+                 ? sh_input[(offsetI+1)*blockDim.y+(offsetJ+1)] : 0.0f;
+                 
+		T1 bl = ((offsetI-1 >= 0) && (offsetI-1 <= (blockDim.y-1)) && (offsetJ+1 >= 0) && (offsetJ+1 <= (blockDim.x-1)))
+                 ? sh_input[(offsetI-1)*blockDim.y+(offsetJ+1)] : 0.0f;
+                 
+		T1 br = ((offsetI+1 >= 0) && (offsetI+1 <= (blockDim.y-1)) && (offsetJ-1 >= 0) && (offsetJ-1 <= (blockDim.x-1)))
+                 ? sh_input[(offsetI+1)*blockDim.y+(offsetJ-1)] : 0.0f;
+        */
+        
+        T1 tl = ((threadIdx.y-1 >= 0) && (threadIdx.y-1 <= (blockDim.y-1)) && (threadIdx.x-1 >= 0) && (threadIdx.x-1 <= (blockDim.x-1)))
+                ? sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+                 
+		T1 tr = ((threadIdx.y+1 >= 0) && (threadIdx.y+1 <= (blockDim.y-1)) && (threadIdx.x+1 >= 0) && (threadIdx.x+1 <= (blockDim.x-1)))
+                 ? sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
+                 
+		T1 bl = ((threadIdx.y-1 >= 0) && (threadIdx.y-1 <= (blockDim.y-1)) && (threadIdx.x+1 >= 0) && (threadIdx.x+1 <= (blockDim.x-1)))
+                 ? sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
+                 
+		T1 br = (((threadIdx.y+1) >= 0) && (threadIdx.y+1 <= (blockDim.y-1)) && ((threadIdx.x-1) >= 0) && (threadIdx.x-1 <= (blockDim.x-1)))
+                 ? sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+        
+        /*
+        T1 tl = (threadIdx.y >= timeTileSize && threadIdx.x > t) ? sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+        T1 tr = (threadIdx.y < blockDim.y-timeTileSize && threadIdx.y < blockDim.x-timeTileSize) ? 
                  sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
-        T1 bl = (threadIdx.y > 0 && threadIdx.x < blockDim.x-1) ? 
+        T1 bl = (threadIdx.y >= timeTileSize && threadIdx.x < blockDim.x-timeTileSize) ? 
                  sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x+1)] : 0.0f;
-        T1 br = (threadIdx.y < blockDim.y-1 && threadIdx.x > 0) ? 
+        T1 br = (threadIdx.y < blockDim.y-timeTileSize && threadIdx.x >= timeTileSize) ? 
                  sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x-1)] : 0.0f;
+        */
 		T1 sum = l+r+b+t+tl+tr+bl+br;
-        T1 val = (sum == 3.0f || (c == 1.0f && sum == 2.0f))?1.0f:0.0f;
+        T1 val = (sum == 3 || (c == 1 && sum == 2))?1:0;
 		#endif
 		#endif
 		#endif
 		
 		#ifdef PSKEL_DEBUG
-		printf("STEP 3 - val: %f\n",val);
+		//printf("STEP 3 - val: %f\n",val);
 		#endif
 		/*T1 val = 0.25f * (sh_input[(threadIdx.y+1)*blockDim.y+(threadIdx.x)] + 
 						  sh_input[(threadIdx.y-1)*blockDim.y+(threadIdx.x)] + 
@@ -311,21 +338,25 @@ __global__ void stencilTilingCU(Array2D<T1> input,Array2D<T1> output,Mask2D<T2> 
 		__syncthreads();
 		
 		sh_input[threadIdx.y*blockDim.y+threadIdx.x] =
-        		((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
-        		 (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? val : sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+                ((threadIdx.x >= (timeTileSize)) && (threadIdx.x < (blockDim.x-(timeTileSize))) &&
+                 (threadIdx.y >= (timeTileSize)) && (threadIdx.y < (blockDim.y-(timeTileSize)))) ? val : sh_input[threadIdx.y*blockDim.y+threadIdx.x];
+        		
+                //((offsetI >= 0) && (offsetI <= (tilingHeight-1)) &&
+        		// (offsetJ >= 0) && (offsetJ <= (tilingWidth-1))) ? val : sh_input[threadIdx.y*blockDim.y+threadIdx.x];
 
 		#ifdef PSKEL_DEBUG
-		printf("STEP 4 - sh_intput[%d] = %f\n",threadIdx.y*blockDim.y+threadIdx.x,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
+		//printf("STEP 4 - sh_intput[%d] = %f\n",threadIdx.y*blockDim.y+threadIdx.x,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
         #endif
         // Sync before re-reading shared
         __syncthreads();
 	}
 	
-	if(threadIdx.x >= (timeTileSize-1) && threadIdx.x <= (blockDim.x-1-(timeTileSize-1)) &&
-       threadIdx.y >= (timeTileSize-1) && threadIdx.y <= (blockDim.y-1-(timeTileSize-1))) {
+	if(threadIdx.x >= (timeTileSize) && threadIdx.x < (blockDim.x-(timeTileSize)) &&
+       threadIdx.y >= (timeTileSize) && threadIdx.y < (blockDim.y-(timeTileSize)) &&
+       offsetI >= 0 && offsetI < tilingHeight && offsetJ >= 0 && offsetJ < tilingWidth) {
         output(offsetI,offsetJ) = sh_input[threadIdx.y*blockDim.y+threadIdx.x];
         #ifdef PSKEL_DEBUG
-        printf("STEP 5 - output(%d,%d) = %f\n",offsetI,offsetJ,sh_input[threadIdx.y*blockDim.y+threadIdx.x]);
+        //printf("STEP 5 - [%d,%d] output(%d,%d) = %f\n",blockIdx.y*blockDim.y+threadIdx.y,blockIdx.x*blockDim.x+threadIdx.x,offsetII,offsetJJ,output(offsetII,offsetJJ));
         #endif
 	}
 }
@@ -793,23 +824,39 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t py
 	*/
 	
 	/*Howelinsk method */
-	dim3 dimGrid(input.getWidth() / GPUBlockSizeX, input.getHeight() / GPUBlockSizeY);
-	dim3 dimBlock(GPUBlockSizeX + 2*(pyramidHeight-1), GPUBlockSizeY + 2*(pyramidHeight-1));
-	const int sharedMemSize = dimBlock.x * dimBlock.y * sizeof(float); //need to get this size from somewhere
+	//dim3 dimGrid(input.getWidth() / GPUBlockSizeX, input.getHeight() / GPUBlockSizeY);
+    dim3 dimBlock(GPUBlockSizeX + 2*(pyramidHeight-1), GPUBlockSizeY + 2*(pyramidHeight-1));
+    dim3 dimGrid(input.getWidth() / GPUBlockSizeX + ((input.getWidth()%GPUBlockSizeX == 0)?0:1), 
+                 input.getHeight() / GPUBlockSizeY + ((input.getHeight()%GPUBlockSizeY == 0)?0:1));
 	
-	#ifdef PSKEL_DEBUG
-	printf("timeTileSize: %d\ngridSize: [%d, %d]\nblockSize:[%d, %d]\n",pyramidHeight,dimGrid.x,dimGrid.y,dimBlock.x,dimBlock.y);  
-	#endif
-
+    const int sharedMemSize = dimBlock.x * dimBlock.y * sizeof(float); //need to get this size from somewhere
+    
+    #ifdef PSKEL_DEBUG
+    printf("Input Size [%ld,%ld] Block Size: [%d,%d] Grid Size:  [%d,%d]\n",
+        input.getWidth(), input.getHeight(), dimBlock.x, dimBlock.y,dimGrid.x,dimGrid.y);
+    #endif
 
 	
+	size_t it = 0;
 	for(size_t t = 0; t<iterations; t+=pyramidHeight){
 		//size_t it = MIN(pyramidHeight, iterations-t);
-		if((t%2)==0)
+		if((it%2)==0){
+            #ifdef PSKEL_DEBUG
+                printf("Odd Iteration %ld\n",it);
+            #endif
 			stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->input, this->output, this->mask, this->args,maskRange,pyramidHeight,input.getWidth(),input.getHeight(),input.getDepth());
-		else stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->output, this->input, this->mask, this->args,maskRange,pyramidHeight,input.getWidth(),input.getHeight(),input.getDepth());
+        }
+        else{
+            #ifdef PSKEL_DEBUG
+                printf("Even Iteration %ld\n",it);
+            #endif
+            stencilTilingCU<<<dimGrid, dimBlock, sharedMemSize>>>(this->output, this->input, this->mask, this->args,maskRange,pyramidHeight,input.getWidth(),input.getHeight(),input.getDepth());
+        }
+        it++;
 	}
-	if((iterations%2)==1)
+    gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+	if((it%2)==1)
 		output.copyToHost();
 	else output.copyFromDevice(input);
 	input.deviceFree();
