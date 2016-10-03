@@ -52,6 +52,11 @@ namespace PSkel{
  **/
 template<typename T>
 class ArrayBase{
+public: 
+	#ifdef PSKEL_CUDA
+	T *deviceArray; /*For shared memory. Change this later */
+	#endif
+
 protected:
 	//variables that hold the real boundaries (total allocated data.)
 	size_t realWidth, realHeight, realDepth;
@@ -64,9 +69,11 @@ protected:
 	size_t width, height,depth;
 	
 	//host and device (GPU memory) pointers
-	T *hostArray;
+	T *hostArray; // __attribute__((aligned(64)));
+	T haloValue;
+	T* haloValuePtr;
 	#ifdef PSKEL_CUDA
-	T *deviceArray;
+	//T *deviceArray;
 	#endif
 
 	#ifdef PSKEL_CUDA
@@ -144,6 +151,25 @@ public:
 	 **/
 	__device__ __host__ size_t getDepth() const;
 	
+	 /**
+	 *          * Get the width size of the "virtual" array.
+ 	*                   * \return the "virtual" width of the array data structure.
+ 	*                            **/
+        __device__ __host__ size_t getWidthOffset() const;
+
+        /**
+	* Get the height size of the "virtual" array.
+	 *                   * \return the "virtual" height of the array data structure.
+	 *                            **/
+        __device__ __host__ size_t getHeightOffset() const;
+
+        /**
+	 *          * Get the depth size of the "virtual" array.
+	     	            * \return the "virtual" depth of the array data structure.
+	 *                            **/
+        __device__ __host__ size_t getDepthOffset() const;
+
+
 	/**
 	 * Get the size, in bytes, of the allocated memory for the "virtual" array.
 	 * \return the total of bytes allocated in memory for the "virtual" array.

@@ -133,8 +133,8 @@ __parallel__ void stencilKernel(Array<T1> input, Array<T1> output, Mask<T2> mask
  * \param[in] w width index for the current element to be processed.
  **/
 
-template<typename T1, class Args>
-__parallel__ void stencilKernel(T1 input[BLOCK_SIZE][BLOCK_SIZE], T1 output[BLOCK_SIZE][BLOCK_SIZE], Args args, size_t ty, size_t tx);
+//template<typename T1, class Args>
+//__parallel__ void stencilKernel(T1 input[BLOCK_SIZE][BLOCK_SIZE], T1 output[BLOCK_SIZE][BLOCK_SIZE], Args args, size_t ty, size_t tx);
 
 template<typename T1, typename T2, class Args>
 __parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, Mask2D<T2> mask, Args args, size_t h, size_t w);
@@ -175,7 +175,7 @@ protected:
 	#ifdef PSKEL_TBB
 	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
-	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	virtual inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange) = 0;
 	#ifdef PSKEL_CUDA
 	void runCUDA(Array,Array,size_t,size_t);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
@@ -315,7 +315,7 @@ template<class Array, class Mask, class Args>
 class Stencil3D : public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t numThreads);
+	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -332,7 +332,7 @@ template<class Array, class Mask, class Args>
 class Stencil2D : public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t numThreads);
+	inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -351,7 +351,7 @@ template<class Array, class Mask, class Args>
 class Stencil: public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t numThreads);
+	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif

@@ -5,7 +5,7 @@
 #define NUM_EVENTS_RAPL 6
 #define NUM_EVENTS_NVML 1
 
-#define NUM_GROUPS_GPU 1
+#define NUM_GROUPS_GPU 1 
 #define MAX_EVENTS_GPU 7
 
 #ifdef QUADRO
@@ -62,15 +62,22 @@ namespace PSkelPAPI{
 								{"PAPI_TOT_CYC", "PAPI_TOT_INS","PAPI_RES_STL","PAPI_REF_CYC","PAPI_FP_OPS"}
 							};
 	#elif TESLA
-	char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
+	/*char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
+							{"PAPI_L3_TCA",  "PAPI_L3_TCM"},
+						};
+	
+	*/
+ 	char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
 								{"PAPI_TOT_INS", "PAPI_VEC_SP", "PAPI_LD_INS", "PAPI_SR_INS", "",            ""},
 								{"PAPI_TOT_INS", "PAPI_FP_INS", "PAPI_FDV_INS","",            "",            ""},
 								{"PAPI_TOT_INS", "PAPI_BR_INS", "PAPI_BR_CN",  "PAPI_BR_TKN", "PAPI_BR_MSP", "PAPI_BR_PRC"},
 								{"PAPI_L2_DCA",  "PAPI_L2_DCM", "PAPI_L2_TCA", "PAPI_L2_TCM", "",            ""},
 								{"PAPI_L2_DCR",  "PAPI_L2_DCW", "PAPI_L2_TCR", "PAPI_L2_TCW", "",             ""},
-								{"PAPI_L3_TCA",  "PAPI_L3_TCM", "PAPI_L3_DCR", "PAPI_L3_DCW", "PAPI_L3_TCR", "PAPI_L3_TCW"},
+							//	{"PAPI_L3_TCA",  "PAPI_L3_TCM", "PAPI_L3_DCR", "PAPI_L3_DCW", "PAPI_L3_TCR", "PAPI_L3_TCW"},
+								{"PAPI_L3_TCA",  "PAPI_L3_TCM", "", "", "", ""},
 								{"PAPI_TOT_CYC", "PAPI_TOT_INS","PAPI_STL_ICY","PAPI_REF_CYC","",             ""}
 							};
+	
 	#else
 	char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
 								{"PAPI_TOT_INS", "PAPI_VEC_SP", "",            "",            "",            ""},
@@ -504,10 +511,10 @@ namespace PSkelPAPI{
 							break;
 						case 5:
 							printf("L3_TCM  = %.2f\n",(100.0*((double)values_cpu[5][1]/values_cpu[5][0])));
-							printf("L3_DCR  = %.2f\n",(100.0*((double)values_cpu[5][2]/(values_cpu[5][2] + values_cpu[5][3]))));
-							printf("L3_DCW  = %.2f\n",(100.0*((double)values_cpu[5][3]/(values_cpu[5][2] + values_cpu[5][3]))));
-							printf("L3_TCR  = %.2f\n",(100.0*((double)values_cpu[5][4]/(values_cpu[5][4] + values_cpu[5][5]))));
-							printf("L3_TCW  = %.2f\n",(100.0*((double)values_cpu[5][5]/(values_cpu[5][4] + values_cpu[5][5]))));
+							//printf("L3_DCR  = %.2f\n",(100.0*((double)values_cpu[5][2]/(values_cpu[5][2] + values_cpu[5][3]))));
+							//printf("L3_DCW  = %.2f\n",(100.0*((double)values_cpu[5][3]/(values_cpu[5][2] + values_cpu[5][3]))));
+							//printf("L3_TCR  = %.2f\n",(100.0*((double)values_cpu[5][4]/(values_cpu[5][4] + values_cpu[5][5]))));
+							//printf("L3_TCW  = %.2f\n",(100.0*((double)values_cpu[5][5]/(values_cpu[5][4] + values_cpu[5][5]))));
 							printf("--------------------------------------------------------------------------------\n");
 							break;
 						case 6:
@@ -565,7 +572,7 @@ namespace PSkelPAPI{
 			case CPU:
 				printf("PROFILE VALUES\n");
 				printf("--------------------------------------------------------------------------------\n");
-				for(int g=0;g<NUM_GROUPS_CPU;g++){
+				for(int g=5;g<=5;g++){ //g<NUM_GROUPS_CPU
 					for( int i = 0; i < eventCountCPU[g]; i++ ){
 						printf("%s\t\t\t\t%12lld\n",EventNameCPU[g][i],values_cpu[g][i]);
 					}

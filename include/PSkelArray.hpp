@@ -36,8 +36,8 @@
 #define VALUE(x) VALUE_TO_STRING(x)
 #define VAR_NAME_VALUE(var) #var "="  VALUE(var)
 
-#include <cstring>
-#include <omp.h>
+///#include <cstring>
+//#include <omp.h>
 
 namespace PSkel{
 
@@ -53,6 +53,8 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->heightOffset = 0;
 	this->depthOffset = 0;
 	this->hostArray = 0;
+	this->haloValue = (T) 0;
+	this->haloValuePtr = &(this->haloValue);
 	#ifdef PSKEL_CUDA
     	this->deviceArray = NULL;
 	#endif
@@ -112,7 +114,7 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
 	#ifdef PSKEL_MANAGED
 		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
 	#else
-	#ifdef PSKEL_CUDA
+	#ifdef PSKEL_CUDAX
             gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
             cudaMemset(this->hostArray, 0, size()*sizeof(T));
     #else
@@ -131,7 +133,7 @@ __forceinline__ void ArrayBase<T>::hostFree(){
 	#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#else
-	#ifdef PSKEL_CUDA
+	#ifdef PSKEL_CUDAX
 		gpuErrchk( cudaFreeHost(this->hostArray) );
 	#else
 		free(this->hostArray);
@@ -142,19 +144,35 @@ __forceinline__ void ArrayBase<T>::hostFree(){
 }
 
 template<typename T>
-__forceinline__ __host__ __device__ size_t ArrayBase<T>::getWidth() const{
+__forceinline __host__ __device__ size_t ArrayBase<T>::getWidth() const{
 	return width;
 }
 	
 template<typename T>
-__forceinline__ __host__ __device__ size_t ArrayBase<T>::getHeight() const{
+__forceinline __host__ __device__ size_t ArrayBase<T>::getHeight() const{
 	return height;
 }
 
 template<typename T>
-__forceinline__ __host__ __device__ size_t ArrayBase<T>::getDepth() const{
+__forceinline __host__ __device__ size_t ArrayBase<T>::getDepth() const{
 	return depth;
 }
+
+template<typename T>
+__forceinline __host__ __device__ size_t ArrayBase<T>::getWidthOffset() const{
+        return widthOffset;
+}
+
+template<typename T>
+__forceinline __host__ __device__ size_t ArrayBase<T>::getHeightOffset() const{
+        return heightOffset;
+}
+
+template<typename T>
+__forceinline __host__ __device__ size_t ArrayBase<T>::getDepthOffset() const{
+        return depthOffset;
+}
+
 	
 template<typename T>
 __forceinline__ size_t ArrayBase<T>::memSize() const{
@@ -234,9 +252,8 @@ void ArrayBase<T>::hostClone(Arrays array){
 	
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostMemCopy(Arrays array){
-	#ifdef DEBUG
-		hr_timer_t timer;
-		hrt_start(&timer);
+	#ifdef TIMER
+		double start = omp_get_wtime();
 	#endif
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		memcpy(this->hostArray, array.hostArray, size()*sizeof(T));
@@ -248,9 +265,9 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
                         this->hostGet(i,j,k)=array.hostGet(i,j,k);
 		}}}
 	}
-	#ifdef DEBUG
-		hrt_stop(&timer);
-		printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),hrt_elapsed_time(&timer));
+	#ifdef TIMER
+		double end = omp_get_wtime();
+		printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),end-start);
 	#endif
 }
 
@@ -391,7 +408,7 @@ template<typename T>
 Array2D<T>::Array2D(size_t width, size_t height) : ArrayBase<T>(width,height,1){}
 
 template<typename T>
-__forceinline__ __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t w) const {
+__forceinline __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t w) const {
 	#ifdef PSKEL_MANAGED
 		return this->hostGet(h,w,0);
 	#else
@@ -402,7 +419,10 @@ __forceinline__ __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t 
 		return this->deviceArray[h*this->width+w];
 	#else
 		//return this->hostGet(h,w,0);
-		return this->hostArray[ ((h+this->heightOffset)*this->realWidth + (w+this->widthOffset))];
+		//return ((h+this->heightOffset)<this->realHeight && (w+this->widthOffset)<this->realWidth)
+		//	? this->hostArray[ ((h+this->heightOffset)*this->realWidth + (w+this->widthOffset))] : this->haloValuePtr[0];
+		return this->hostArray[((h+this->heightOffset)*this->realWidth + (w+this->widthOffset))];
+	
 	#endif
 	#endif
 }
