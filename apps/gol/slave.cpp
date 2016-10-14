@@ -26,12 +26,54 @@ struct Arguments
 
 
 namespace PSkel{
-  __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
-      int neighbors=0;
-      for(int z=0;z<mask.size;z++){
-        neighbors += mask.get(z,input,h,w);
-      } 
-      output(h,w) = ((neighbors==3 || (input(h,w)==1 && neighbors==2))?1:0);
+__parallel__ void stencilKernel(Array2D<int> input, Array2D<int> output,
+    Mask2D<int> mask, Arguments args, size_t i, size_t j){
+    //int neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
+    //                 input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
+    //                 input(i,j-1)   + input(i,j+1) ; 
+
+    //int neighbors = mask.get(0,input,i,j) + mask.get(1,input,i,j) + mask.get(2,input,i,j) +
+    //                mask.get(3,input,i,j) + mask.get(4,input,i,j) + mask.get(5,input,i,j) +
+    //          mask.get(6,input,i,j) + mask.get(7,input,i,j);
+
+                      
+    
+    int neighbors = 0;
+    int height=input.getHeight();
+    int width=input.getWidth();
+    
+    if ( (j == 0) && (i == 0) ) { //  Corner 1  
+        neighbors = input(i+1,j) + input(i,j+1) + input (i+1,j+1);
+    } //  Corner 2  
+    else if ((j == 0) && (i == width-1)) {
+        neighbors = input(i-1,j) + input(i,j+1) + input(i-1,j+1);
+    } //  Corner 3  
+    else if ((j == height-1) && (i == width-1)) {
+        neighbors = input(i-1,j) + input(i,j-1) + input(i-1,j-1);
+    } //  Corner 4  
+    else if ((j == height-1) && (i == 0)) {
+        neighbors = input(i,j-1) + input(i+1,j) + input(i+1,j-1);
+    } //  Edge 1  
+    else if (j == 0) {
+        neighbors = input(i-1,j) + input(i+1,j) + input(i-1,j+1) + input(i,j+1) + input(i+1,j+1);
+    } //  Edge 2  
+    else if (i == width-1) {
+        neighbors = input(i,j-1) +  input(i-1,j-1) + input(i-1,j) +  input(i-1,j+1) + input(i,j+1);
+    } //Edge 3  
+    else if (j == height-1) {
+        neighbors = input(i-1,j-1) + input(i,j-1) + input(i+1,j-1) + input(i-1,j) + input(i+1,j);
+    } //Edge 4
+    else if (i == 0) {
+        neighbors = input(i,j-1) + input(i+1,j-1) + input(i+1,j) + input(i,j+1) + input(i+1,j+1);
+    } //Inside the grid
+    else {
+        neighbors =  input(i-1,j-1) + input(i-1,j) + input(i-1,j+1)  +
+                     input(i+1,j-1) + input(i+1,j) + input(i+1,j+1)  + 
+                     input(i,j-1)   + input(i,j+1) ;
+    }
+                  
+    output(i,j) = (neighbors == 3 || (input(i,j) == 1 && neighbors == 2))?1:0;
+        
   }
 }
 

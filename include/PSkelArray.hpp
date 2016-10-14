@@ -198,17 +198,17 @@ void ArrayBase<T>::hostFree(){
 
 template<typename T>
 size_t ArrayBase<T>::getWidth() const{
-	return realWidth;
+	return width;
 }
 	
 template<typename T>
 size_t ArrayBase<T>::getHeight() const{
-	return realHeight;
+	return height;
 }
 
 template<typename T>
 size_t ArrayBase<T>::getDepth() const{
-	return realDepth;
+	return depth;
 }
 	
 template<typename T>

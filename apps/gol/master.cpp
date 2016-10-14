@@ -12,7 +12,7 @@
 //#define BUG_TEST
 // #define PRINT_OUT
 #define TIME_EXEC
-#define TIME_SEND
+// #define TIME_SEND
 #define ARGC_SLAVE 4
 #include "../../include/PSkel.h"
 
@@ -27,7 +27,7 @@ struct Arguments
 
 int main(int argc, char **argv){ 
 	int width, height, tilingHeight, tilingWidth, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
-	if(argc != 8){
+	if(argc != 9){
 		printf ("Wrong number of parameters.\n");
 		printf("Usage: WIDTH HEIGHT TILING_HEIGHT TILING_WIDTH ITERATIONS INNER_ITERATIONS NUMBER_CLUSTERS NUMBER_THREADS\n");
 		mppa_exit(-1);
@@ -42,7 +42,7 @@ int main(int argc, char **argv){
 	innerIterations = atoi(argv[6]);
 	nb_clusters = atoi(argv[7]);
 	nb_threads = atoi(argv[8]);
-	
+	printf("nb_threads: %d\n", nb_threads);
 	//Mask configuration	
 	
 	Array2D<int> inputGrid(width,height);

@@ -27,7 +27,6 @@ namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
     int numberA = 0;
     int numberI = 0;
-    
     for (int z = 0; z < mask.size; z++) {
       if(z < arg.internCircle) {
         numberA += mask.get(z, input, h, w);
@@ -49,6 +48,8 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
     else {
 		output(h,w) = input(h,w);//doesn't change
     }
+  int c = 0;
+  c++;
   }
 }
 

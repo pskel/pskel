@@ -303,7 +303,7 @@ public:
 	* \param[in] nb_tiles the number of tiles for the cluster to execute.
 	* \param[in] iterations the number of iterations for the execution.
 	**/
-	void runIterativeMPPA(Array in, Array out, int iterations, int numThreads);
+	void runIterativeMPPA(Array in, Array out, int iterations, size_t numThreads);
 	#endif
 };
 
