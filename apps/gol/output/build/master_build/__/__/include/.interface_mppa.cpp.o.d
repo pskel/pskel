@@ -13,7 +13,7 @@ output/build/master_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-rtems/include/machine/_default_types.h \
  /usr/local/k1tools/k1-rtems/include/sys/_types.h \
  /usr/local/k1tools/k1-rtems/include/sys/lock.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stddef.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include/stddef.h \
  /usr/local/k1tools/k1-rtems/include/machine/types.h \
  /usr/local/k1tools/k1-rtems/include/sys/sched.h \
  /usr/local/k1tools/k1-rtems/include/errno.h \
@@ -22,328 +22,415 @@ output/build/master_build/__/__/include/interface_mppa.cpp.o: \
  /usr/local/k1tools/k1-rtems/include/sched.h \
  /usr/local/k1tools/k1-rtems/include/stdio.h \
  /usr/local/k1tools/k1-rtems/include/_ansi.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stdarg.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include/stdarg.h \
  /usr/local/k1tools/k1-rtems/include/sys/stdio.h \
  /usr/local/k1tools/k1-rtems/include/stdlib.h \
  /usr/local/k1tools/k1-rtems/include/machine/stdlib.h \
  /usr/local/k1tools/k1-rtems/include/alloca.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/hal.h \
  /usr/local/k1tools/k1-rtems/include/builtin_k1.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/device_ios.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/device_helper.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/types.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/common.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/types.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/types.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/types.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/types.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/scall_no.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/scall_no.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/scall_no.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/scall_no.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/scall_no.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/syscall.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/syscall.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/types.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/syscall.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/syscall.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/types.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/syscall.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/assert.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/assert.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/assert.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/assert.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/assert.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/board/boot_args.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/board/common/boot_args.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/board/common/boot_args.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/board/clocks.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/board/mppa256_rtl_simulation_platform/clocks.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/board/rtl_simulation_platform/clocks.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/cnoc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/cnoc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/common/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/cnoc.bostan.io.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/device_inttype.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/syscnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/syscnoc.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/dnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/dnoc.bostan.io.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/pwr_ctrl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/pwr_ctrl.bostan.io.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/common/cnoc.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/types.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/io.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/io.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/registers.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/io.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/io.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/registers.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/io.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cpu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/cpu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/cpu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/cpu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/cpu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/event.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/event.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/cpu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/event.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/event.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/cpu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/event.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/mp.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/mp.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/mp.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/dsu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/common/dsu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/mp.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/mp.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/common/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/types.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/io.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cpu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/event.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/mp.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/dsu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/dsu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/trace.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/trace.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/debug.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/debug.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/dsu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/common/dsu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/types.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/io.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cpu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/event.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/mp.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/dnoc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/dnoc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/io.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/common/dnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/dnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/common/dnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/dnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/common/dnoc.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cache.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/cache.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/cache.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/cache.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/cache.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/scall_no.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/syscall.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/assert.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/common/dnoc.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/dsu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/dsu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/axi_if.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/axi_if.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/types.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/trap.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/cpu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr_front_end.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ddr_front_end.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/ddr_ctrl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/ddr_ctrl.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_front_end.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_constants.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/trap.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/trap.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/trap.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/mpfe.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/axi_if.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/reorder_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/rmw_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_constants.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_ctrlr.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_phy.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_pll.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ecc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ddr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_front_end.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_ctrlr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_pll.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr_constants.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_constants.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ddr_constants.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_constants.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr_ctrlr.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_ctrlr.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr_phy.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_phy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ddr_ctrlr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_ctrlr.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ddr_pll.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ddr_pll.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ecc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ecc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ddr_pll.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ddr_pll.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ftu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ftu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ftu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/ftu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/ftu.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ftu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic_base.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/interrupt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic_inputs.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/gic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/gic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/gic.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic_base.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/interrupt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/interrupt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/interrupt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic_inputs.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gic_base.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic_base.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/gic_base.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic_base.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gic_inputs.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic_inputs.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/gic_inputs.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic_inputs.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gpio.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gpio.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/sysctl.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gpt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/gpt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/i2c_master.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/i2c_master.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/ftu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/i2c_slave.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/i2c_slave.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/mpfe.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/mpfe.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/pcie.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/pcie.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_ctrl.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/power_ctrl.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/cnoc.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/core/power.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/power.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/cache.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/event.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/io.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/power.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_id.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/power_id.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_id.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/reorder_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/reorder_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/rmw_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/rmw_core.h \
- /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/softirq.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/softirq.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/gpio.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/gpio.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/gpio.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gpio.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gic.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/sysctl.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/sysctl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/sysctl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/sysctl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/sysctl.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/sysctl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/gpt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/gpt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/gpt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/gpt.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gpt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/gic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/i2c_master.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/i2c_master.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/i2c_master.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/i2c_master.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/i2c_master.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/sysctl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/ftu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/i2c_slave.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/i2c_slave.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/i2c_slave.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/i2c_slave.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/i2c_slave.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/pcie.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/pcie.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/pcie_phy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/pcie_phy.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/pcie_csr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/pcie_csr.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/pcie_master.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/pcie_master.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/pcie_master_itf.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/pcie_master_itf.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/msi_msix.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/msi_msix.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/eth_pcie_csr.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/eth_pcie_csr.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/eth_pcie_phy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/eth_pcie_phy.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/doorbell.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/doorbell.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/pcie.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_ctrl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/power_ctrl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/power_ctrl.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/cnoc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/core/power.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/power.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/cache.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/event.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/io.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/idle.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/idle.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_id.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/power_id.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/power_id.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_id.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/power.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/power_id.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/softirq.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/softirq.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/softirq.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/sysctl.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/uart.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/cluster/iocomm/uart.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/uart.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/uart.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/uart.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/cluster/iocomm/uart.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/spi.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/spi.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/spi.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/spi.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ufc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ufc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/ufc.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/ufc.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/ethernet.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/ethernet.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/ethernet.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/ethernet.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/ethernet_phy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/ethernet_phy.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/interlaken.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/interlaken.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/interlaken.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/interlaken.bostan.dev \
+ /usr/local/k1tools/k1-rtems/include/HAL/hal/cluster/trng.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/cluster/iocomm/trng.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/devices/io/trng.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/devices/trng.bostan.dev \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/atomic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/atomic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/atomic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/atomic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/atomic.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cache.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/context.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/context.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/context.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/context.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/common/context.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/context.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/cpu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/diagnostic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/diagnostic.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/diagnostic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/diagnostic.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/diagnostic.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/event.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/interrupt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/interrupt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/interrupt.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/io.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/legacy.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/legacy.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/interrupt.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/timer.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/timer.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/power.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/trap.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/trap.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/legacy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/legacy.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/interrupt.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/power.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/timer.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/timer.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/trap.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/legacy.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/memory_coherency.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/memory_coherency.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/memory_coherency.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/memory_coherency.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/memory_coherency.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/mmu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/mmu.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/mmu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/mmu.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/mmu.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/mp.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/optimize.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/optimize.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/optimize.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/optimize.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/optimize.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/power.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/timer.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/timer.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/timer.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/tlb.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/tlb.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/common/tlb.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/mppa_v12/core/k1bio/tlb.h \
+ /usr/local/k1tools/k1-rtems/include/HAL/machine/common/core/tlb.h \
  /usr/local/k1tools/k1-rtems/include/HAL/hal/core/trap.h \
- /usr/local/k1tools/k1-rtems/include/HAL/machine/core/k1io/trap.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/bsp.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/bspopts.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/system.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/percpu.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/cpu.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/types.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/basedefs.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/cpuopts.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stdbool.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include/stdint.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/bsp.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/bspopts.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/system.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/percpu.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/cpu.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/types.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/basedefs.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/cpuopts.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include/stdbool.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include/stdint.h \
  /usr/local/k1tools/k1-rtems/include/stdint.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/k1.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/memory.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/scall.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/trace.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/timestamp.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/timespec.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/k1.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/memory.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/scall.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/trace.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/timestamp.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/timespec.h \
  /usr/local/k1tools/k1-rtems/include/time.h \
  /usr/local/k1tools/k1-rtems/include/machine/time.h \
  /usr/local/k1tools/k1-rtems/include/signal.h \
  /usr/local/k1tools/k1-rtems/include/sys/signal.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/bspsmp.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/status.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/status.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/types.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/heap.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/thread.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/context.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/object.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/chain.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/address.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/address.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/bspIo.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/isr.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/isr.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/object.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/priority.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/scheduler.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/prioritybitmap.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/stack.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/states.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/tod.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/tqdata.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/threadsync.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/watchdog.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/modes.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/config.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/config.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/config.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/tasks.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/eventset.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/asr.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/attr.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/extension.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/userext.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/interr.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/io.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/init.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/intr.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/options.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/barrier.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/support.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/corebarrier.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/threadq.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/cache.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/clock.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/bspsmp.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/status.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/status.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/types.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/heap.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/thread.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/context.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/object.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/chain.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/address.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/address.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/bspIo.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/isr.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/isr.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/object.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/priority.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/scheduler.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/prioritybitmap.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/stack.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/states.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/tod.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/tqdata.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/threadsync.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/watchdog.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/modes.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/config.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/config.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/config.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/tasks.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/eventset.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/asr.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/attr.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/extension.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/userext.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/interr.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/io.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/init.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/intr.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/options.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/barrier.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/support.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/corebarrier.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/threadq.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/cache.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/clock.h \
  /usr/local/k1tools/k1-rtems/include/sys/time.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/timer.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/sem.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/coremutex.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/sysstate.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/sysstate.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/coresem.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/message.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/coremsg.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include-fixed/limits.h \
- /usr/local/k1tools/lib/gcc/k1-rtems/4.9.1/include-fixed/syslimits.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/timer.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/sem.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/coremutex.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/sysstate.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/sysstate.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/coresem.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/message.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/coremsg.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include-fixed/limits.h \
+ /usr/local/k1tools/lib/gcc/k1-rtems/4.9.3/include-fixed/syslimits.h \
  /usr/local/k1tools/k1-rtems/include/limits.h \
  /usr/local/k1tools/k1-rtems/include/sys/syslimits.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/event.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/signal.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/object.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/part.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/region.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/debug.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/dpmem.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/fatal.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/rtems/ratemon.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/event.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/signal.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/object.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/part.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/region.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/debug.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/dpmem.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/fatal.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/rtems/ratemon.h \
  /usr/local/k1tools/k1-rtems/include/string.h \
  /usr/local/k1tools/k1-rtems/include/sys/cdefs.h \
  /usr/local/k1tools/k1-rtems/include/sys/string.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/console.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/clockdrv.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/ios_smem_alloc.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/mmu.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/confdefs.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/apimutex.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/libio.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/console.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/clockdrv.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/ios_smem_alloc.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/mmu.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/confdefs.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/apimutex.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/libio.h \
  /usr/local/k1tools/k1-rtems/include/sys/stat.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/ioctl.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/ttycom.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/ioccom.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/filio.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/sockio.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/statvfs.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/ioctl.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/ttycom.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/ioccom.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/filio.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/sockio.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/statvfs.h \
  /usr/local/k1tools/k1-rtems/include/termios.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/sys/termios.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/fs.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/chain.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/chain.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/chain.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/imfs.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/pipe.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/schedulerpriority.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/malloc.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/wkspace.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/libcsupport.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/mqueue.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/barrier.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/cond.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/cond.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/sys/termios.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/fs.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/chain.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/chain.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/chain.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/imfs.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/pipe.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/schedulerpriority.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/malloc.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/wkspace.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/libcsupport.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/mqueue.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/barrier.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/cond.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/cond.inl \
  /usr/local/k1tools/k1-rtems/include/pthread.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/mqueue.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/mqueue.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/mutex.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/mutex.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/key.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/key.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/psignal.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/pthread.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/threadsup.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/pthread.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/sigset.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/rwlock.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/corerwlock.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/semaphore.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/semaphore.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/semaphore.inl \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/spinlock.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/score/corespinlock.h \
- /usr/local/k1tools/k1-rtems/ioddr_single/k1-rtems/ioddr_single/lib/include/rtems/posix/timer.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/mqueue.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/mqueue.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/mutex.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/mutex.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/key.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/key.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/psignal.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/pthread.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/threadsup.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/pthread.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/sigset.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/rwlock.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/corerwlock.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/semaphore.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/semaphore.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/semaphore.inl \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/spinlock.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/score/corespinlock.h \
+ /usr/local/k1tools/k1-rtems/ioddr_single/k1bio/k1-rtems/ioddr_single/lib/include/rtems/posix/timer.h \
  /usr/local/k1tools/k1-rtems/include/reent.h \
  ../../include/interface_mppa.h \
  /usr/local/k1tools/k1-rtems/include/mppaipc.h \
