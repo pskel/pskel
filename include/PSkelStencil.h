@@ -351,7 +351,7 @@ template<class Array, class Mask, class Args>
 class Stencil: public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
+	inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t num_threads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif

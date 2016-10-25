@@ -38,6 +38,7 @@
 
 ///#include <cstring>
 //#include <omp.h>
+#include<iostream>
 
 namespace PSkel{
 
@@ -169,6 +170,11 @@ __forceinline __host__ __device__ size_t ArrayBase<T>::getHeightOffset() const{
 }
 
 template<typename T>
+__forceinline __host__ __device__ size_t ArrayBase<T>::getRealHeight() const{
+        return realHeight;
+}
+
+template<typename T>
 __forceinline __host__ __device__ size_t ArrayBase<T>::getDepthOffset() const{
         return depthOffset;
 }
@@ -258,7 +264,8 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		memcpy(this->hostArray, array.hostArray, size()*sizeof(T));
 	}else{
-		#pragma omp parallel for
+		//std::cout<<"CPU_hostMemCopy executing parallel"<<std::endl;
+		#pragma omp parallel for num_threads(11)
 		for(size_t i = 0; i<height; ++i){
 		for(size_t j = 0; j<width; ++j){
 		for(size_t k = 0; k<depth; ++k){
@@ -267,7 +274,8 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 	}
 	#ifdef TIMER
 		double end = omp_get_wtime();
-		printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),end-start);
+		std::cout<<"CPU_hostMemCopy: "<<end-start<<std::endl;
+		//printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),end-start);
 	#endif
 }
 
