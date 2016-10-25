@@ -811,13 +811,13 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 			#ifdef PSKEL_TBB
 				this->runTBB(input, this->output, numThreads);
 			#else
-				this->runOpenMP(input, this->output, width, height, depth, maskRange);
+				this->runOpenMP(input, this->output, width, height, depth, maskRange, numThreads);
 			#endif
 		}else {
 			#ifdef PSKEL_TBB
 				this->runTBB(this->output, input, numThreads);
 			#else
-				this->runOpenMP(this->output, input, width, height, depth,  maskRange);
+				this->runOpenMP(this->output, input, width, height, depth,  maskRange, numThreads);
 			#endif
 		}
 	}
@@ -1088,18 +1088,18 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 							#ifdef PSKEL_TBB
 								this->runTBB(inputCopy, outputCPU, numThreads);
 							#else
-								this->runOpenMP(inputCopy, outputCPU, width, height, depth, maskRange);
+								this->runOpenMP(inputCopy, outputCPU, width, height, depth, maskRange, numThreads);
 							#endif
 						}else {
 							#ifdef PSKEL_TBB
 								this->runTBB(outputCPU, inputCopy, numThreads);
 							#else
-								this->runOpenMP(outputCPU, inputCopy, width, height, depth, maskRange);
+								this->runOpenMP(outputCPU, inputCopy, width, height, depth, maskRange, numThreads);
 							#endif
 						}
 					}//end for
-					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
-					//inputCopy.hostFree();
+					if((iterations%2)==0) outputCPU.hostMemCopy(inputCopy);
+					inputCopy.hostFree();
 					endCPU = omp_get_wtime();
 					//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
 				}//end CPU section
@@ -1632,7 +1632,7 @@ void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
 }
 
 template<class Array, class Mask, class Args>
-inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange){
+inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads){
 	//omp_set_num_threads(numThreads);
 	//size_t height = in.getHeight();
 	//size_t width = in.getWidth();
@@ -1663,7 +1663,7 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	}}	
 	#else
 	
-	#pragma omp parallel num_threads(11)
+	#pragma omp parallel num_threads(numThreads)
 	{
 	//printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
 	#pragma omp for

@@ -175,7 +175,7 @@ protected:
 	#ifdef PSKEL_TBB
 	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
-	virtual inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange) = 0;
+	virtual inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads) = 0;
 	#ifdef PSKEL_CUDA
 	void runCUDA(Array,Array,size_t,size_t);
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
@@ -315,7 +315,7 @@ template<class Array, class Mask, class Args>
 class Stencil3D : public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
+	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -332,7 +332,7 @@ template<class Array, class Mask, class Args>
 class Stencil2D : public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
+	inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
@@ -351,7 +351,7 @@ template<class Array, class Mask, class Args>
 class Stencil: public StencilBase<Array, Mask, Args>{
 protected:
 	void runSeq(Array in, Array out);
-	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange);
+	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
 	#endif
