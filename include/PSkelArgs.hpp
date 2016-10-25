@@ -62,7 +62,7 @@ int Args<T>::getWidth() const{
 }
 	
 template<typename T>
-T & Args<T>::operator()(int x) const {
+__forceinline T & Args<T>::operator()(int x) const {
 	#ifdef __CUDA_ARCH__
 		return deviceArray[x];
 	#else
@@ -91,7 +91,7 @@ Args2D<T>::Args2D(int _width,int _height){
     //gpuErrchk( cudaDeviceReset() );
     //gpuErrchk( cudaSetDeviceFlags(cudaDeviceMapHost) );
 	
-    gpuErrchk( cudaHostAlloc((void **) &hostArray, width*height*sizeof(T), cudaHostAllocWriteCombined  | cudaHostAllocMapped) );
+    	gpuErrchk( cudaHostAlloc((void **) &hostArray, width*height*sizeof(T), cudaHostAllocWriteCombined  | cudaHostAllocMapped) );
 	gpuErrchk( cudaHostGetDevicePointer((void **) &deviceArray, (void *) hostArray, 0) );
 }
 	
@@ -106,7 +106,7 @@ int Args2D<T>::getHeight() const{
 }
 	
 template<typename T>
-T & Args2D<T>::operator()(int x,int y) const {
+__forceinline T & Args2D<T>::operator()(int x,int y) const {
 	#ifdef __CUDA_ARCH__
 		return deviceArray[y*width+x];
 	#else
@@ -152,7 +152,7 @@ int Args3D<T>::getDepth() const{
 }
 	
 template<typename T>
-T & Args3D<T>::operator()(int x,int y,int z) const {
+__forceinline T & Args3D<T>::operator()(int x,int y,int z) const {
 	#ifdef __CUDA_ARCH__
 		return deviceArray[(z*height + y)*width + x];
 	#else

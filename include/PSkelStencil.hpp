@@ -638,7 +638,7 @@ void StencilBase<Array, Mask,Args>::runCPU(size_t numThreads){
 	#ifdef PSKEL_TBB
 		this->runTBB(this->input, this->output, numThreads);
 	#else
-		this->runOpenMP(this->input, this->output, this->input.getWidth(),this->input.getHeight(),this->input.getDepth,maskRange);
+		this->runOpenMP(this->input, this->output, this->input.getWidth(),this->input.getHeight(),this->input.getDepth,maskRange,numThreads);
 	#endif
 }
 
@@ -792,7 +792,7 @@ void StencilBase<Array, Mask,Args>::runIterativeSequential(size_t iterations){
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t numThreads){
 	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
-	omp_set_num_threads(numThreads);
+	//omp_set_num_threads(numThreads);
 	#ifdef PSKEL_TBB
 	//tbb::task_scheduler_init::automatic; //(numThreads);
 	#endif
@@ -803,28 +803,28 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	size_t depth = this->input.getDepth();
 	size_t maskRange = this->mask.getRange();
 	//cout << "numThreads: " << numThreads << endl;
-	//Array inputCopy;
-	//inputCopy.hostClone(input);
+	Array inputCopy;
+	inputCopy.hostClone(input);
 	start = omp_get_wtime();
 	for(size_t it = 0; it<iterations; it++){
 		if(it%2==0){
 			#ifdef PSKEL_TBB
-				this->runTBB(input, this->output, numThreads);
+				this->runTBB(inputCopy,this->output, numThreads);
 			#else
-				this->runOpenMP(input, this->output, width, height, depth, maskRange);
+				this->runOpenMP(inputCopy, this->output, width, height, depth, maskRange, numThreads);
 			#endif
 		}else {
 			#ifdef PSKEL_TBB
-				this->runTBB(this->output, input, numThreads);
+				this->runTBB(this->output, inputCopy, numThreads);
 			#else
-				this->runOpenMP(this->output, input, width, height, depth,  maskRange);
+				this->runOpenMP(this->output, inputCopy, width, height, depth,  maskRange, numThreads);
 			#endif
 		}
 	}
 	if((iterations%2)==0) output.hostMemCopy(input);
 	end = omp_get_wtime();
-	cout<<"CPU Time : "<<end-start<<endl;
-	//inputCopy.hostFree();
+	cout<<"CPU_time\t"<<end-start<<endl;
+	inputCopy.hostFree();
 }
 
 
@@ -971,7 +971,7 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 		output.copyToHost();
 	else output.copyFromDevice(input);
 	double end = omp_get_wtime();
-	cout<<"GPU Time: "<<end-start<<endl;
+	cout<<"GPU_time\t"<<end-start<<endl;
 	input.deviceFree();
 	mask.deviceFree();
 	output.deviceFree();
@@ -1010,7 +1010,10 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 	Array outputGPU;
 	Array tmp;
 	Array inputCPU;
+	Array inputCopy;
 	Array outputCPU;
+	Array coreTmp;
+	Array coreOutput;	
 	size_t maskRange = this->mask.getRange();
 	if(this->input.getHeight()==1){
 		
@@ -1053,7 +1056,10 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 						tmp.copyFromDevice(inputGPU);
 					else	
 						tmp.copyFromDevice(outputGPU);	
-		
+					
+					//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+					//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+				
 					endGPU = omp_get_wtime();
 					//printf("%Thread %d finished GPU Partition\n",omp_get_thread_num());
 				}//end GPU section
@@ -1071,35 +1077,35 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					////inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					////outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 
-					Array inputCopy;
+					//Array inputCopy;
 					inputCopy.hostClone(inputCPU);
-					size_t width = inputCPU.getWidth();
-					size_t height = inputCPU.getHeight();
-					size_t depth = inputCPU.getDepth();
-
 					startCPU = omp_get_wtime();
 					
 					for(size_t it = 0; it<iterations; it++){
 					  //cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
-                                          inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-                                          outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-					   //cout<<"It "<<it<<" width "<<inputCPU.getWidthOffset()<<" height "<<inputCPU.getHeightOffset()<<endl;
+                                          inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+                                          outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+					  size_t width = inputCopy.getWidth();
+					  size_t height = inputCopy.getHeight();
+					  size_t depth = inputCopy.getDepth();
+
+					  //cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
 						if(it%2==0){
 							#ifdef PSKEL_TBB
 								this->runTBB(inputCopy, outputCPU, numThreads);
 							#else
-								this->runOpenMP(inputCopy, outputCPU, width, height, depth, maskRange);
+								this->runOpenMP(inputCopy, outputCPU, width, height, depth, maskRange, numThreads);
 							#endif
 						}else {
 							#ifdef PSKEL_TBB
 								this->runTBB(outputCPU, inputCopy, numThreads);
 							#else
-								this->runOpenMP(outputCPU, inputCopy, width, height, depth, maskRange);
+								this->runOpenMP(outputCPU, inputCopy, width, height, depth, maskRange, numThreads);
 							#endif
 						}
 					}//end for
-					if((iterations%2)==0) outputCPU.hostMemCopy(inputCPU);
-					//inputCopy.hostFree();
+					if((iterations%2)==0) outputCPU.hostMemCopy(inputCopy);
+					inputCopy.hostFree();
 					endCPU = omp_get_wtime();
 					//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
 				}//end CPU section
@@ -1109,8 +1115,8 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 			//	tmp.copyFromDevice(inputGPU);
 			//else
 			//	tmp.copyFromDevice(outputGPU);	
-			Array coreTmp;
-			Array coreOutput;
+			//Array coreTmp;
+			//Array coreOutput;
 			coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
 			coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
 			coreOutput.hostMemCopy(coreTmp);
@@ -1119,10 +1125,11 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 		}//end if partitioned
 	}//end if input.getHeight()
 	//cudaDeviceSynchronize();
-	cout<<"CPU Time: "<<endCPU-startCPU<<endl;
-	cout<<"GPU Time: "<<endGPU-startGPU<<endl;
-	cout<<"Total   : "<<end-start<<endl;
+	cout<<"CPU_time\t"<<endCPU-startCPU<<endl;
+	cout<<"GPU_time\t"<<endGPU-startGPU<<endl;
+	cout<<"Total_time\t"<<end-start<<endl;
 	tmp.hostFree();
+	inputCopy.hostFree();
 	inputGPU.deviceFree();
 	outputGPU.deviceFree();
 	mask.deviceFree();
@@ -1233,16 +1240,29 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runCUDA(Array in, Array out, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
-	dim3 DimBlock(GPUBlockSizeX, GPUBlockSizeY, 1);
-	dim3 DimGrid((in.getWidth() - 1)/GPUBlockSizeX + 1, (in.getHeight() - 1)/GPUBlockSizeY + 1, in.getDepth());
-    size_t maskRange = mask.getRange();
-
+	size_t maskRange = mask.getRange();
+    	dim3 dimBlock(GPUBlockSizeX, GPUBlockSizeY,1);
+	//dim3 dimBlock(GPUBlockSizeX, GPUBlockSizeY);
 	#ifdef PSKEL_SHARED
-		size_t sharedSize = sizeof(float)*(GPUBlockSizeX+2*maskRange)*(GPUBlockSizeY+2*maskRange);
-        stencilTilingCU<<<DimGrid, DimBlock,sharedSize>>>(in, out, this->mask, this->args, maskRange, in.getWidth(),in.getHeight(),in.getDepth());
+		size_t pyramidHeight = 2;
+		int EffectiveBlockSizeX = GPUBlockSizeX- 2*(pyramidHeight);
+    		int EffectiveBlockSizeY = GPUBlockSizeY- 2*(pyramidHeight);
+    		size_t HaloX = 2*(pyramidHeight)*(input.getWidth()/dimBlock.x) + ((input.getWidth()%GPUBlockSizeX== 0)?0:1);
+    		size_t HaloY = 2*(pyramidHeight)*(input.getHeight()/dimBlock.y) + ((input.getHeight()%GPUBlockSizeY == 0)?0:1);
+    		size_t gridX = input.getWidth() + HaloX;
+    		size_t gridY = input.getHeight() + HaloY;
+
+    		dim3 dimGrid((input.getWidth()+HaloX)  /GPUBlockSizeX  + ((input.getWidth()%dimBlock.x == 0)?0:1), 
+                    	     (input.getHeight()+HaloY) /GPUBlockSizeY + ((input.getHeight()%dimBlock.y == 0)?0:1));
+    		//dim3 dimGrid = ( gridX/GPUBlockSizeX, gridY/GPUBlockSizeY );
+    		const int sharedMemSize = dimBlock.x * dimBlock.y * sizeof(input(0,0)); //need to get this size from somewhere
+		//size_t sharedSize = sizeof(float)*(GPUBlockSizeX+2*maskRange)*(GPUBlockSizeY+2*maskRange);
+        	stencilTilingCU<<<dimGrid, dimBlock,sharedMemSize>>>(in, out, this->mask, this->args, maskRange, 2, in.getWidth(),in.getHeight(),in.getDepth());
 	#else
-        //stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
-        stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args,maskRange,in.getWidth(),in.getHeight(),in.getDepth());
+        	//dim3 DimBlock(GPUBlockSizeX, GPUBlockSizeY, 1);
+		dim3 dimGrid((in.getWidth() - 1)/GPUBlockSizeX + 1, (in.getHeight() - 1)/GPUBlockSizeY + 1, in.getDepth());
+    		//stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
+	        stencilTilingCU<<<dimGrid, dimBlock>>>(in, out, this->mask, this->args,maskRange,in.getWidth(),in.getHeight(),in.getDepth());
 	#endif
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
@@ -1559,9 +1579,9 @@ void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out){
 }
 
 template<class Array, class Mask, class Args>
-void Stencil3D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange){
+void Stencil3D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads){
 	//omp_set_num_threads(numThreads);
-	#pragma omp parallel for
+	#pragma omp parallel for num_threads(numThreads)
 	for (int h = 0; h < height; h++){
 	for (int w = 0; w < width; w++){
 	for (int d = 0; d < depth; d++){
@@ -1632,7 +1652,7 @@ void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
 }
 
 template<class Array, class Mask, class Args>
-inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange){
+inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads){
 	//omp_set_num_threads(numThreads);
 	//size_t height = in.getHeight();
 	//size_t width = in.getWidth();
@@ -1641,7 +1661,7 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
   	#ifdef CACHE_BLOCK
 	#define TH 15
 	#define TW 15
-	#pragma omp parallel for collapse(1) num_threads(11)
+	#pragma omp parallel for collapse(1) num_threads(numThreads)
 	for(size_t hh = maskRange; hh < height-maskRange;hh+=TH){
 	for(size_t ww = maskRange; ww < width-maskRange; ww+=TW){
 		for(size_t h = hh; h < MIN(hh+TH,height-maskRange);h++){
@@ -1663,7 +1683,7 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	}}	
 	#else
 	
-	#pragma omp parallel num_threads(11)
+	#pragma omp parallel num_threads(numThreads)
 	{
 	//printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
 	#pragma omp for
@@ -1740,9 +1760,9 @@ void Stencil<Array,Mask,Args>::runSeq(Array in, Array out){
 }
 
 template<class Array, class Mask, class Args>
-void Stencil<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth,size_t maskRange){
+void Stencil<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth,size_t maskRange, size_t numThreads){
 	//omp_set_num_threads(numThreads);
-	#pragma omp parallel for
+	#pragma omp parallel for num_threads(numThreads)
 	for (int i = 0; i < width; i++){
 		stencilKernel(in,out,this->mask, this->args,i);
 	}

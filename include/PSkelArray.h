@@ -144,6 +144,8 @@ public:
 	 * \return the "virtual" height of the array data structure.
 	 **/
 	__device__ __host__ size_t getHeight() const;
+
+	__device__ __host__ size_t getRealHeight() const;
 	
 	/**
 	 * Get the depth size of the "virtual" array.
