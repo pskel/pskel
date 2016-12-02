@@ -72,8 +72,11 @@ runtime details.
 
 #ifdef PSKEL_TBB
     #include <tbb/blocked_range.h>
+    #include <tbb/blocked_range2d.h>
     #include <tbb/parallel_for.h>
     #include <tbb/task_scheduler_init.h>
+    #include <tbb/partitioner.h>
+    #include <tbb/scalable_allocator.h>
 #endif
 
 #ifdef DEBUG

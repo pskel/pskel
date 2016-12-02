@@ -36,11 +36,11 @@
 #ifndef PSKEL_STENCIL_H
 #define PSKEL_STENCIL_H
 
-#ifdef PSKEL_TBB
-  #include <tbb/blocked_range.h>
-  #include <tbb/parallel_for.h>
-  #include <tbb/task_scheduler_init.h>
-#endif
+//#ifdef PSKEL_TBB
+//  #include <tbb/blocked_range.h>
+//  #include <tbb/parallel_for.h>
+//  #include <tbb/task_scheduler_init.h>
+//#endif
 
 #include "PSkelDefs.h"
 #include "PSkelArray.h"
@@ -137,7 +137,7 @@ __parallel__ void stencilKernel(Array<T1> input, Array<T1> output, Mask<T2> mask
 //__parallel__ void stencilKernel(T1 input[BLOCK_SIZE][BLOCK_SIZE], T1 output[BLOCK_SIZE][BLOCK_SIZE], Args args, size_t ty, size_t tx);
 
 template<typename T1, typename T2, class Args>
-__parallel__ void stencilKernel(Array2D<T1> input, Array2D<T1> output, Mask2D<T2> mask, Args args, size_t h, size_t w);
+__parallel__ void stencilKernel(const Array2D<T1>& input, const Array2D<T1>& output, const Mask2D<T2>& mask, const Args& args, size_t h, size_t w);
 
 
 /**
@@ -181,6 +181,7 @@ protected:
 	void runIterativeTilingCUDA(Array in, Array out, StencilTiling<Array,Mask> tiling, size_t GPUBlockSizeX, size_t GPUBlockSizeY);
 	#endif
 public:
+	
 	/**
 	 * Executes sequentially in CPU a single iteration of the stencil computation. 
 	 **/
@@ -271,6 +272,7 @@ public:
 	 * \param[in] GPUBlockSizeY the block size (y dimension) used for the GPU processing the stencil kernel.
 	 **/
 	void runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
+	void runIterativePartition2(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
 	#endif
 
 	#ifdef PSKEL_CUDA
@@ -305,8 +307,9 @@ public:
 	#endif
 
 	//void runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads);
+	//
+	//void operator()(const tbb::blocked_range<size_t> &r) const;
 };
-
 //*******************************************************************************************
 // Stencil 3D
 //*******************************************************************************************
@@ -322,6 +325,21 @@ protected:
 public:
 	Stencil3D();
 	Stencil3D(Array _input, Array _output, Mask _mask, Args _args);
+/*
+	void operator()(const tbb::blocked_range<size_t> &r)const{
+                size_t begin = r.begin();
+                size_t end = r.end();
+		size_t wbegin = this->mask.getMaskRange();
+		size_t wend = this->input.getWidth()-wbegin;
+                #pragma forceinline recursive
+                #pragma ivdep
+                for (size_t h = begin; h != end; ++h){
+                	for (size_t w = wbegin; w < wend; ++w){
+                       		stencilKernel(this->input,this->output,this->mask, this->args,h,w);
+                       }
+		}
+        }
+*/
 };
 
 //*******************************************************************************************
@@ -340,6 +358,22 @@ public:
 	Stencil2D();
 	Stencil2D(Array _input, Array _output, Mask _mask, Args _args);
 	//~Stencil2D();
+	//
+/*
+	void operator()(const tbb::blocked_range<size_t> &r)const{
+                size_t begin = r.begin();
+                size_t end = r.end();
+		size_t wbegin = this->mask.getMaskRange();
+		size_t wend = this->input.getWidth()-wbegin;
+                #pragma forceinline recursive
+                #pragma ivdep
+                for (size_t h = begin; h != end; ++h){
+                	for (size_t w = wbegin; w < wend; ++w){
+                       		stencilKernel(this->input,this->output,this->mask, this->args,h,w);
+                       }
+		}
+        }
+*/                        
 };
 
 //*******************************************************************************************
@@ -358,6 +392,18 @@ protected:
 public:
 	Stencil();
 	Stencil(Array _input, Array _output, Mask _mask, Args _args);
+
+/*	void operator()(const tbb::blocked_range<size_t> &r)const{
+                size_t begin = r.begin();
+                size_t end = r.end();
+		//size_t wbegin = this->mask.getMaskRange();
+		//size_t wend = this->input.getWidth()-wbegin;
+                #pragma forceinline recursive
+                #pragma ivdep
+                for (size_t w = begin; w != end; ++w){
+                       		stencilKernel(this->input,this->output,this->mask, this->args,w);
+		}
+        }*/
 };
 
 }
