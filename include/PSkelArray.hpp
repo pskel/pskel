@@ -524,7 +524,9 @@ void ArrayBase<T>::copyFromDevice(Arrays array){
 }
 #endif
 
-template<typename T> template<typename Arrays>
+#ifdef PSKEL_CUDA
+template<typename T> 
+template<typename Arrays>
 void ArrayBase<T>::copyFromDevicePinned(Arrays array){
 	#ifndef PSKEL_MANAGED
 	if(array.size()==realSize()){
@@ -558,7 +560,7 @@ void ArrayBase<T>::copyFromDevicePinned(Arrays array){
 	}
 	#endif
 }
-
+#endif
 
 
 #ifdef PSKEL_CUDA

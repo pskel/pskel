@@ -2309,6 +2309,13 @@ struct TBBStencil{
 		this->args = args;
 	}
 	void operator()(tbb::blocked_range<int> r)const{
+		for (int i = r.begin(); i != r.end(); i++){
+			stencilKernel(this->input,this->output,this->mask, this->args,i);
+		}
+	}
+};
+
+
 template<class Array, class Mask, class Args>
 void Stencil<Array,Mask,Args>::runTBB(Array in, Array out, size_t numThreads){
 	TBBStencil<Array, Mask, Args> tbbstencil(in, out, this->mask, this->args);
