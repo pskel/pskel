@@ -135,7 +135,12 @@ void ArrayBase<T>::hostScalableAlloc(size_t _width, size_t _height, size_t _dept
 	this->realDepth = _depth;
 	//Alloc scalable memory
 	this->hostArray = NULL;
+	#ifdef PSKEL_TBB
 	this->hostScalableAlloc();
+	#else
+	std::cout<<"Warning! Allocating non-scalable memory"<<std::endl;
+	this->hostAlloc();
+	#endif
 	//Copy clone memory
 	//this->hostMemCopy(array);
 }
@@ -179,7 +184,7 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #endif
 	#endif
-	#ifdef PSKEL_TBBX
+	#ifdef PSKEL_TBB
 	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
 	    std::cout<<"Host scalable memory allocated"<<std::endl;
     	#else
@@ -243,7 +248,7 @@ __forceinline__ void ArrayBase<T>::hostFree(){
 	#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#endif
-	#ifdef PSKEL_TBBX
+	#ifdef PSKEL_TBB
 		scalable_free(this->hostArray);
 	#else
 		free(this->hostArray);

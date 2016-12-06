@@ -1273,7 +1273,6 @@ void StencilBase<Array, Mask,Args>::runIterativePartition2(size_t iterations, fl
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
-	#ifdef PSKEL_TBB
 	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
 	double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
 	if(GPUBlockSizeX==0){
@@ -1356,9 +1355,12 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 	cout<<"CPU Coredepth offset\t"<<cpuTiling.coreDepthOffset<<endl;
 	*/
 
-	
+	/* Ghost + Core Area */
 	inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-
+	
+	/* Core Area */
+	outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
+	
 	//inputGPU.hostAllocPinned();
 	//outputGPU.hostAllocPinned();
 	/*
@@ -1371,14 +1373,12 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 			
 	Array inputTBB;
 	Array outputTBB;									
-	inputTBB.hostScalableAlloc(inputCPU.getWidth(),inputCPU.getHeight(),inputCPU.getDepth());
-	outputTBB.hostScalableAlloc(inputCPU.getWidth(),inputCPU.getHeight(),inputCPU.getDepth());
- 	size_t tbbWidth = inputTBB.getWidth();
-        size_t tbbHeight = inputTBB.getHeight();
-        size_t tbbDepth = inputTBB.getDepth();
-					
-	/* Core Area */
-	outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
+	size_t tbbWidth = inputCPU.getWidth();
+        size_t tbbHeight = inputCPU.getHeight();
+        size_t tbbDepth = inputCPU.getDepth();
+	inputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+	outputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+ 					
 	/*
 	cout<<"CPU output width \t"<<outputCPU.getWidth()<<endl;
 	cout<<"CPU output height \t"<<outputCPU.getHeight()<<endl;
@@ -1419,7 +1419,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 			start = omp_get_wtime();
 			omp_set_num_threads(2);
 			omp_set_nested(1);
-			printf("Main thread %d starting parallel section\n",omp_get_thread_num());
+			//printf("Main thread %d starting parallel section\n",omp_get_thread_num());
 			//cout<<"Input size "<<input.size()<<endl;
 			//startPinnedCopy = omp_get_wtime();
 			//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));
@@ -1483,14 +1483,14 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 				//printf("Thread %d entering parallel section\n",omp_get_thread_num());
 				#pragma omp section
 				{//begin CPU
-					printf("Thread %d computing CPU Partition\n",omp_get_thread_num());
+					//printf("Thread %d computing CPU Partition\n",omp_get_thread_num());
 					//printf("%f Running CPU iterations\n",omp_get_wtime());
 					
 					startCPU = omp_get_wtime();
 					
 					#pragma omp parallel for num_threads(numThreads-1)
-					for(size_t h = 0;h<inputCPU.getHeight();++h){
-						for(size_t w=0;w<inputCPU.getWidth();++w){
+					for(size_t h = 0;h<tbbHeight;++h){
+						for(size_t w=0;w<tbbWidth;++w){
 							inputTBB(h,w) = inputCPU(h,w);
 							//outputTBB(h,w) = outputCPU(h,w);
 						}
@@ -1536,11 +1536,11 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					  	//size_t depth = inputTBB.getDepth();
 
 						//cout<<"oi "<<height<<" "<<maskRange<<endl;
-						size_t tbbHeight2 = inputTBB.getHeight();
+						//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
 						//cout<<"input height: "<<inputTBB.getHeight()<<endl;
 					 	//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
 					 	//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
-					 	tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight2-maskRange), tbbstencil, ap);
+					 	tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
 					 	//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
 					 	//
 					 	//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
@@ -1555,30 +1555,36 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 						//	#ifdef PSKEL_TBB
 						//		this->runTBB(inputCopy, outputCPU, numThreads);
 						//	#else
-								this->runOpenMP(inputTBB, outputTBB, width, height, depth, maskRange, numThreads);
+								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
 						//	#endif
 						}else {
 						//	#ifdef PSKEL_TBB
 						//		this->runTBB(outputCPU, inputCopy, numThreads);
 						//	#else
-								this->runOpenMP(outputTBB, inputTBB, width, height, depth, maskRange, numThreads);
+								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
 						//	#endif
 						}
 						#endif
 					}//end for
+					/*
 					#ifdef PSKEL_TBB
 					//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
                                        	//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
 					//TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputCPU,this->mask, this->args);
-					size_t tbbHeight2 = outputTBB.getHeight();
+					//size_t tbbHeight2 = outputTBB.getHeight();
 					//cout<<"height input: "<<outputTBB.getHeight()<<endl;
 					//cout<<"height output: "<<outputCPU.getHeight()<<endl;
 					//cout<<"output offset: "<<outputCPU.getHeightOffset()<<endl;
 					tbbstencil.set(outputTBB,outputCPU);
-					tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight2-maskRange), tbbstencil, ap);
+					tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+					#else
+						this->runOpenMP(outputTBB, outputCPU, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);	
 					#endif
-					
-					if((iterations%2)==1) outputCPU.hostMemCopy(outputTBB);
+					*/
+					if((iterations%2)==1)
+						 outputCPU.hostMemCopy(outputTBB);
+					else
+						outputCPU.hostMemCopy(inputTBB);
 					//if((iterations%2)==1) tbbstencil.swap();
 					//inputCopy.hostFree();
 					//size_t coreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
@@ -1635,7 +1641,6 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 	outputGPU.deviceFree();
 	mask.deviceFree();
 	//cudaStreamDestroy(stream1);
-	#endif
 }
 #endif 
 
