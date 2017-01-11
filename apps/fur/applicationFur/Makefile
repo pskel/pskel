@@ -6,8 +6,8 @@ CUDAFLAGS = --compiler-bindir /usr/bin/gcc-4.8 -O3 -Xcompiler -ftree-vectorize -
 CXXFLAGS = -O3 -w
 GENCONDE = -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\"
 OMP_TBB = -fopenmp -lgomp -ltbb
-GCCLIB = -lgomp -fopenmp
-LIBS = -lgomp -ltbb -lcuda -I../../lib/ -L../../lib/ga -lga -lm #-papi -L /usr/local/cuda-5.5/extras/CUPTI/lib -L /usr/local/cuda-5.5/extras/CUPTI/lib64 -lcupti
+GCCLIB = -lgomp -fopenmp -lpapi
+LIBS = -lgomp -ltbb -lcuda -lpapi -I../../lib/ -L../../lib/ga -lga -lm #-papi -L /usr/local/cuda-5.5/extras/CUPTI/lib -L /usr/local/cuda-5.5/extras/CUPTI/lib64 -lcupti
 SRC_NAME = applicationFur
 BIN_DIR = ./
 

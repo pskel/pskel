@@ -1,22 +1,22 @@
 //-------------------------------------------------------------------------------
 // Copyright (c) 2015, Márcio B. Castro <marcio.castro@ufsc.br>
-//					   
+//
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,6 +39,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/time.h>
+#include <time.h>
+#include <iostream>
 
 /*
  * GLOBAL CONSTANTS
@@ -54,7 +57,7 @@
 #define MAX_CLUSTERS 16
 #define MAX_THREADS_PER_CLUSTER 16
 #define MPPA_FREQUENCY 400
-
+#define BILLION 1E9
 /*
  * INTERNAL STRUCTURES
  */
@@ -95,8 +98,9 @@ barrier_t *mppa_create_slave_barrier (char *path_master, char *path_slave);
 void mppa_barrier_wait (barrier_t *barrier);
 void mppa_close_barrier (barrier_t *barrier);
 
-void mppa_init_time(void);
-inline uint64_t mppa_get_time(void);
-inline uint64_t mppa_diff_time(uint64_t t1, uint64_t t2);
+struct timeval mppa_master_get_time(void);
+struct timespec mppa_slave_get_time(void);
+double mppa_master_diff_time(struct timeval begin, struct timeval end);
+double mppa_slave_diff_time(struct timespec begin, struct timespec end);
 
 #endif // __INTERFACE_MPPA_H

@@ -2,21 +2,21 @@
 // Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
 //					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -121,7 +121,8 @@ protected:
 	#endif
 
 	#ifndef MPPA_MASTER
-	virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+	// virtual void runOpenMP(Array in, Array out, size_t numThreads) = 0;
+  virtual inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads) = 0;
 	#endif
 
 	#ifdef PSKEL_CUDA
@@ -130,14 +131,14 @@ protected:
 	#endif
 public:
 	/**
-	 * Executes sequentially in CPU a single iteration of the stencil computation. 
+	 * Executes sequentially in CPU a single iteration of the stencil computation.
 	 **/
 	#ifndef MPPA_MASTER
 	void runSequential();
 	#endif
 
 	/**
-	 * Executes in CPU, using multithreads, a single iteration of the stencil computation. 
+	 * Executes in CPU, using multithreads, a single iteration of the stencil computation.
 	 * \param[in] numThreads the number of threads used for processing the stencil kernel.
 	 * if numThreads is 0, the number of threads is automatically chosen.
 	 **/
@@ -182,7 +183,7 @@ public:
 	//void runHybrid(float GPUPartition, size_t GPUBlockSize, size_t numThreads);
 
 	/**
-	 * Executes sequentially in CPU multiple iterations of the stencil computation. 
+	 * Executes sequentially in CPU multiple iterations of the stencil computation.
 	 * At each given iteration, except the first, the previous output is used as input.
 	 * \param[in] iterations the number of iterations to be computed.
 	 **/
@@ -190,7 +191,7 @@ public:
 	void runIterativeSequential(size_t iterations);
 	#endif
 	/**
-	 * Executes in CPU, using multithreads, multiple iterations of the stencil computation. 
+	 * Executes in CPU, using multithreads, multiple iterations of the stencil computation.
 	 * At each given iteration, except the first, the previous output is used as input.
 	 * \param[in] iterations the number of iterations to be computed.
 	 * \param[in] numThreads the number of threads used for processing the stencil kernel.
@@ -244,7 +245,7 @@ public:
 	#endif
 
 	//void runIterativeHybrid(size_t iterations, float GPUPartition, size_t GPUBlockSize, size_t numThreads);
-	
+
 	#ifdef PSKEL_MPPA
 	/**
 	 * Spawn the slaves in MPPA.
@@ -272,7 +273,7 @@ public:
 	**/
 	void waitSlaves(int nb_clusters, int tilingHeight, int tilingWidth);
 	#endif
-	
+
 	#ifdef PSKEL_MPPA
 	/**
 	* Configure the slave execution and wait for them to finish.
@@ -284,7 +285,7 @@ public:
 	**/
 	void scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, size_t tilingWidth, int iterations, int innerIterations);
 	#endif
-	
+
 	#ifdef PSKEL_MPPA
 	/**
 	* Configure the portals for the slave and execute the kernel.
@@ -343,7 +344,8 @@ protected:
 	#endif
 
 	#ifndef MPPA_MASTER
-	void runOpenMP(Array in, Array out, size_t numThreads);
+	// void runOpenMP(Array in, Array out, size_t numThreads);
+  inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#endif
 
 	#ifdef PSKEL_TBB

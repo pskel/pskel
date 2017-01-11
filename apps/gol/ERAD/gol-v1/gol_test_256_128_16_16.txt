@@ -1,0 +1,58 @@
+IODDR0@0.0: RM 0: nb_threads: 16
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0253386
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0252881
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.025335
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0252737
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0251992
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0250974
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0251576
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0250319
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252136
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0251018
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0251432
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0251104
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0251953
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0251958
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0251822
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0251785
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252476
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0251379
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0252096
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0251985
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252191
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0251699
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0252406
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0252191
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252134
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0252271
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.025187
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.02522
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.025259
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0252845
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0252515
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.025222
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252122
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0253159
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0252885
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0251993
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0252031
+IODDR0@0.0: RM 0: Slave[0] Total Time: 1.01821
+IODDR0@0.0: RM 0: Slave[0] Send Time: 0.00328027
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.025293
+IODDR0@0.0: RM 0: Slave[1] Total Time: 0.806183
+IODDR0@0.0: RM 0: Slave[1] Send Time: 0.00325946
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0252819
+IODDR0@0.0: RM 0: Slave[2] Total Time: 0.806784
+IODDR0@0.0: RM 0: Slave[2] Send Time: 0.00325946
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0252052
+IODDR0@0.0: RM 0: Slave[3] Total Time: 0.704184
+IODDR0@0.0: RM 0: Slave[3] Send Time: 0.00325946
+IODDR0@0.0: RM 0: Master Time: 0.649744
+Lock already held by user vargas, please wait (1 user(s) remaining)
+Lock acquired
+====== BOARD 0 ======
+
+ - Acquisition time: 1.76 s
+ - MPPA 0 Power
+   - Power (avg): 4.49 W
+   - Energy     : 7.92 J

@@ -1,0 +1,63 @@
+IODDR0@0.0: RM 0: width: 256
+IODDR0@0.0: RM 0: height: 256
+IODDR0@0.0: RM 0: tilingHeight: 128
+IODDR0@0.0: RM 0: tilingWidth: 128
+IODDR0@0.0: RM 0: iterations: 100
+IODDR0@0.0: RM 0: innerIterations: 10
+IODDR0@0.0: RM 0: nb_clusters: 16
+IODDR0@0.0: RM 0: nb_threads: 16
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0881014
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0881071
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0881326
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0880461
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880212
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.087937
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880619
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.087873
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880218
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879369
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880627
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878733
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880212
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879367
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.088063
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878732
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.088021
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879365
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880636
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.087873
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880207
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879365
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880634
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878726
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880211
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879367
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.088064
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878733
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880207
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879366
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880635
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878724
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880211
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879367
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880641
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878732
+IODDR0@0.0: RM 0: Slave[0] Computation Time: 0.0880211
+IODDR0@0.0: RM 0: Slave[0] Total Time: 1.69442
+IODDR0@0.0: RM 0: Slave[0] Send Time: 0.00340058
+IODDR0@0.0: RM 0: Slave[1] Computation Time: 0.0879366
+IODDR0@0.0: RM 0: Slave[1] Total Time: 1.48415
+IODDR0@0.0: RM 0: Slave[1] Send Time: 0.00343898
+IODDR0@0.0: RM 0: Slave[2] Computation Time: 0.0880637
+IODDR0@0.0: RM 0: Slave[2] Total Time: 1.48538
+IODDR0@0.0: RM 0: Slave[2] Send Time: 0.00343898
+IODDR0@0.0: RM 0: Slave[3] Computation Time: 0.0878728
+IODDR0@0.0: RM 0: Slave[3] Total Time: 1.3845
+IODDR0@0.0: RM 0: Slave[3] Send Time: 0.00343899
+IODDR0@0.0: RM 0: Master Time: 1.32033
+====== BOARD 0 ======
+
+ - Acquisition time: 2.48 s
+ - MPPA 0 Power
+   - Power (avg): 4.81 W
+   - Energy     : 11.93 J

@@ -6,8 +6,8 @@ platforms := hardware
 cppflags := -w -I ../../lib/ -Wstack-usage=4096
 k1-lflags := -lmppaipc
 # slave flags
-slave-cflags := -fopenmp -lgomp -lm -I../../lib/ 
-slave-lflags := -fopenmp -lgomp -lm -I../../lib/ 
+slave-cppflags := -fopenmp -lgomp -lm -I../../lib/ 
+slave-lflags := -fopenmp -lgomp -lm -I../../lib/
 
 #master
 io-bin := master

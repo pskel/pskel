@@ -18,18 +18,24 @@
 using namespace std;
 using namespace PSkel;
 
+struct Arguments{
+	float h;
+};
 
 namespace PSkel{
-  __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask, float factor, size_t h, size_t w){
+  __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask, Arguments args, size_t i, size_t j){
       //printf("MaskGet(0): %f\n", mask.get(0, input, h, w));
       //printf("MaskGet(1): %f\n", mask.get(1, input, h, w));
       //printf("MaskGet(2): %f\n", mask.get(2, input, h, w));
       //printf("MaskGet(3): %f\n", mask.get(3, input, h, w));
       //printf("factor: %f\n", factor);
-      output(h,w) = 0.25*(mask.get(0,input,h,w) + mask.get(1,input,h,w) + 
-        mask.get(2,input,h,w) + mask.get(3,input,h,w) - 4*factor*factor );
+
+      // output(h,w) = 0.25*(mask.get(0,input,h,w) + mask.get(1,input,h,w) +
+      //   mask.get(2,input,h,w) + mask.get(3,input,h,w) - 4*factor*factor );
+
       //printf("OutputValor: %f\n", output(h,w));
-    
+
+	    output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) + input(i+1,j) - args.h);
   }
 }
 
@@ -39,7 +45,7 @@ int main(int argc,char **argv) {
 
 
   Mask2D<float> mask(4);
-  
+
   mask.set(0,1,0,0);
   mask.set(1,-1,0,0);
   mask.set(2,0,1,0);
@@ -55,7 +61,7 @@ int main(int argc,char **argv) {
   // numCPUThreads = atoi(argv[6]);
   // tileHeight = atoi(argv[7]);
   // tileIterations = atoi(argv[8]);
-  
+
   int nb_tiles = atoi(argv[0]);
   int width = atoi(argv[1]);
   int height = atoi(argv[2]);
@@ -67,11 +73,15 @@ int main(int argc,char **argv) {
   int realHeight = atoi(argv[8]);
   int realWidth = atoi(argv[9]);
 
-  float factor = 1.f/(float)realWidth;
+  // float factor = 1.f/(float)realWidth;
+
+  Arguments args;
+  	//args.h = 1.f / (float) x_max;
+  args.h = 4.f / (float) (width*width);
 
   Array2D<float> partInput(width, height);
   Array2D<float> output(width, height);
-  Stencil2D<Array2D<float>, Mask2D<float>, float> stencil(partInput, output, mask, factor);
+  Stencil2D<Array2D<float>, Mask2D<float>, Arguments> stencil(partInput, output, mask, args);
   // if(iterations == 0)  {
   stencil.runMPPA(cluster_id, nb_threads, nb_tiles, outteriterations, itMod);
   // } else {

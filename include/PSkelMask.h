@@ -2,21 +2,21 @@
 // Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
 //					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -36,8 +36,8 @@
 #ifndef PSKEL_MASK_H
 #define PSKEL_MASK_H
 
+#include <assert.h>
 #include "PSkelArray.h"
-#include "interface_mppa.h"
 
 namespace PSkel{
 
@@ -58,7 +58,7 @@ protected:
 	T *deviceWeight;
 	#endif
 	T haloValue;
-	
+
 	/**
          * The MaskBase constructor creates and allocates the specified mask
          * in the host memory.
@@ -102,14 +102,14 @@ public:
 	size_t memSize() const;
 
 	//__device__ __host__ size_t size() const;
-	
+
 	/**
 	 * Get the weight of a given element in the mask.
-	 * \param[in] n index of the element in the mask. 
+	 * \param[in] n index of the element in the mask.
 	 * \return the weight of the specified element.
 	 **/
 	__device__ __host__ T getWeight(size_t n);
-		
+
 };
 
 
@@ -139,9 +139,9 @@ public:
          * \param[in] weight the weight defined for the n-th neighbor.
          **/
 	__device__ __host__ void set(size_t n, int h, int w, int d, T weight=T(0));
-	
+
 	//__device__ __host__ void set(size_t n,int x,int y,int z);
-	
+
 	/**
          * Get the n-th neighbor from the specified input array.
          * \param[in] n the index of the neighbor.
@@ -153,7 +153,7 @@ public:
          **/
 	template<typename V>
 	__forceinline__ __device__ __host__ T get(size_t n, Array3D<V> array, size_t h, size_t w, size_t d);
-	
+
 	__device__ __host__ size_t getRange();
 	/*
         template<typename Arrays>
@@ -167,7 +167,7 @@ public:
 
 template<typename T>
 class Mask2D : public MaskBase<T>{
-public:	
+public:
 	/**
          * The Mask2D constructor creates and allocates the specified 2-dimensional mask
          * in the host memory.
@@ -177,7 +177,7 @@ public:
          * it is calculated as the maximum absolute value on the mask.
          **/
 	Mask2D(size_t size=0, T haloVal=T(0), size_t range=0);
-	
+
 	/**
          * Set the mask information for accessing the n-th neighbor for a given element.
          * \param[in] n the index of the neighbor.
@@ -186,9 +186,9 @@ public:
          * \param[in] weight the weight defined for the n-th neighbor.
          **/
 	__device__ __host__ void set(size_t n, int h, int w, T weight=T(0));
-	
+
 	//__device__ __host__ void set(size_t n,int x,int y);
-	
+
 	/**
          * Get the n-th neighbor from the specified input array.
          * \param[in] n the index of the neighbor.
@@ -199,7 +199,7 @@ public:
          **/
 	template<typename V>
 	__forceinline__ __device__ __host__ T get(size_t n, Array2D<V> array, size_t h, size_t w);
-	
+
 	__device__ __host__ size_t getRange();
 	/*
         template<typename Arrays>
@@ -223,9 +223,9 @@ public:
          * it is calculated as the maximum absolute value on the mask.
          **/
 	Mask(size_t size=0, T haloVal=T(0), size_t range=0);
-		
+
 	//__device__ __host__ void set(size_t n,int x);
-	
+
 	/**
          * Set the mask information for accessing the n-th neighbor for a given element.
          * \param[in] n the index of the neighbor.
@@ -233,7 +233,7 @@ public:
          * \param[in] weight the weight defined for the n-th neighbor.
          **/
 	__device__ __host__ void set(size_t n, int i, T weight=T(0));
-	
+
 	/**
          * Get the n-th neighbor from the specified input array.
          * \param[in] n the index of the neighbor.
@@ -243,7 +243,7 @@ public:
          **/
 	template<typename V>
 	__forceinline__ __device__ __host__ T get(size_t n, Array<V> array, size_t i);
-	
+
 	__device__ __host__ size_t getRange();
 	/*
         template<typename Arrays>

@@ -6,9 +6,11 @@
 #include <fstream>
 
 //#define PSKEL_SHARED_MASK
-#include "../include/PSkel.h"
+#define PSKEL_PAPI
+#include "../../../include/PSkel.h"
 
 //#include "../utils/hr_time.h"
+
 
 using namespace std;
 using namespace PSkel;
@@ -18,20 +20,39 @@ struct Arguments
 	int externCircle;
 	int internCircle;
 	float power;
+	int level;
 };
 
 namespace PSkel{
 	__parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
 		int numberA = 0;
 		int numberI = 0;
-		for (int z = 0; z < mask.size; z++) {
-			if(z < arg.internCircle) {
-				numberA += mask.get(z, input, h, w);
-				//printf("A: %d\n", numberA);
+		int level = arg.level;
+		// for (int z = 0; z < mask.size; z++) {
+		// 	if(z < arg.internCircle) {
+		// 		numberA += mask.get(z, input, h, w);
+		// 		//printf("A: %d\n", numberA);
+		//
+		// 	} else {
+		// 		numberI += mask.get(z, input, h, w);
+		// 		//printf("I: %d\n", numberI);
+		// 	}
+		// }
+		for (int x = (level-2*level); x <= level; x++) {
+			for (int y = (level-2*level); y <= level; y++) {
+				if (x != 0 || y != 0) {
+						numberA += input(h+x, w+y);
+				}
+			}
+		}
 
-			} else {
-				numberI += mask.get(z, input, h, w);
-				//printf("I: %d\n", numberI);
+		for (int x = (2*level-4*level); x <= 2*level; x++) {
+			for (int y = (2*level-4*level); y <= 2*level; y++) {
+				if (x != 0 || y != 0) {
+					if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
+							numberI += input(h+x,w+y);
+					}
+				}
 			}
 		}
 		float totalPowerI = numberI*(arg.power);// The power of Inhibitors
@@ -69,9 +90,9 @@ int main(int argc, char **argv){
 	//printf("width:%d\n", width);
 	height = atoi (argv[2]);
 	iterations = atoi (argv[3]);
-    GPUBlockSize = atoi(argv[4]);
+  GPUBlockSize = atoi(argv[4]);
 	numCPUThreads = atoi(argv[5]);
-    mode = atoi(argv[6]);
+  mode = atoi(argv[6]);
 	tileHeight = atoi(argv[7]);
 	tileIterations = atoi(argv[8]);
 	level = atoi(argv[9]);
@@ -88,7 +109,7 @@ int main(int argc, char **argv){
 
 
 	Mask2D<int> mask(size);
-	
+
 	int count = 0;
 	for (int x = (level-2*level); x <= level; x++) {
 		for (int y = (level-2*level); y <= level; y++) {
@@ -112,11 +133,12 @@ int main(int argc, char **argv){
 
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
-	
+
 	Arguments arg;
 	arg.power = power;
 	arg.internCircle = internCircle;
 	arg.externCircle = externCircle;
+	arg.level = level;
 
 	srand(123456789);
 	// ofstream myfile ("inputGrid.txt");
@@ -138,7 +160,9 @@ int main(int argc, char **argv){
 	}
 
 
-
+	#ifdef PSKEL_PAPI
+			PSkelPAPI::init(PSkelPAPI::RAPL);
+	#endif
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
 
 	//hr_timer_t timer;
@@ -155,7 +179,14 @@ int main(int argc, char **argv){
 			break;
         case 1:
             //hrt_start(&timer);
+						#ifdef PSKEL_PAPI
+						PSkelPAPI::papi_start(PSkelPAPI::RAPL,0);
+						#endif
             stencil.runIterativeCPU(iterations,numCPUThreads);
+						#ifdef PSKEL_PAPI
+						PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
+						PSkelPAPI::print_profile_values(PSkelPAPI::RAPL);
+						#endif
             //for(int i = 0; i < outputGrid.getHeight();i++) {
              //   for(int j = 0; j < outputGrid.getWidth();j++) {
             //        printf("FinalOutput(%d,%d):%d\n",i,j,outputGrid(i,j));
@@ -173,17 +204,17 @@ int main(int argc, char **argv){
 		#ifdef PSKEL_CUDA
 		case 1:
 			//hrt_start(&timer);
-			stencil.runIterativeGPU(iterations, GPUBlockSize);	
+			stencil.runIterativeGPU(iterations, GPUBlockSize);
 			//hrt_stop(&timer);
 			break;
 		case 2:
 			//hrt_start(&timer);
-			stencil.runIterativeTilingGPU(iterations, width, tileHeight, 1, tileIterations, GPUBlockSize);	
+			stencil.runIterativeTilingGPU(iterations, width, tileHeight, 1, tileIterations, GPUBlockSize);
 			//hrt_stop(&timer);
 			break;
 		case 3:
 			//hrt_start(&timer);
-			stencil.runIterativeAutoGPU(iterations, GPUBlockSize);	
+			stencil.runIterativeAutoGPU(iterations, GPUBlockSize);
 			//hrt_stop(&timer);
 			break;
 		#endif
@@ -194,6 +225,9 @@ int main(int argc, char **argv){
     //    }
     //}
 	//cout << hrt_elapsed_time(&timer) << endl;
+	#ifdef PSkel_PAPI
+	PSkelPAPI::shutdown();
+	#endif
 	inputGrid.hostFree();
 	outputGrid.hostFree();
 	return 0;

@@ -16,7 +16,7 @@
 // #define BUG_TEST
 // #define PRINT_OUT
 #define TIME_EXEC
-#define TIME_SEND
+// #define TIME_SEND
 #include "../../include/PSkel.h"
 
 
@@ -44,7 +44,7 @@ int CalcSize(int level){
 
 
 
-int main(int argc, char **argv){ 
+int main(int argc, char **argv){
 	int width, height, tilingHeight, tilingWidth, iterations, innerIterations, pid, nb_clusters, nb_threads; //stencil size
 	if(argc != 9){
 		printf ("Wrong number of parameters.\n");
@@ -78,7 +78,7 @@ int main(int argc, char **argv){
 	nb_threads = atoi(argv[8]);
 	printf("nb_threads: %d\n", nb_threads);
 
-	
+
 	//Mask configuration
 	int level = 1;
   	int power = 2;
@@ -86,8 +86,8 @@ int main(int argc, char **argv){
   	int internCircle = pow(CalcSize(level), 2) - 1;
   	int externCircle = pow(CalcSize(2*level), 2) - 1 - internCircle;
   	int size = internCircle + externCircle;
-	
-	
+
+
 	Array2D<int> inputGrid(width,height);
 	Array2D<int> outputGrid(width,height);
   	Mask2D<int> mask(size);
@@ -145,11 +145,14 @@ int main(int argc, char **argv){
 	Arguments arg;
 
 	Stencil2D<Array2D<int>, Mask2D<int>, Arguments> stencil(inputGrid, outputGrid, mask, arg);
-	
+	struct timeval start=mppa_master_get_time();
+
 	//Schedule computation to slaves
 
 	stencil.scheduleMPPA("slave", nb_clusters, nb_threads, tilingHeight, tilingWidth, iterations, innerIterations);
-	
+
+	struct timeval end=mppa_master_get_time();
+	cout<<"Master Time: " << mppa_master_diff_time(start,end) << endl;
 	//Print results
 	/*cout<<"OUTPUT"<<endl;
 	for(int i=0;i<width;i+=25){
@@ -157,7 +160,7 @@ int main(int argc, char **argv){
 			cout<<"("<<i    <<","<<j       <<") = "<<outputGrid(i,j)<<"\t\t";
 			cout<<"("<<width-1-i<<","<<height-1-j<<") = "<<outputGrid(width-1-i,height-1-j)<<endl;
 		}
-	}	
+	}
 	*/
 
 	stencil.~Stencil2D();
