@@ -803,28 +803,28 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	size_t depth = this->input.getDepth();
 	size_t maskRange = this->mask.getRange();
 	//cout << "numThreads: " << numThreads << endl;
-	Array inputCopy;
-	inputCopy.hostClone(input);
+	//Array inputCopy;
+	//inputCopy.hostClone(input);
 	start = omp_get_wtime();
 	for(size_t it = 0; it<iterations; it++){
 		if(it%2==0){
 			#ifdef PSKEL_TBB
-				this->runTBB(inputCopy,this->output, numThreads);
+				this->runTBB(input,this->output, numThreads);
 			#else
-				this->runOpenMP(inputCopy, this->output, width, height, depth, maskRange, numThreads);
+				this->runOpenMP(input, this->output, width, height, depth, maskRange, numThreads);
 			#endif
 		}else {
 			#ifdef PSKEL_TBB
-				this->runTBB(this->output, inputCopy, numThreads);
+				this->runTBB(this->output, input, numThreads);
 			#else
-				this->runOpenMP(this->output, inputCopy, width, height, depth,  maskRange, numThreads);
+				this->runOpenMP(this->output, input, width, height, depth,  maskRange, numThreads);
 			#endif
 		}
 	}
 	if((iterations%2)==0) output.hostMemCopy(input);
 	end = omp_get_wtime();
 	cout<<"CPU_time\t"<<end-start<<endl;
-	inputCopy.hostFree();
+	//inputCopy.hostFree();
 }
 
 

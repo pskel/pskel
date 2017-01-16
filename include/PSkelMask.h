@@ -159,7 +159,7 @@ public:
          * \return the n-th neighbor of the given central element, from the input array.
          **/
 	template<typename V>
-	__forceinline__ __device__ __host__ T get(size_t n, Array3D<V> array, size_t h, size_t w, size_t d);
+	__forceinline __device__ __host__ T get(size_t n, Array3D<V> array, size_t h, size_t w, size_t d);
 	
 	__device__ __host__ size_t getRange();
 	/*
@@ -207,7 +207,7 @@ public:
          * \return the n-th neighbor of the given central element, from the input array.
          **/
 	template<typename V>
-	__forceinline__ __device__ __host__ T get(size_t n, Array2D<V> array, size_t h, size_t w);
+	__forceinline __device__ __host__ T & get(size_t n, Array2D<V> array, size_t h, size_t w) const;
 	
 	__device__ __host__ size_t getRange();
 	/*
