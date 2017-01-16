@@ -58,6 +58,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->haloValuePtr = &(this->haloValue);
 	#ifdef PSKEL_CUDA
     	this->deviceArray = NULL;
+	this->hostGPUArray = NULL;
 	#endif
 	
 	if(size()>0) this->hostAlloc();	
@@ -69,7 +70,8 @@ __forceinline__ void ArrayBase<T>::deviceAlloc(){
 	#ifndef PSKEL_MANAGED
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
-		cudaMemset(this->deviceArray, 0, size()*sizeof(T));
+		printf("Allocated %lld bytes in the GPU\n",size()*sizeof(T));
+		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 	#endif
 }
@@ -101,47 +103,174 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 	this->hostArray = NULL;
 	#ifdef PSKEL_CUDA
 	this->deviceArray = NULL;
+	this->hostGPUArray = NULL;
 	#endif
 
 	this->hostAlloc();
+	
+	#ifdef PSKEL_CUDA
+        //gpuErrchk( cudaHostAlloc((void**)&hostGPUArray, size()*sizeof(T),cudaHostAllocWriteCombined) );
+        //std::cout<<"Host Pinned memory allocated"<<std::endl;
+	#endif
 }
+
+template<typename T>
+void ArrayBase<T>::hostScalableAlloc(){
+	#ifdef PSKEL_TBB
+	this->hostArray = (T*) scalable_malloc(size()*sizeof(T));
+        std::cout<<"Host scalable memory allocated"<<std::endl;	
+	#endif
+}
+
+template<typename T>
+void ArrayBase<T>::hostScalableAlloc(size_t _width, size_t _height, size_t _depth){
+	this->width = _width;
+	this->height = _height;
+	this->depth = _depth;
+	this->widthOffset = 0;
+	this->heightOffset = 0;
+	this->depthOffset = 0;
+	this->realWidth = _width;
+	this->realHeight = _height;
+	this->realDepth = _depth;
+	//Alloc scalable memory
+	this->hostArray = NULL;
+	#ifdef PSKEL_TBB
+	this->hostScalableAlloc();
+	#else
+	std::cout<<"Warning! Allocating non-scalable memory"<<std::endl;
+	this->hostAlloc();
+	#endif
+	//Copy clone memory
+	//this->hostMemCopy(array);
+}
+
 
 //TODO When using CUDA, a page-locked memory is allocated. Verify the diference
 //in performance between cudaMallocHost and cudaHostAlloc and its flags.
 //It seems that Cloudsim CPU Performance is worst with cudaMallocHost.
 template<typename T>
 __forceinline__ void ArrayBase<T>::hostAlloc(){
-	if(this->hostArray==NULL){
+	/*if(this->hostArray==NULL){
 	#ifdef PSKEL_MANAGED
 		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
 	#else
-	#ifdef PSKEL_CUDAX
-            gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
-            cudaMemset(this->hostArray, 0, size()*sizeof(T));
-    #else
-            this->hostArray = (T*) calloc(size(), sizeof(T));
-    #endif
+	#ifdef PSKEL_CUDA
+            //gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
+	    gpuErrchk( cudaHostAlloc((void**)&hostArray, size()*sizeof(T),cudaHostAllocPortable) );
+            //cudaMemset(this->hostArray, 0, size()*sizeof(T));
+        #else
+	#ifdef PSKEL_TBB
+	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
+    	#else
+            //this->hostArray = (T*) calloc(size(), sizeof(T));
+            this->hostArray = (T*) malloc(size()*sizeof(T));
+    	#endif
+	#endif
 	#endif
 	#ifdef DEBUG
 		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
 	#endif
 	}
+	*/
+	if(this->hostArray==NULL){
+	#ifdef PSKEL_MANAGED
+		cudaMallocManaged((void**)&hostArray,size()*sizeof(T));
+	#else
+	#ifdef PSKEL_CUDA
+            //gpuErrchk( cudaMallocHost((void**)&hostArray, size()*sizeof(T)) );
+	    //gpuErrchk( cudaHostAlloc((void**)&hostGPUArray, size()*sizeof(T),cudaHostAllocWriteCombined) );
+	    //std::cout<<"Host Pinned memory allocated"<<std::endl;
+            //cudaMemset(this->hostArray, 0, size()*sizeof(T));
+        #endif
+	#endif
+	#ifdef PSKEL_TBB
+	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
+	    std::cout<<"Host scalable memory allocated"<<std::endl;
+    	#else
+            //this->hostArray = (T*) calloc(size(), sizeof(T));
+            this->hostArray = (T*) malloc(size()*sizeof(T));
+    	#endif
+	#ifdef DEBUG
+		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
+	#endif
+	}
+
 }
-	
+
+template<typename T>
+void ArrayBase<T>::hostAllocPinned(){
+	gpuErrchk( cudaHostAlloc((void**)&hostGPUArray, size()*sizeof(T),cudaHostAllocWriteCombined) );
+        std::cout<<"Host Pinned memory allocated"<<std::endl;
+}
+
+
+template<typename T>
+void ArrayBase<T>::hostAllocPinned(size_t _width, size_t _height, size_t _depth){
+	this->width = _width;
+        this->height = _height;
+        this->depth = _depth;
+        this->widthOffset = 0;
+        this->heightOffset = 0;
+        this->depthOffset = 0;
+        this->realWidth = _width;
+        this->realHeight = _height;
+        this->realDepth = _depth;
+
+	gpuErrchk( cudaHostAlloc((void**)&hostGPUArray, size()*sizeof(T),cudaHostAllocWriteCombined) );
+        std::cout<<"Host Pinned memory allocated"<<std::endl;
+}
+
+
+
 template<typename T>
 __forceinline__ void ArrayBase<T>::hostFree(){
-	if(this->hostArray!=NULL){
-	#ifdef PSKEL_MANAGED
+/*	if(this->hostArray!=NULL){
+	gpuErrchk( cudaHostAlloc((void**)&hostGPUArray, size()*sizeof(T),cudaHostAllocWriteCombined) );
+            std::cout<<"Host Pinned memory allocated"<<std::endl;
+#ifdef PSKEL_MANAGED
 		cudaFree(this->hostArray);
 	#else
-	#ifdef PSKEL_CUDAX
+	#ifdef PSKEL_CUDA
 		gpuErrchk( cudaFreeHost(this->hostArray) );
+	#else
+	#ifdef PSKEL_TBB
+		scalable_free(this->hostArray);
 	#else
 		free(this->hostArray);
 	#endif	
 	#endif
+	#endif
 	this->hostArray = NULL;
 	}
+*/
+	if(this->hostArray!=NULL){
+	#ifdef PSKEL_MANAGED
+		cudaFree(this->hostArray);
+	#endif
+	#ifdef PSKEL_TBB
+		scalable_free(this->hostArray);
+	#else
+		free(this->hostArray);
+	#endif	
+	this->hostArray = NULL;
+	}
+
+	#ifdef PSKEL_CUDA
+		if(this->hostGPUArray != NULL){
+			gpuErrchk( cudaFreeHost(this->hostGPUArray) );
+			this->hostGPUArray = NULL;
+		}
+	#endif
+	
+}
+
+template<typename T>
+inline void ArrayBase<T>::cudaHostMemCopy(){
+	#ifdef PSKEL_CUDA
+	//gpuErrchk ( cudaMemcpy(hostGPUArray, hostArray, size()*sizeof(T), cudaMemcpyHostToHost) );
+	memcpy(this->hostGPUArray, this->hostArray, size()*sizeof(T));
+	#endif
 }
 
 template<typename T>
@@ -191,6 +320,11 @@ __forceinline__ size_t ArrayBase<T>::size() const{
 }
 
 template<typename T>
+__forceinline__ size_t ArrayBase<T>::typeSize() const{
+	return sizeof(T);
+}
+
+template<typename T>
 __forceinline__ size_t ArrayBase<T>::realSize() const{
 	return realHeight*realWidth*realDepth;
 }
@@ -213,6 +347,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	#ifdef PSKEL_CUDA
 	if(this->deviceArray!=NULL){
 		if(this->size()!=(width*height*depth)){
+			std::cout<<"Host slice free GPU memory"<<std::endl;
 			this->deviceFree();
 			this->deviceArray = NULL;
 		}
@@ -229,6 +364,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
 	this->hostArray = array.hostArray;
+	this->hostGPUArray = array.hostGPUArray;
 
 	#if DEBUG
 		printf("Array of address %p sliced with offset (%d,%d,%d) starting at address %p\n",
@@ -251,6 +387,7 @@ void ArrayBase<T>::hostClone(Arrays array){
 	this->realDepth = array.depth;
 	//Alloc clone memory
 	this->hostArray = NULL;
+	this->hostGPUArray = NULL;
 	this->hostAlloc();
 	//Copy clone memory
 	this->hostMemCopy(array);
@@ -263,9 +400,15 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 	#endif
 	if(array.size()==array.realSize() && this->size()==this->realSize()){
 		memcpy(this->hostArray, array.hostArray, size()*sizeof(T));
+	} else if(array.depth == array.realDepth && array.width == array.realWidth && this->depth == this->realDepth && this->width == this->realWidth){
+		T *hostPtr = (T*)(this->hostArray) + size_t(heightOffset*realWidth*realDepth);
+		memcpy(hostPtr, array.hostArray, size()*sizeof(T));
+	} else if(array.realDepth == 1 && array.realHeight == 1 && this->realDepth == 1 && this->realHeight == 1){
+		T *hostPtr = (T*)(this->hostArray) + size_t(widthOffset);
+		memcpy(hostPtr, array.hostArray, size()*sizeof(T));	
 	}else{
-		//std::cout<<"CPU_hostMemCopy executing parallel"<<std::endl;
-		#pragma omp parallel for num_threads(11)
+		std::cout<<"CPU hostMemCopy executing parallel"<<std::endl;
+		#pragma omp parallel for
 		for(size_t i = 0; i<height; ++i){
 		for(size_t j = 0; j<width; ++j){
 		for(size_t k = 0; k<depth; ++k){
@@ -279,35 +422,81 @@ void ArrayBase<T>::hostMemCopy(Arrays array){
 	#endif
 }
 
+template<typename T> template<typename Arrays>
+void ArrayBase<T>::hostPinnedMemCopy(Arrays array){
+	#ifdef TIMER
+		double start = omp_get_wtime();
+	#endif
+	if(array.size()==array.realSize() && this->size()==this->realSize()){
+		memcpy(this->hostArray, array.hostGPUArray, size()*sizeof(T));
+	} else if(array.depth == array.realDepth && array.width == array.realWidth && this->depth == this->realDepth && this->width == this->realWidth){
+		T *hostPtr = (T*)(this->hostArray) + size_t(heightOffset*realWidth*realDepth);
+		memcpy(hostPtr, array.hostGPUArray, size()*sizeof(T));
+	} else if(array.realDepth == 1 && array.realHeight == 1 && this->realDepth == 1 && this->realHeight == 1){
+		T *hostPtr = (T*)(this->hostArray) + size_t(widthOffset);
+		memcpy(hostPtr, array.hostGPUArray, size()*sizeof(T));	
+	}else{
+		std::cout<<"CPU hostPinnedMemCopy executing parallel. TODO!"<<std::endl;
+		/*
+		#pragma omp parallel for
+		for(size_t i = 0; i<height; ++i){
+		for(size_t j = 0; j<width; ++j){
+		for(size_t k = 0; k<depth; ++k){
+                        this->hostGet(i,j,k)=array.hostGet(i,j,k);
+		}}}
+		*/
+	}
+	#ifdef TIMER
+		double end = omp_get_wtime();
+		std::cout<<"CPU_hostMemCopy: "<<end-start<<std::endl;
+		//printf("Host copy from address %p to address %p took %f seconds\n",&(array.hostArray),&(this->hostArray),end-start);
+	#endif
+}
+
+
 #ifdef PSKEL_CUDA
 template<typename T>
-void ArrayBase<T>::copyToDevice(){
+inline void ArrayBase<T>::copyToDevice(){
 	#ifndef PSKEL_MANAGED
 	if(size()==realSize()){
-		gpuErrchk ( cudaMemcpy(deviceArray, hostArray, size()*sizeof(T), cudaMemcpyHostToDevice) );
+		//std::cout<<"Copy type 1"<<std::endl;
+		gpuErrchk ( cudaMemcpyAsync(deviceArray, hostArray, size()*sizeof(T), cudaMemcpyHostToDevice) );
 	}else if(depth==realDepth && width==realWidth){
+		std::cout<<"Copy type 2"<<std::endl;
 		T *hostPtr = (T*)(hostArray) + size_t(heightOffset*realWidth*realDepth);
-		gpuErrchk ( cudaMemcpy(deviceArray, hostPtr, size()*sizeof(T),cudaMemcpyHostToDevice) );
+		gpuErrchk ( cudaMemcpyAsync(deviceArray, hostPtr, size()*sizeof(T),cudaMemcpyHostToDevice) );
 	}else if(realDepth==1 && realHeight==1){
+		std::cout<<"Copy type 3"<<std::endl;
 		T *hostPtr = (T*)(hostArray) + size_t(widthOffset);
-		gpuErrchk ( cudaMemcpy(deviceArray, hostPtr, size()*sizeof(T),cudaMemcpyHostToDevice) );
+		gpuErrchk ( cudaMemcpyAsync(deviceArray, hostPtr, size()*sizeof(T),cudaMemcpyHostToDevice) );
 	}else{ 
 		//if "virtual" array is non-continuously allocated,
 		//create a copy in pinned memory before transfering.
+		std::cout<<"CPU copyToDevice executing in parallel"<<std::endl;
 		T *copyPtr;
 		gpuErrchk( cudaMallocHost((void**)&copyPtr, size()*sizeof(T)) );
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(12)
 		for(size_t h = 0; h<height; ++h){
 		for(size_t w = 0; w<width; ++w){
 		for(size_t d = 0; d<depth; ++d){
                         copyPtr[(h*width+w)*depth+d] = this->hostGet(h,w,d);
 		}}}
-		gpuErrchk ( cudaMemcpy(deviceArray, copyPtr, size()*sizeof(T), cudaMemcpyHostToDevice) );
+		gpuErrchk ( cudaMemcpyAsync(deviceArray, copyPtr, size()*sizeof(T), cudaMemcpyHostToDevice) );
 		cudaFreeHost(copyPtr);
 	}
 	#endif
 }
 #endif
+
+template<typename T>
+inline void ArrayBase<T>::copyToDevicePinned(){
+	gpuErrchk ( cudaMemcpyAsync(deviceArray, hostGPUArray, size()*sizeof(T), cudaMemcpyHostToDevice) );
+}
+
+template<typename T>
+inline void ArrayBase<T>::copyFromDevicePinned(){
+        gpuErrchk ( cudaMemcpyAsync(hostGPUArray,deviceArray, size()*sizeof(T), cudaMemcpyDeviceToHost) );
+}
 
 #ifdef PSKEL_CUDA
 template<typename T> template<typename Arrays>
@@ -324,6 +513,7 @@ void ArrayBase<T>::copyFromDevice(Arrays array){
 	}else{
 		//if "virtual" array is non-continuously allocated,
 		//create a copy in pinned memory before transfering.
+		std::cout<<"GPU copyFromDevice executing in parallel"<<std::endl;
 		T *copyPtr;
 		gpuErrchk( cudaMallocHost((void**)&copyPtr, size()*sizeof(T)) );
 		gpuErrchk ( cudaMemcpy(copyPtr, array.deviceArray, size()*sizeof(T), cudaMemcpyDeviceToHost) );
@@ -340,6 +530,45 @@ void ArrayBase<T>::copyFromDevice(Arrays array){
 #endif
 
 #ifdef PSKEL_CUDA
+template<typename T> 
+template<typename Arrays>
+void ArrayBase<T>::copyFromDevicePinned(Arrays array){
+	#ifndef PSKEL_MANAGED
+	if(array.size()==realSize()){
+		std::cout<<"Copy from Device Pinned Type 1"<<std::endl;
+		gpuErrchk ( cudaMemcpy(hostGPUArray, array.deviceArray, array.size()*sizeof(T),cudaMemcpyDeviceToHost) );
+	}else if(array.depth==realDepth && array.width==realWidth){
+		std::cout<<"Copy from Device Pinned Type 2"<<std::endl;
+		T *hostPtr = (T*)(hostGPUArray) + size_t(heightOffset*realWidth*realDepth);
+		gpuErrchk ( cudaMemcpy(hostPtr, array.deviceArray, array.size()*sizeof(T), cudaMemcpyDeviceToHost) );
+	}else if(realDepth==1 && realHeight==1){
+		std::cout<<"Copy from Device Pinned Type 3"<<std::endl;
+		T *hostPtr = (T*)(hostGPUArray) + size_t(widthOffset);
+		gpuErrchk ( cudaMemcpy(hostPtr, array.deviceArray, array.size()*sizeof(T), cudaMemcpyDeviceToHost) );
+	}else{
+		//if "virtual" array is non-continuously allocated,
+		//create a copy in pinned memory before transfering.
+		std::cout<<"Copy from Device Pinned Type 4"<<std::endl;
+		std::cout<<"TODO!"<<std::endl;
+		/*
+ 		T *copyPtr;
+		gpuErrchk( cudaMallocHost((void**)&copyPtr, size()*sizeof(T)) );
+		gpuErrchk ( cudaMemcpy(copyPtr, array.deviceArray, size()*sizeof(T), cudaMemcpyDeviceToHost) );
+		#pragma omp parallel for
+		for(size_t h = 0; h<height; ++h){
+		for(size_t w = 0; w<width; ++w){
+		for(size_t d = 0; d<depth; ++d){
+                	this->hostGet(h,w,d) = copyPtr[(h*width+w)*depth+d];
+		}}}
+		cudaFreeHost(copyPtr);
+		*/
+	}
+	#endif
+}
+#endif
+
+
+#ifdef PSKEL_CUDA
 template<typename T>
 void ArrayBase<T>::copyToHost(){
 	if(size()==realSize()){
@@ -353,6 +582,7 @@ void ArrayBase<T>::copyToHost(){
 	}else{
 		//if "virtual" array is non-continuously allocated,
 		//create a copy in pinned memory before transfering.
+		std::cout<<"GPU copyToHost executing in parallel"<<std::endl;
 		T *copyPtr;
 		gpuErrchk( cudaMallocHost((void**)&copyPtr, size()*sizeof(T)) );
 		gpuErrchk ( cudaMemcpy(copyPtr, deviceArray, size()*sizeof(T), cudaMemcpyDeviceToHost) );
@@ -418,7 +648,8 @@ Array2D<T>::Array2D(size_t width, size_t height) : ArrayBase<T>(width,height,1){
 template<typename T>
 __forceinline __host__ __device__ T & Array2D<T>::operator()(size_t h, size_t w) const {
 	#ifdef PSKEL_MANAGED
-		return this->hostGet(h,w,0);
+		//return this->hostGet(h,w,0);
+		return this->hostArray[((h+this->heightOffset)*this->realWidth + (w+this->widthOffset))];
 	#else
 	#ifdef __CUDA_ARCH__
 		/* TODO deviceGet is not inlining!

@@ -120,6 +120,7 @@ __forceinline__ __host__ __device__ T MaskBase<T>::getWeight(size_t n) {
 	#endif
 }
 
+#ifdef PSKEL_CUDA
 // specializations for types we use
 template<>
 __device__ float* MaskBase<float>::GetSharedPointer(){
@@ -142,6 +143,7 @@ __device__ bool* MaskBase<bool>::GetSharedPointer(){
 	// printf( "sh_float=%p\n", sh_float );
 	return sh_bool;
 }
+#endif
 
 //*******************************************************************************************
 // MASK3D

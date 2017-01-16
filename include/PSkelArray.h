@@ -54,8 +54,11 @@ template<typename T>
 class ArrayBase{
 public: 
 	#ifdef PSKEL_CUDA
-	T *deviceArray; /*For shared memory. Change this later */
+	T * __restrict__ deviceArray; /*For shared memory. Change this later */
+	T * __restrict__ hostGPUArray __attribute__((aligned(16)));
 	#endif
+
+	T * __restrict__ hostArray __attribute__((aligned(16)));
 
 protected:
 	//variables that hold the real boundaries (total allocated data.)
@@ -69,7 +72,7 @@ protected:
 	size_t width, height,depth;
 	
 	//host and device (GPU memory) pointers
-	T *hostArray; // __attribute__((aligned(64)));
+	//T *hostArray; //__attribute__((aligned(16)));
 	T haloValue;
 	T* haloValuePtr;
 	#ifdef PSKEL_CUDA
@@ -128,6 +131,14 @@ public:
 	 **/
 	void hostAlloc();
 
+	void hostAllocPinned();
+
+	void hostAllocPinned(size_t width, size_t height, size_t depth);
+
+	void hostScalableAlloc();
+	
+	void hostScalableAlloc(size_t width, size_t height, size_t depth);
+
 	/**
 	 * Frees the allocated host (main) memory.
 	 **/
@@ -184,6 +195,10 @@ public:
 	 **/
 	__device__ __host__ size_t size() const;
 
+
+	__device__ __host__ size_t typeSize() const;
+
+
 	/**
 	 * Get the size of the real allocated array, i.e. the number of elements 
 	 * \return the size of the real allocated array.
@@ -218,6 +233,13 @@ public:
 	 **/
 	template<typename Arrays>
 	void hostMemCopy(Arrays array);
+	
+	template<typename Arrays>
+	void hostPinnedMemCopy(Arrays array);
+	
+	#ifdef PSKEL_CUDA
+	void cudaHostMemCopy();
+	#endif
 
 	#ifdef PSKEL_CUDA
 	/**
@@ -226,6 +248,11 @@ public:
 	 * Both the host and device memory must be allocated before the data is transferred.
 	 **/
 	void copyToDevice();
+	void copyToDevicePinned();
+	void copyFromDevicePinned();
+
+	template<typename Arrays>
+	void copyFromDevicePinned(Arrays array);
 	#endif
 
 	#ifdef PSKEL_CUDA

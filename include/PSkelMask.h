@@ -111,12 +111,13 @@ public:
 	 **/
 	__device__ __host__ T getWeight(size_t n);
 	
-	
+	#ifdef PSKEL_CUDA	
 	__device__ T* GetSharedPointer( void ){
-        extern __device__ void error( void );
-        error();
-        return NULL;
-    }	
+        	extern __device__ void error( void );
+        	error();
+        	return NULL;	
+    	}
+	#endif
 };
 
 
