@@ -39,6 +39,10 @@
 ///#include <cstring>
 //#include <omp.h>
 #include<iostream>
+#include <xmmintrin.h>
+#ifdef __INTEL_COMPILER
+#  define _MM_MALLOC_H_INCLUDED 1 /* disables gcc's <mm_malloc.h>, for Intel */
+#endif
 
 namespace PSkel{
 
@@ -116,10 +120,10 @@ void ArrayBase<T>::hostAlloc(size_t width, size_t height, size_t depth){
 
 template<typename T>
 void ArrayBase<T>::hostScalableAlloc(){
-	#ifdef PSKEL_TBB
+	//#ifdef PSKEL_TBB
 	this->hostArray = (T*) scalable_malloc(size()*sizeof(T));
         std::cout<<"Host scalable memory allocated"<<std::endl;	
-	#endif
+	//#endif
 }
 
 template<typename T>
@@ -140,6 +144,7 @@ void ArrayBase<T>::hostScalableAlloc(size_t _width, size_t _height, size_t _dept
 	#else
 	std::cout<<"Warning! Allocating non-scalable memory"<<std::endl;
 	this->hostAlloc();
+	//this->hostScalableAlloc();	
 	#endif
 	//Copy clone memory
 	//this->hostMemCopy(array);
@@ -188,8 +193,11 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
 	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
 	    std::cout<<"Host scalable memory allocated"<<std::endl;
     	#else
-            //this->hostArray = (T*) calloc(size(), sizeof(T));
-            this->hostArray = (T*) malloc(size()*sizeof(T));
+            //this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
+	    //std::cout<<"Host scalable memory allocated"<<std::endl;
+	    //this->hostArray = (T*) calloc(size(), sizeof(T));
+            //this->hostArray = (T*) malloc(size()*sizeof(T));
+ 	    this->hostArray = (T*) _mm_malloc(size()*sizeof(T),16); /* aligned malloc */
     	#endif
 	#ifdef DEBUG
 		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
@@ -251,7 +259,9 @@ __forceinline__ void ArrayBase<T>::hostFree(){
 	#ifdef PSKEL_TBB
 		scalable_free(this->hostArray);
 	#else
-		free(this->hostArray);
+		//free(this->hostArray);
+		_mm_free(this->hostArray);	
+		//scalable_free(this->hostArray);
 	#endif	
 	this->hostArray = NULL;
 	}
@@ -337,7 +347,7 @@ __forceinline__ __device__ T & ArrayBase<T>::deviceGet(size_t h, size_t w, size_
 #endif
 
 template<typename T>
-__forceinline__  __host__ T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
+inline T & ArrayBase<T>::hostGet(size_t h, size_t w, size_t d) const {
 	return this->hostArray[ ((h+heightOffset)*realWidth + (w+widthOffset))*realDepth + (d+depthOffset) ];
 }
 

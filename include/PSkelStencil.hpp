@@ -36,8 +36,8 @@
 #include <algorithm>
 #include <iostream>
 
-#include <iostream>
-
+//#include <malloc.h>
+//#include <xmmintrin.h>
 using namespace std;
 
 namespace PSkel{
@@ -144,9 +144,11 @@ struct TBBStencil2D{
 		size_t hend = r.rows().end();
 		size_t wbegin = r.cols().begin();
 		size_t wend = r.cols().end();
+		//#pragma ivdep
 		for (size_t h = hbegin; h != hend; ++h){
+		//#pragma vector aligned
 		for (size_t w = wbegin; w != wend; ++w){
-			//#pragma forceinline
+			//#pragma forceinline recursive
 			stencilKernel(this->input,this->output,this->mask, this->args,h,w);
 		}}
 	}
@@ -157,11 +159,11 @@ struct TBBStencil2D{
 		size_t end = r.end();
 		size_t wbegin = this->mask.getRange();
 		size_t wend = input.getWidth()-wbegin;
-		#pragma forceinline recursive
-		#pragma ivdep
+		//#pragma ivdep
 		for (size_t h = begin; h != end; ++h){
+		//#pragma vector aligned
 		for (size_t w = wbegin; w < wend; ++w){
-			//#pragma forceinline
+			//#pragma forceinline recursive
 			stencilKernel(this->input,this->output,this->mask, this->args,h,w);
 			//output(h,w) = (input(h,w)+input(h+1,w+1)) *0.5;
 			//b[h*width+w] = a[h*width+(w-1)] + a[h*width+(w+1)]; // + a[(h+1)*width+w] + a[(h-1)*width+w] )*0.25;
@@ -869,7 +871,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 	//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
 	//omp_set_num_threads(numThreads);
 	#ifdef PSKEL_TBB
-	tbb::task_scheduler_init init(numThreads);
+	tbb::task_scheduler_init init;
 	tbb::affinity_partitioner ap;
 	TBBStencil2D<Array,Mask,Args> tbbstencil(this->input, this->output, this->mask, this->args); 
 	#endif
@@ -1241,7 +1243,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition2(size_t iterations, fl
 				//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
 			}//end CPU section	
 			}//end parallel omp parallel
-			startCopy = omp_get_wtime();
+			//startCopy = omp_get_wtime();
 			//printf("Main thread %d finished parallel section\n",omp_get_thread_num());
 			//if(iterations%2==0)
 			//	tmp.copyFromDevice(inputGPU);
@@ -1273,7 +1275,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition2(size_t iterations, fl
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
-	numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
+	//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
 	double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
 	if(GPUBlockSizeX==0){
 		int device;
@@ -1518,6 +1520,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 					
 					//inputCopy.hostClone(inputCPU);
 					//startCPU = omp_get_wtime();
+					
 					#ifdef PSKEL_TBB
 					TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
 					tbb::task_scheduler_init init(numThreads-1);
@@ -2185,46 +2188,54 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	size_t hrange = height-maskRange;
 	size_t wrange = width-maskRange;
   	#ifdef CACHE_BLOCK
-	#define TH 64
-	#define TW 64
-	#pragma omp parallel for num_threads(numThreads)
-	for(size_t hh = maskRange; hh < height-maskRange;hh+=TH){
-	for(size_t ww = maskRange; ww < width-maskRange; ww+=TW){
-		for(size_t h = hh; h < MIN(hh+TH,height-maskRange);h++){
+	#define TH 16
+	#define TW 16
+	#pragma omp parallel num_threads(numThreads)
+	{
+	#pragma ivdep
+	#pragma omp for
+	for(size_t hh = maskRange; hh < hrange;hh+=TH){
+	for(size_t ww = maskRange; ww < wrange; ww+=TW){
+		for(size_t h = hh; h < MIN(hh+TH,hrange);h++){
 			//__builtin_prefetch (&in(h-1,ww),0,3);
 			//__builtin_prefetch (&in(h,ww),0,3);		
 			//__builtin_prefetch (&in(h+1,ww),0,3);
 			//__builtin_prefetch (&out(h,ww),1,1);	
-			#pragma omp simd
+			//#pragma omp simd
+			#pragma vector aligned
 			for(size_t w = ww; w < MIN(ww+TW,width-maskRange);w++){
-				//stencilKernel(in,out,this->mask, this->args,h,w);
-				out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w));
+				#pragma forceinline recursive
+				stencilKernel(in,out,this->mask, this->args,h,w);
+				//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w));
 				//__builtin_prefetch (&in(h-1,w),0,1,2);
 				//__builtin_prefetch (&in(h+1,w),0,1,2);
 			}
 			//__builtin_prefetch (&in(h,ww),0,1,3);
 			//__builtin_prefetch (&in(h+1,ww),0,1,3);		
 			//__builtin_prefetch (&in(h+2,ww),0,1,3);
-//		}	
-	}}	
+		}	
+	}}
+	}	
 	#else
 	#pragma omp parallel num_threads(numThreads)
 	{
 	//printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
-	#pragma forceinline recursive
+	//#pragma forceinline recursive
 	#pragma ivdep
 	#pragma omp for
 	for (size_t h = maskRange; h < hrange; h++){ 
-	//#pragma simd
-	for (size_t w = maskRange; w < wrange; w++){	
-		stencilKernel(in,out,this->mask,this->args,h,w);
-		//#pragma omp simd
-		//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
+		#pragma vector aligned
+		for (size_t w = maskRange; w < wrange; w++){
+			#pragma forceinline recursive
+			stencilKernel(in,out,this->mask,this->args,h,w);
+			//#pragma omp simd
+			//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
 			
-		//__builtin_prefetch (&in(h-1,w),0,1,2);
-		//__builtin_prefetch (&in(h+1,w),0,1,2);
-		//__builtin_prefetch (in(h,w),0,1,3);	
-			}}
+			//__builtin_prefetch (&in(h-1,w),0,1,2);
+			//__builtin_prefetch (&in(h+1,w),0,1,2);
+			//__builtin_prefetch (in(h,w),0,1,3);	
+		}
+	}
 	}
 	#endif
 }

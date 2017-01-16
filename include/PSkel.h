@@ -76,8 +76,9 @@ runtime details.
     #include <tbb/parallel_for.h>
     #include <tbb/task_scheduler_init.h>
     #include <tbb/partitioner.h>
-    #include <tbb/scalable_allocator.h>
 #endif
+    #include <tbb/scalable_allocator.h>
+//#endif
 
 #ifdef DEBUG
     #include "hr_time.h"

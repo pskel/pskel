@@ -72,7 +72,8 @@ protected:
 	size_t width, height,depth;
 	
 	//host and device (GPU memory) pointers
-	//T *hostArray; //__attribute__((aligned(16)));
+	//T *hostAr
+	//ray; //__attribute__((aligned(16)));
 	T haloValue;
 	T* haloValuePtr;
 	#ifdef PSKEL_CUDA
