@@ -6,7 +6,7 @@
 #define MPPA_SLAVE
 // #define DEBUG
 // #define PRINT_OUT
-#define TIME_EXEC
+// #define TIME_EXEC
 // #define TIME_SEND
 #define BARRIER_SYNC_MASTER "/mppa/sync/128:1"
 #define BARRIER_SYNC_SLAVE "/mppa/sync/[0..15]:2"
