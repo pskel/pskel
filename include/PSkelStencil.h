@@ -171,7 +171,7 @@ protected:
 	Args args;
 	Mask mask;
 
-	//virtual void runSeq(Array in, Array out) = 0;
+	virtual void runSeq(Array in, Array out,size_t width, size_t height, size_t maskRange) = 0;
 	#ifdef PSKEL_TBB
 	virtual void runTBB(Array in, Array out, size_t numThreads) = 0;
 	#endif
@@ -317,7 +317,7 @@ public:
 template<class Array, class Mask, class Args>
 class Stencil3D : public StencilBase<Array, Mask, Args>{
 protected:
-	void runSeq(Array in, Array out);
+	void runSeq(Array in, Array out, size_t, size_t, size_t);
 	void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);
@@ -349,7 +349,7 @@ public:
 template<class Array, class Mask, class Args>
 class Stencil2D : public StencilBase<Array, Mask, Args>{
 protected:
-	void runSeq(Array in, Array out);
+	inline __attribute__((always_inline)) void runSeq(Array in, Array out, size_t width, size_t height, size_t maskRange);
 	inline __attribute__((always_inline)) void runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads);
 	#ifdef PSKEL_TBB
 	void runTBB(Array in, Array out, size_t numThreads);

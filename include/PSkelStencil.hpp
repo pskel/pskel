@@ -705,7 +705,12 @@ __global__ void stencilTilingCU(Array3D<T1> input,Array3D<T1> output,Mask3D<T2> 
 
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runSequential(){
-	this->runSeq(this->input, this->output);
+	size_t width = this->input.getWidth();
+	size_t height = this->input.getHeight();
+	//size_t depth = this->input.getDepth();
+	size_t maskRange = this->mask.getRange();
+	
+	this->runSeq(this->input, this->output,width, height, maskRange);
 }
 
 template<class Array, class Mask, class Args>
@@ -856,14 +861,18 @@ void StencilBase<Array, Mask,Args>::runAutoGPU(size_t GPUBlockSize){
 
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::runIterativeSequential(size_t iterations){
-	Array inputCopy;
-	inputCopy.hostClone(input);
+	//Array inputCopy;
+	//inputCopy.hostClone(input);
+	size_t width = this->input.getWidth();
+	size_t height = this->input.getHeight();
+	size_t maskRange = this->mask.getRange();
+	
 	for(size_t it = 0; it<iterations; it++){
-		if(it%2==0) this->runSeq(inputCopy, this->output);
-		else this->runSeq(this->output, inputCopy);
+		if(it%2==0) this->runSeq(this->input, this->output, width, height, maskRange);
+		else this->runSeq(this->output, this->input,width,height,maskRange);
 	}
-	if((iterations%2)==0) output.hostMemCopy(inputCopy);
-	inputCopy.hostFree();
+	if((iterations%2)==0) output.hostMemCopy(input);
+	//inputCopy.hostFree();
 }
 
 template<class Array, class Mask, class Args>
@@ -2081,7 +2090,7 @@ Stencil3D<Array,Mask,Args>::Stencil3D(Array _input, Array _output, Mask _mask, A
 }
 
 template<class Array, class Mask, class Args>
-void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out){
+void Stencil3D<Array,Mask,Args>::runSeq(Array in, Array out, size_t width, size_t height, size_t maskRange){
 	for (int h = 0; h < in.getHeight(); h++){
 	for (int w = 0; w < in.getWidth(); w++){
 	for (int d = 0; d < in.getDepth(); d++){
@@ -2170,11 +2179,14 @@ Stencil2D<Array,Mask,Args>::~Stencil2D(){
 */
 
 template<class Array, class Mask, class Args>
-void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out){
-	size_t height = in.getHeight();
-	size_t width = in.getWidth();
-	for (size_t h = 0; h < height; h++){
-	for (size_t w = 0; w < width; w++){
+inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runSeq(Array in, Array out, size_t width, size_t height, size_t maskRange){
+	//printf("Seq\n");
+	size_t hrange = height-maskRange;
+	size_t wrange = width-maskRange;
+	//size_t height = in.getHeight();
+	//size_t width = in.getWidth();
+	for (size_t h = maskRange; h < hrange; h++){
+	for (size_t w = maskRange; w < wrange; w++){
 		stencilKernel(in,out,this->mask, this->args,h,w);
 	}}
 }
@@ -2221,15 +2233,16 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	{
 	//printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
 	//#pragma forceinline recursive
-	#pragma ivdep
+	//printf("executing thread %d\n",omp_get_thread_num());
+	//#pragma ivdep
 	#pragma omp for
 	for (size_t h = maskRange; h < hrange; h++){ 
-		#pragma vector aligned
+		//#pragma vector aligned
 		for (size_t w = maskRange; w < wrange; w++){
-			#pragma forceinline recursive
+			//#pragma forceinline recursive
 			stencilKernel(in,out,this->mask,this->args,h,w);
 			//#pragma omp simd
-			//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
+			//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args);
 			
 			//__builtin_prefetch (&in(h-1,w),0,1,2);
 			//__builtin_prefetch (&in(h+1,w),0,1,2);

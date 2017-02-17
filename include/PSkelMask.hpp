@@ -112,7 +112,7 @@ __host__ __device__ size_t MaskBase<T>::size() const{
 }
 */
 template<typename T>
-__forceinline__ __host__ __device__ T MaskBase<T>::getWeight(size_t n) {
+__forceinline__ __host__ __device__ T & MaskBase<T>::getWeight(size_t n) const {
 	#ifdef __CUDA_ARCH__
 		return deviceWeight[n];
 	#else

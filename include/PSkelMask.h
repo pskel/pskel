@@ -109,7 +109,7 @@ public:
 	 * \param[in] n index of the element in the mask. 
 	 * \return the weight of the specified element.
 	 **/
-	__device__ __host__ T getWeight(size_t n);
+	__device__ __host__ T & getWeight(size_t n) const;
 	
 	#ifdef PSKEL_CUDA	
 	__device__ T* GetSharedPointer( void ){
