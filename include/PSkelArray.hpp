@@ -74,7 +74,7 @@ __forceinline__ void ArrayBase<T>::deviceAlloc(){
 	#ifndef PSKEL_MANAGED
 	if(this->deviceArray==NULL){
 		gpuErrchk( cudaMalloc((void **) &deviceArray, size()*sizeof(T)) );
-		printf("Allocated %lld bytes in the GPU\n",size()*sizeof(T));
+		//printf("Allocated %lld bytes in the GPU\n",size()*sizeof(T));
 		//cudaMemset(this->deviceArray, 0, size()*sizeof(T));
 	}
 	#endif
