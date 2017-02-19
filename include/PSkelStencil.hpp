@@ -32,6 +32,8 @@
 #ifndef PSKEL_STENCIL_HPP
 #define PSKEL_STENCIL_HPP
 
+//#define CACHE_BLOCK
+
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -923,6 +925,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 		tbbstencil.swap();	
 		#endif
 	}
+	//end = omp_get_wtime();
 	#ifdef PSKEL_TBB
 	if((iterations%2)==1) tbbstencil.swap();
 	#else
@@ -2200,8 +2203,8 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	size_t hrange = height-maskRange;
 	size_t wrange = width-maskRange;
   	#ifdef CACHE_BLOCK
-	#define TH 16
-	#define TW 16
+	#define TH 32
+	#define TW 128
 	#pragma omp parallel num_threads(numThreads)
 	{
 	#pragma ivdep
