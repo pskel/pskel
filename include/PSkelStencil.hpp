@@ -1067,9 +1067,9 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 		double start = omp_get_wtime();
 		mask.copyToDevice();
 
-		//cudaHostRegister(input.hostArray,input.size()*input.typeSize(),cudaHostRegisterDefault);
+		cudaHostRegister(input.hostArray,input.size()*input.typeSize(),cudaHostRegisterDefault);
 		input.copyToDevice();
-		//cudaHostUnregister(input.hostArray);
+		cudaHostUnregister(input.hostArray);
 		//output.copyToDevice();
 		//this->setGPUInputData();
 		for(size_t it = 0; it<iterations; it++){
@@ -1077,14 +1077,14 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 				this->runCUDA(this->input, this->output, GPUBlockSizeX, GPUBlockSizeY);
 			else this->runCUDA(this->output, this->input, GPUBlockSizeX, GPUBlockSizeY);
 		}
-		//cudaHostRegister(output.hostArray,output.size()*output.typeSize(),cudaHostRegisterDefault);
+		cudaHostRegister(output.hostArray,output.size()*output.typeSize(),cudaHostRegisterDefault);
 		if((iterations%2)==1){
 			output.copyToHost();
 		}	
 		else{
 			 output.copyFromDevice(input);
 		}
-		//cudaHostUnregister(output.hostArray);
+		cudaHostUnregister(output.hostArray);
 		double end = omp_get_wtime();
 		cout<<"GPU_time\t"<<end-start<<endl;
 		input.deviceFree();
