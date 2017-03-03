@@ -11,7 +11,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 mpl.rcParams['axes.linewidth'] = 1.2
 mpl.rcParams['font.size'] = 19
@@ -34,8 +34,9 @@ plt.xticks([(w+1)*2 for w in range(8)])
 plt.xlim(1.8,16.2)
 plt.ylim(0, 80)
 
+plt.suptitle('Tempo de Execução', fontsize=27)
 plt.xlabel('Número de Clusters', fontsize=22)
-plt.ylabel('Tempo de execução(s)', fontsize=22)
+plt.ylabel('Tempo de Execução (s)', fontsize=22)
    #plt.xlim(-0.15, 2.9)
 plt.grid(which='major')
 #plt.tick_params(labelsize=12)

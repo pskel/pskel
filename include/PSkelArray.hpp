@@ -2,21 +2,21 @@
 // Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
 //					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -163,7 +163,7 @@ void ArrayBase<T>::mppaFree(){
 	free(this->mppaArray);
 	this->mppaArray = NULL;
 	//}
-}	
+}
 #endif
 
 #ifdef PSKEL_MPPA
@@ -174,7 +174,7 @@ void ArrayBase<T>::auxFree(){
 	//cudaFreeHost(this->hostArray);
 	this->aux = NULL;
 	//}
-}	
+}
 #endif
 
 template<typename T>
@@ -186,7 +186,7 @@ void ArrayBase<T>::hostAlloc(){
 		//memset(this->hostArray, 0, size()*sizeof(T));
 	}
 }
-	
+
 template<typename T>
 void ArrayBase<T>::hostFree(){
 	//if(this->hostArray!=NULL){
@@ -200,7 +200,7 @@ template<typename T>
 size_t ArrayBase<T>::getWidth() const{
 	return width;
 }
-	
+
 template<typename T>
 size_t ArrayBase<T>::getHeight() const{
 	return height;
@@ -210,7 +210,7 @@ template<typename T>
 size_t ArrayBase<T>::getDepth() const{
 	return depth;
 }
-	
+
 template<typename T>
 size_t ArrayBase<T>::memSize() const{
 	return size()*sizeof(T);
@@ -256,7 +256,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 		}
 	}
 	#endif
-	
+
 	this->width = width;
 	this->height = height;
 	this->depth = depth;
@@ -267,7 +267,7 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
 	#ifdef MPPA_MASTER
-	
+
 	#endif
 	#ifndef PSKEL_MPPA
 	this->hostArray = array.hostArray;
@@ -404,7 +404,7 @@ void ArrayBase<T>::copyFromAux(){
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo(size_t offsetSlave, size_t offsetMaster, int tam){
+void ArrayBase<T>::copyToo(size_t offsetSlave, size_t offsetMaster, int tam){
     tam = tam*sizeof(T);
 	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(offsetSlave*realDepth);
 	mppa_async_write_portal(this->write_portal, mppaSlicePtr, tam, sizeof(T)*offsetMaster);
@@ -413,12 +413,28 @@ void ArrayBase<T>::copyTo(size_t offsetSlave, size_t offsetMaster, int tam){
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo(){
-	T *mppaSlicePtr = (T*)(this->mppaArray);
-	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
+void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t offset){
+	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(offset*realDepth);
+	// printf("esize: %d, offset: %d, heightOffset: %d, widthOffset: %d, offset: %d\n", esize, offset, heightOffset, widthOffset, offset);
+	int sstride = sJump*sizeof(T);
+	int tstride = tJump*sizeof(T);
+	int ecount = this->height;
+	int size = this->width*sizeof(T);
+	// mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
+	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, 0);
+
 }
 #endif
 
+#ifdef PSKEL_MPPA
+template<typename T>
+void ArrayBase<T>::copyTo(){
+	T *mppaSlicePtr = (T*)(this->mppaArray);
+	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
+	// mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), ecount, sstride, tstride, 0);
+
+}
+#endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
@@ -440,7 +456,7 @@ void ArrayBase<T>::portalReadAlloc(int trigger, int nb_cluster){
 	char pathSlave[25];
 	char path[25];
 	sprintf(pathSlave, "/mppa/portal/%d:%d", nb_cluster, 4 + nb_cluster);
-    
+
     this->read_portal = mppa_create_read_portal(pathSlave, this->mppaArray, this->memSize(), trigger, NULL);
 	#endif
 }
@@ -604,7 +620,7 @@ void ArrayBase<T>::copyToDevice(){
 	}else if(realDepth==1 && realHeight==1){
 		T *hostPtr = (T*)(hostArray) + size_t(widthOffset);
 		gpuErrchk ( cudaMemcpy(deviceArray, hostPtr, size()*sizeof(T),cudaMemcpyHostToDevice) );
-	}else{ 
+	}else{
 		//if "virtual" array is non-continuously allocated,
 		//create a copy in pinned memory before transfering.
 		T *copyPtr;
@@ -692,7 +708,7 @@ ArrayBase<T>::operator bool() const {
 
 template<typename T>
 Array3D<T>::Array3D() : ArrayBase<T>(0,0,0) {}
-	
+
 /*
 //TODO O kernel cuda nÃ£o aceita structs com destrutores. Corrigir nas prÃ³ximas versÃµes
 ~Array3D(){

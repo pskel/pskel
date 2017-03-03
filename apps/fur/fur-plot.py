@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import sys
@@ -32,7 +32,7 @@ def plotBars(df, valCol, fileName):
    plt.xticks(np.array(xs)+w*len(xlabels)/3,xlabels)
    plt.legend(loc='best', ncol=1, fontsize=24)
    # fig = plt.figure()
-   plt.suptitle('Aplicação Fur', fontsize=27)
+   plt.suptitle('Aplicacao Fur', fontsize=27)
    plt.xlabel(df.columns[0], fontsize=27)
    plt.ylabel(df.columns[valCol], fontsize=27)
    plt.xlim(-0.15, 3.9)

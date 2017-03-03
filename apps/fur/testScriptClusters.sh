@@ -1,7 +1,7 @@
 #!/bin/bash
 APP_NAME="fur"
 EXECUTABLE="run.sh"
-TEST_DIRECTORY="tests/ERAD"
+TEST_DIRECTORY="tests/Dev"
 NUMBER_ITERATIONS=50
 NUMBER_INNER_ITERATIONS=10
 # NUMBER_CLUSTERS=16
@@ -12,7 +12,7 @@ for INPUT_SIZE in 2048
 do
     for TILE_SIZE in 128
     do
-      for NUMBER_CLUSTERS in 2 4 6 8 10 12 14
+      for NUMBER_CLUSTERS in 2 4 6 8 10 12 14 16
       do
         for i in `seq 1 ${EXECUTION_TIMES}`
         do

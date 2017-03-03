@@ -115,6 +115,16 @@ void mppa_async_write_portal (portal_t *portal, void *buffer, int buffer_size, i
   assert(status == 0);
 }
 
+void mppa_async_write_stride_portal (portal_t *portal, void *buffer, int buffer_size, int ecount, int sstride, int tstride, int offset) {
+  int status;
+
+  // mppa_pwrites(portal->file_descriptor, buffer, buffer_size, ecount, sstride, tstride, offset);
+  mppa_aiocb_set_pwrite(&portal->aiocb, buffer, buffer_size, offset);
+  mppa_aiocb_set_strides(&portal->aiocb, ecount, sstride, tstride);
+  status = mppa_aio_write(&portal->aiocb);
+  assert(status == 0);
+}
+
 /**************************************
  * BARRIER
  **************************************/

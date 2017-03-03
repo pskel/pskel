@@ -2,21 +2,21 @@
 // Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
 //					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -78,7 +78,7 @@ private:
  	int* aux;
  	//T *comm_buffer;
 	#endif
-	
+
 protected:
 	#ifdef PSKEL_CUDA
 	/**
@@ -110,7 +110,7 @@ protected:
          * \param[in] depth Depth for the 3D array being created.
          **/
 	ArrayBase(size_t width, size_t height, size_t depth);
-public:	
+public:
 	#ifdef PSKEL_CUDA
 	/**
 	 * Allocates the "virtual" array in device memory.
@@ -142,7 +142,7 @@ public:
 	void portalAuxReadAlloc(int trigger, int nb_cluster);
 	#endif
 
-	#ifdef PSKEL_MPPA	
+	#ifdef PSKEL_MPPA
 	void mppaAlloc(size_t width, size_t height, size_t depth);
 	#endif
 
@@ -157,25 +157,25 @@ public:
 	 * Frees the allocated host (main) memory.
 	 **/
 	void hostFree();
-	
+
 	/**
 	 * Get the width size of the "virtual" array.
 	 * \return the "virtual" width of the array data structure.
 	 **/
 	__device__ __host__ size_t getWidth() const;
-	
+
 	/**
 	 * Get the height size of the "virtual" array.
 	 * \return the "virtual" height of the array data structure.
 	 **/
 	__device__ __host__ size_t getHeight() const;
-	
+
 	/**
 	 * Get the depth size of the "virtual" array.
 	 * \return the "virtual" depth of the array data structure.
 	 **/
 	__device__ __host__ size_t getDepth() const;
-	
+
 	/**
 	 * Get the size, in bytes, of the allocated memory for the "virtual" array.
 	 * \return the total of bytes allocated in memory for the "virtual" array.
@@ -183,13 +183,13 @@ public:
 	__device__ __host__ size_t memSize() const;
 
 	/**
-	 * Get the size of the "virtual" array, i.e. the number of elements 
+	 * Get the size of the "virtual" array, i.e. the number of elements
 	 * \return the size of the "virtual" array.
 	 **/
 	__device__ __host__ size_t size() const;
 
 	/**
-	 * Get the size of the real allocated array, i.e. the number of elements 
+	 * Get the size of the real allocated array, i.e. the number of elements
 	 * \return the size of the real allocated array.
 	 **/
 	__device__ __host__ size_t realSize() const;
@@ -215,11 +215,11 @@ public:
 	 **/
 	template<typename Arrays>
 	void hostClone(Arrays array);
-	
+
 	template<typename Arrays>
 	void mppaClone(Arrays array);
-    
-    
+
+
 	template<typename Arrays>
 	void mppaMasterClone(Arrays array);
 
@@ -295,7 +295,11 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void copyTo(size_t offsetSlave, size_t offsetMaster, int tam);
+	void copyToo(size_t offsetSlave, size_t offsetMaster, int tam);
+	#endif
+
+	#ifdef PSKEL_MPPA
+	void copyTo(size_t sJump, size_t tJump, size_t offset);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -347,7 +351,7 @@ public:
 	 **/
 	void copyToHost();
 	#endif
-	
+
 	/**
 	 * Verifies if there is memory allocated for the array data structure.
 	 * This function can be called both from device and host environment,
@@ -368,14 +372,14 @@ public:
          * The Array3D default constructor creates an empty array withour allocating memory space.
          **/
 	Array3D();
-	
+
 	/*
 	//TODO O kernel cuda não aceita structs com destrutores. Corrigir nas próximas versões
 	~Array3D(){
 		free(hostArray);
 		cudaFree(deviceArray);
 	}*/
-	
+
 	/**
          * The Array3D constructor creates and allocates the specified 3-dimensional array
          * in the host memory.
@@ -384,7 +388,7 @@ public:
          * \param[in] depth depth for the 3D array being created.
          **/
 	Array3D(size_t width, size_t height, size_t depth);
-	
+
 	/**
          * Access a specific element of the array allocated in the memory space
          * relative to the execution environment, i.e. either in the host or device memory.
@@ -394,7 +398,7 @@ public:
          * \return the reference of the element specified via parameters.
          **/
 	__attribute__((always_inline)) __forceinline__ __device__ __host__ T & operator()(size_t h,size_t w,size_t d) const ;
-	
+
 };
 
 //*******************************************************************************************
@@ -403,12 +407,12 @@ public:
 
 template<typename T>
 class Array2D: public ArrayBase<T>{
-public:	
+public:
 	/**
          * The Array2D default constructor creates an empty array withour allocating memory space.
          **/
 	Array2D();
-	
+
 
 	//~Array2D();
 	/**
@@ -418,7 +422,7 @@ public:
          * \param[in] height height for the 2D array being created.
          **/
 	Array2D(size_t width, size_t height);
-	
+
 	/**
          * Access a specific element of the array allocated in the memory space
          * relative to the execution environment, i.e. either in the host or device memory.
@@ -427,7 +431,7 @@ public:
          * \return the reference of the element specified via parameters.
          **/
 	__attribute__((always_inline)) __forceinline__ __device__ __host__ T & operator()(size_t h, size_t w) const ;
-	
+
 };
 
 //*******************************************************************************************
@@ -441,7 +445,7 @@ public:
          * The Array default constructor creates an empty array withour allocating memory space.
          **/
 	Array();
-	
+
 	/**
          * The Array constructor creates and allocates the specified 1-dimensional array
          * in the host memory.
@@ -455,7 +459,7 @@ public:
          * \param[in] w offset for the element being accessed.
          * \return the reference of the element specified via parameters.
          **/
-	__attribute__((always_inline)) __forceinline__ __device__ __host__ T & operator()(size_t w) const;	
+	__attribute__((always_inline)) __forceinline__ __device__ __host__ T & operator()(size_t w) const;
 };
 
 }//end namespace

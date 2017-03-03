@@ -4,7 +4,7 @@
 
 #define PSKEL_MPPA
 #define MPPA_SLAVE
-// #define DEBUG
+#define DEBUG
 // #define PRINT_OUT
 // #define TIME_EXEC
 // #define TIME_SEND
@@ -26,6 +26,7 @@ struct Arguments
 
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
+    // printf("StencilKernel Enter!");
     int numberA = 0;
     int numberI = 0;
     int level = arg.level;
@@ -38,7 +39,7 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
     //     //printf("I: %d\n", numberI);
     //   }
     // }
-
+    //
     for (int x = (level-2*level); x <= level; x++) {
   		for (int y = (level-2*level); y <= level; y++) {
   			if (x != 0 || y != 0) {
@@ -58,7 +59,7 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
   	}
     //printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
-    //printf("Power of I: %f\n", totalPowerI);
+    // printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {
 		output(h,w) = 0; //without color and inhibitor
     }
@@ -140,5 +141,8 @@ int main(int argc,char **argv) {
   //      stencil.runIterativeMPPA(cluster_id, nb_threads, nb_tiles, iterations);
   //}
   //stencil.~Stencil2D();
+  stencil.~Stencil2D();
+
+  printf("Exiting slave: %d", cluster_id);
   mppa_exit(0);
 }

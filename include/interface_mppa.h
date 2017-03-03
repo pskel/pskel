@@ -89,6 +89,7 @@ portal_t *mppa_create_read_portal (char *path, void* buffer, unsigned long buffe
 portal_t *mppa_create_write_portal (char *path, void* buffer, unsigned long buffer_size, int receiver_rank);
 void mppa_write_portal (portal_t *portal, void *buffer, int buffer_size, int offset);
 void mppa_async_write_portal (portal_t *portal, void *buffer, int buffer_size, int offset);
+void mppa_async_write_stride_portal (portal_t *portal, void *buffer, int buffer_size, int ecount, int sstride, int tstride, int offset);
 void mppa_async_write_wait_portal(portal_t *portal);
 void mppa_async_read_wait_portal(portal_t *portal);
 void mppa_close_portal (portal_t *portal);

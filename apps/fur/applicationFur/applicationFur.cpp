@@ -6,7 +6,7 @@
 #include <fstream>
 
 //#define PSKEL_SHARED_MASK
-#define PSKEL_PAPI
+// #define PSKEL_PAPI
 #include "../../../include/PSkel.h"
 
 //#include "../utils/hr_time.h"

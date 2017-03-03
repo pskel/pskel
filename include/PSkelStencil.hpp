@@ -218,7 +218,6 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 	size_t heightOffset;
 	size_t widthOffset;
 
-
 	StencilTiling<Array, Mask>tiling(this->input, this->output, this->mask);
 
 	barrier_t *barrierNbClusters;
@@ -280,14 +279,20 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
       					tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
       					outputNumberHt[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
       					outputNumberHt[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-      					outputNumberHt[tS].copyToAux();
-      					outputNumberHt[tS].waitAuxWrite();
+      					// outputNumberHt[tS].copyToAux();
+      					// outputNumberHt[tS].waitAuxWrite();
       					tS++;
     				}
   			}
         struct timeval masterAuxEnd = mppa_master_get_time();
-        cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
+        // cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
 
+        for (int i = 0; i < totalSize; i++) {
+          outputNumberHt[i].copyToAux();
+        }
+        for (int i = 0; i < totalSize; i++) {
+          outputNumberHt[i].waitAuxWrite();
+        }
 
   			for (int i = 0; i < totalSize; i++) {
   				  outputNumberHt[i].closeAuxWritePortal();
@@ -310,24 +315,31 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
     		    hrt_start(&sendTimerMaster);
     		#endif
   			// mppa_barrier_wait(barrierNbClusters);
-        struct timeval masterSendStart = mppa_master_get_time();
+            struct timeval masterSendStart = mppa_master_get_time();
 
   			for(int ht = 0; ht < hTiling; ht++) {
     				for(int wt = 0; wt < wTiling; wt++){
       					heightOffset = ht*tilingHeight;
       					widthOffset = wt*tilingWidth;
       					tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
-    		   			tmp.hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+    		   			slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+                        slice[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset);
                 //Array tmp(tiling.width, tiling.height);
                 //tmp.mppaMasterCopy(slice[tS]);
-                slice[tS].mppaMasterClone(tmp);
-                slice[tS].copyTo();
-    		   			slice[tS].waitWrite();
+                // slice[tS].mppaMasterClone(tmp);
+                //slice[tS].copyTo();
+    		   			//slice[tS].waitWrite();
     		   			tS++;
     		   	}
   			}
         struct timeval masterSendEnd = mppa_master_get_time();
-        cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
+        // cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
+
+        // for (int i = 0; i < totalSize; i++) {
+        // }
+        for (int i = 0; i < totalSize; i++) {
+          slice[i].waitWrite();
+        }
 
   			# if defined (DEBUG) || defined (TIME_EXEC)
       			hrt_stop(&sendTimerMaster);
@@ -340,7 +352,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
             this->output.copyFrom();
         }
   			for (int i = 0; i < totalSize; i++) {
-            slice[i].mppaFree();
+            // slice[i].mppaFree();
   			    slice[i].closeWritePortal();
   			}
   			// #ifdef DEBUG
@@ -389,7 +401,8 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 				#ifdef DEBUG
 					cout<<"MASTER["<<it<<"]: Barrier 2 from tile: " << i <<endl;
 				#endif
-				mppa_barrier_wait(barrierNbClusters);
+        mppa_barrier_wait(barrierNbClusters);
+				// mppa_barrier_wait(barrierNbClusters);
         int tS = 0;
 
         auxHt = baseItHt;
@@ -409,8 +422,8 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
       					tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
       					outputNumberNb[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
         				outputNumberNb[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-      					outputNumberNb[tS].copyToAux();
-      					outputNumberNb[tS].waitAuxWrite();
+      					// outputNumberNb[tS].copyToAux();
+      					// outputNumberNb[tS].waitAuxWrite();
                 tS++;
                 if (tS >= nb_clusters) {
                     auxHt = hTiling;
@@ -423,8 +436,14 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 
 				}
         struct timeval masterAuxEnd = mppa_master_get_time();
-        cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
+        // cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
 
+        for (int i = 0; i < nb_clusters; i++) {
+          outputNumberNb[i].copyToAux();
+        }
+        for (int i = 0; i < nb_clusters; i++) {
+          outputNumberNb[i].waitAuxWrite();
+        }
 				for (int i = 0; i < nb_clusters; i++) {
 					outputNumberNb[i].closeAuxWritePortal();
 				}
@@ -440,7 +459,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 				#ifdef DEBUG
 					cout<<"MASTER["<<it<<"]: Barrier 3 from tile: " << i <<endl;
 				#endif
-				mppa_barrier_wait(barrierNbClusters);
+        mppa_barrier_wait(barrierNbClusters);
 				// for (int j = 0; j < nb_clusters; j++)
         tS = 0;
         ht = baseItHt;
@@ -459,18 +478,31 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 				hrt_start(&sendTimerMaster);
 				#endif
         struct timeval masterSendStart = mppa_master_get_time();
+        struct timeval masterCopyItStart;
+        struct timeval masterCopyItEnd;
+        struct timeval masterSendItEnd;
 
         for (ht; ht < hTiling; ht++) {
           //wt = baseItWt;
           for (wt; wt < wTiling; wt++) {
+              masterCopyItStart = mppa_master_get_time();
   				    heightOffset = ht*tilingHeight;
               widthOffset = wt*tilingWidth;
   				    tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
-  				    tmp.hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+  				    cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+                    cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset);
+                    // for (int i = 0; i < nb_clusters; i++) {
+                    //     for(size_t h=0;h<cluster[tS].getHeight();h++) {
+                    //         for(size_t w=0;w<cluster[tS].getWidth();w++) {
+                    //             printf("ClusterSlice(%d,%d):%d\n",h,w, cluster[tS](h,w));
+                    //         }
+                    //     }
+                    // }
               // cout<<"Tile size(" << ht <<","<< wt << ") is: H(" << tmp.getHeight() << ") ~ W(" << tmp.getWidth() << ")" << endl;
-              cluster[tS].mppaMasterClone(tmp);
-  				    cluster[tS].copyTo();
-  				    cluster[tS].waitWrite();
+              // sleep(1);
+              // cluster[tS].mppaMasterClone(tmp);
+              masterCopyItEnd = mppa_master_get_time();
+  				    // cluster[tS].copyTo();
               tS++;
               if (tS >= nb_clusters) {
                   baseItHt = ht;
@@ -478,13 +510,26 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
                   baseItWt = wt + 1;
                   wt = wTiling;
               }
+              masterSendItEnd = mppa_master_get_time();
+              // cout<<"Master Copy Iteration Time: " << mppa_master_diff_time(masterCopyItStart, masterCopyItEnd) << " to cluster: " << tS <<  endl;
+              // cout<<"Master Send Iteration Time: " << mppa_master_diff_time(masterCopyItStart, masterSendItEnd) << " to cluster: " << tS <<  endl;
+
           }
           if (wt == wTiling) {
               wt = 0;
           }
 				}
+
+         // for (int i = 0; i < nb_clusters; i++) {
+         //    cluster[i].copyTo();
+         // }
+
+
+        for (int i = 0; i < nb_clusters; i++) {
+          cluster[i].waitWrite();
+        }
         struct timeval masterSendEnd = mppa_master_get_time();
-        cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
+        // cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
 
 				# if defined (DEBUG) || defined (TIME_EXEC)
   				hrt_stop(&sendTimerMaster);
@@ -507,7 +552,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
     			   this->output.copyFrom();
         }
         struct timeval masterRecvEnd = mppa_master_get_time();
-        cout<<"Master Recv Time: " << mppa_master_diff_time(masterRecvStart,masterRecvEnd) << endl;
+        // cout<<"Master Recv Time: " << mppa_master_diff_time(masterRecvStart,masterRecvEnd) << endl;
 
 				#ifdef DEBUG
 					cout<<"MASTER["<<it<<"]: Received processed data from clusters"<<endl;
@@ -515,7 +560,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 
 
     		for (int i = 0; i < nb_clusters; i++) {
-            cluster[i].mppaFree();
+            // cluster[i].mppaFree();
     				cluster[i].closeWritePortal();
         }
 
@@ -523,11 +568,11 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 				    cout << "Master Send Time: " << hrt_elapsed_time(&sendTimerMaster) << " from iteration: " << it << " and tile: " << i << endl;
 				#endif
         struct timeval masterBlastEnd = mppa_master_get_time();
-        cout<<"Master Blast Time: " << mppa_master_diff_time(masterBlastStart,masterBlastEnd) << endl;
+        // cout<<"Master Blast Time: " << mppa_master_diff_time(masterBlastStart,masterBlastEnd) << endl;
 
 		  }
       struct timeval masterEnd = mppa_master_get_time();
-      cout<<"Master Total Time: " << mppa_master_diff_time(masterStart,masterEnd) << endl;
+      // cout<<"Master Total Time: " << mppa_master_diff_time(masterStart,masterEnd) << endl;
 
       int hTilingMod = hTiling;
       int wTilingMod = wTiling;
@@ -544,10 +589,11 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 				outputNumberMod[j].portalAuxWriteAlloc(j);
 			}
 
+      mppa_barrier_wait(barrierNbClusters);
 			#ifdef DEBUG
 				cout<<"MASTER["<<it<<"]: Barrier 5"<<endl;
 			#endif
-			mppa_barrier_wait(barrierNbClusters);
+			// mppa_barrier_wait(barrierNbClusters);
       int tS = 0;
       auxHt = baseItHt;
       auxWt = baseItWt;
@@ -563,13 +609,19 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
               tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
               outputNumberMod[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
               outputNumberMod[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-              outputNumberMod[tS].copyToAux();
-              outputNumberMod[tS].waitAuxWrite();
+              // outputNumberMod[tS].copyToAux();
+              // outputNumberMod[tS].waitAuxWrite();
               tS++;
             }
             auxWt = 0;
       }
 
+      for (int i = 0; i < itMod; i++) {
+        outputNumberMod[i].copyToAux();
+      }
+      for (int i = 0; i < itMod; i++) {
+        outputNumberMod[i].waitAuxWrite();
+      }
 			for(int i = 0; i < itMod; i++) {
 			     outputNumberMod[i].closeAuxWritePortal();
 			}
@@ -582,11 +634,11 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 			for(int j = 0; j < itMod; j++) {
 				    cluster[j].portalWriteAlloc(j);
 			}
+      mppa_barrier_wait(barrierNbClusters);
 
 			#ifdef DEBUG
 				cout<<"MASTER["<<it<<"]: Barrier 6"<<endl;
 			#endif
-			mppa_barrier_wait(barrierNbClusters);
 
       tS = 0;
       ht = baseItHt;
@@ -597,7 +649,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
           //baseItWt = 0;
       }
 
-      # if defined (DEBUG) || defined (TIME_EXEC)
+      #if defined (DEBUG) || defined (TIME_EXEC)
   		hrt_start(&modTimerMaster);
   		#endif
 			//mppa_barrier_wait(barrierNbClusters);
@@ -607,9 +659,9 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
                 widthOffset = wt*tilingWidth;
                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                 cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-
-                cluster[tS].copyTo();
-                cluster[tS].waitWrite();
+                cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset);
+                // cluster[tS].copyTo();
+                // cluster[tS].waitWrite();
                 tS++;
             }
             wt = 0;
@@ -618,6 +670,12 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
   			hrt_stop(&modTimerMaster);
   		#endif
 
+      // for (int i = 0; i < itMod; i++) {
+        // cluster[i].copyTo();
+      // }
+      for (int i = 0; i < itMod; i++) {
+        cluster[i].waitWrite();
+      }
 			this->output.setTrigger(itMod);
 
 			// mppa_barrier_wait(barrierNbClusters);
@@ -670,7 +728,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 
 	for(size_t h=0;h<this->output.getHeight();h++) {
 		for(size_t w=0;w<this->output.getWidth();w++) {
-	  	  printf("FinalOutput(%d,%d):%f\n",h,w, output(h,w));
+	  	  printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
 	  }
 	}
 
@@ -688,10 +746,14 @@ void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters, int tilingHeight
 	size_t wTiling = ceil(float(this->input.getHeight())/float(tilingWidth));
 	size_t totalSize = float(hTiling*wTiling);
 	int pid;
+    int wait;
 	if(totalSize < nb_clusters)
 		nb_clusters = totalSize;
 	for (pid = 0; pid < nb_clusters; pid++) {
-  		mppa_waitpid(pid, NULL, 0);
+        // printf("PID: %d", pid);
+  		wait = mppa_waitpid(pid, NULL, 0);
+        // printf("Wait: %d", wait);
+        assert(wait != -1);
 	}
 }
 #endif
@@ -701,7 +763,7 @@ void StencilBase<Array, Mask,Args>::waitSlaves(int nb_clusters, int tilingHeight
 template<class Array, class Mask, class Args>
 void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, size_t tilingWidth, int iterations, int innerIterations){
 
-
+    struct timeval scheduleInit = mppa_master_get_time();
 	# if defined (DEBUG) || defined (TIME_EXEC)
 	hr_timer_t scheduleTimerSpawn;
 	hr_timer_t scheduleTimerSlice;
@@ -756,6 +818,8 @@ void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], in
 	# if defined (DEBUG) || defined (TIME_EXEC)
 	cout << "Schedule Time: "<< hrt_elapsed_time(&scheduleTimer) << endl;
 	#endif
+    struct timeval scheduleEnd = mppa_master_get_time();
+    cout << "ScheduleTime: " << mppa_master_diff_time(scheduleInit, scheduleEnd) << endl;
 
 }
 #endif
@@ -769,6 +833,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	Array tmp;
 	Array inputTmp;
 	Array outputTmp;
+  Array input;
 	Array auxPortal;
 	int *aux;
 	# if defined (DEBUG) || defined (TIME_EXEC)
@@ -776,8 +841,8 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	hr_timer_t compTimerSlave;
 	hr_timer_t sendTimerSlave;
 	//timer
-  	hrt_start(&totTimerSlave);
-  	#endif
+	hrt_start(&totTimerSlave);
+	#endif
 
 	#ifdef DEBUG
 	cout<<"SLAVE["<<cluster_id<<"]: opened finalArr portal in write mode"<<endl;
@@ -800,14 +865,19 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 				cout<<"SLAVE["<<cluster_id<<"]: opened auxPortal in read mode for iteration #"<<j<<endl;
 				#endif
 			}
+
+      struct timespec slaveBarrierAuxStart=mppa_slave_get_time();
 			mppa_barrier_wait(global_barrier);
+      struct timespec slaveBarrierAuxEnd=mppa_slave_get_time();
+      // cout<<"Slave Barrier Aux Time: " << mppa_slave_diff_time(slaveBarrierAuxStart,slaveBarrierAuxEnd) << endl;
+
       struct timespec slaveItExtraEnd=mppa_slave_get_time();
-      cout<<"Slave Iteration Extra Time: " << mppa_slave_diff_time(slaveItExtraStart,slaveItExtraEnd) << endl;
+      // cout<<"Slave Iteration Extra Time: " << mppa_slave_diff_time(slaveItExtraStart,slaveItExtraEnd) << endl;
 
       struct timespec slaveAuxRecvStart=mppa_slave_get_time();
 			auxPortal.copyFromAux();
       struct timespec slaveAuxRecvEnd=mppa_slave_get_time();
-      cout<<"Slave Recv Aux Time: " << mppa_slave_diff_time(slaveAuxRecvStart,slaveAuxRecvEnd) << endl;
+      // cout<<"Slave Recv Aux Time: " << mppa_slave_diff_time(slaveAuxRecvStart,slaveAuxRecvEnd) << endl;
 
       struct timespec slaveAuxStart=mppa_slave_get_time();
 
@@ -847,23 +917,39 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			outputTmp.mppaAlloc(w,h,d);
 			inputTmp.portalReadAlloc(1, cluster_id);
       struct timespec slaveAuxEnd=mppa_slave_get_time();
-      cout<<"Slave Aux Time: " << mppa_slave_diff_time(slaveAuxStart,slaveAuxEnd) << endl;
+      // cout<<"Slave Aux Time: " << mppa_slave_diff_time(slaveAuxStart,slaveAuxEnd) << endl;
 
+      struct timespec slaveBarrierInputStart=mppa_slave_get_time();
 			mppa_barrier_wait(global_barrier);
+      struct timespec slaveBarrierInputEnd=mppa_slave_get_time();
+      // cout<<"Slave Barrier Input Time: " << mppa_slave_diff_time(slaveBarrierInputStart, slaveBarrierInputEnd) <<  endl;
+
 
 			#ifdef DEBUG
 			cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode of iteration #"<<j<<endl;
 			#endif
 
 
-
-
 			//mppa_barrier_wait(global_barrier);
       struct timespec slaveCopyStart=mppa_slave_get_time();
 			inputTmp.copyFrom();
       struct timespec slaveCopyEnd=mppa_slave_get_time();
-      cout<<"Slave Copy Time: " << mppa_slave_diff_time(slaveCopyStart,slaveCopyEnd) << endl;
+      cout<<"Slave Copy Time: " << mppa_slave_diff_time(slaveCopyStart,slaveCopyEnd) << " from slave: " << cluster_id <<  endl;
+      // for(size_t h=0;h<inputTmp.getHeight();h++) {
+      //   for(size_t w=0;w<inputTmp.getWidth();w++) {
+      //       printf("InutB4(%d,%d):%d from cluster: %d\n",h,w, inputTmp(h,w), cluster_id);
+      //   }
+      // }
 
+      // inputTmp.mppaClone(input);
+      // for(size_t h=0;h<inputTmp.getHeight();h++) {
+    	// 	for(size_t w=0;w<inputTmp.getWidth();w++) {
+    	//   	  printf("InputAfter(%d,%d):%d\n",h,w, inputTmp(h,w));
+    	//   }
+    	// }
+
+      // input.mppaFree();
+      // input.auxFree();
       struct timespec slaveCompStart=mppa_slave_get_time();
 
 			#ifdef DEBUG
@@ -874,8 +960,15 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			hrt_start(&compTimerSlave);
 			#endif
 
-
+      struct timespec slaveRunStart=mppa_slave_get_time();
 			this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
+      struct timespec slaveRunEnd=mppa_slave_get_time();
+      cout<<"Slave Computation Time: " << mppa_slave_diff_time(slaveRunStart, slaveRunEnd) <<  endl;
+      // for(size_t h=0;h<outputTmp.getHeight();h++) {
+    	// 	for(size_t w=0;w<outputTmp.getWidth();w++) {
+    	//   	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
+    	//   }
+    	// }
 
 			# if defined (DEBUG) || defined (TIME_EXEC)
 			hrt_stop(&compTimerSlave);
@@ -892,9 +985,12 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 				tmp.mppaMemCopy(outputTmp);
 			}
 
+      struct timespec slaveSliceStart=mppa_slave_get_time();
       Array fTmp;
 			fTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
       finalArr.mppaClone(fTmp);
+      struct timespec slaveSliceEnd=mppa_slave_get_time();
+      // cout<<"Slave Final Slice Time: " << mppa_slave_diff_time(slaveSliceStart, slaveSliceEnd) <<  endl;
 
 
       int slaveBaseHeight = 0;
@@ -906,13 +1002,13 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
       struct timespec sendStart=mppa_slave_get_time();
 
             for (int i = 0; i < finalArr.getHeight(); i++) {
-                finalArr.copyTo(slaveBaseHeight, masterBaseWidth, tam);
+                finalArr.copyToo(slaveBaseHeight, masterBaseWidth, tam);
                 slaveBaseHeight += finalArr.getWidth();
                 masterBaseWidth += baseWidth;
-            	finalArr.waitWrite();
+            	  finalArr.waitWrite();
             }
       struct timespec sendEnd=mppa_slave_get_time();
-      cout<<"Slave Send Time: " << mppa_slave_diff_time(sendStart,sendEnd) << endl;
+      // cout<<"Slave Send Time: " << mppa_slave_diff_time(sendStart,sendEnd) << endl;
 			# if defined (DEBUG) || defined (TIME_EXEC)
 			hrt_stop(&sendTimerSlave);
 			#endif
@@ -925,8 +1021,10 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			#endif
 
 
+      // cout<<"Slave Input Size: " << inputTmp.getHeight() << ", " << inputTmp.getWidth() << endl;
 			inputTmp.mppaFree();
 			inputTmp.auxFree();
+
 
 			outputTmp.mppaFree();
 			outputTmp.auxFree();
@@ -947,14 +1045,14 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 
 			}
       struct timespec slaveCompEnd=mppa_slave_get_time();
-      cout<<"Slave Run Computation Time: " << mppa_slave_diff_time(slaveCompStart,slaveCompEnd) << endl;
+      // cout<<"Slave Run Computation Time: " << mppa_slave_diff_time(slaveCompStart,slaveCompEnd) << endl;
 
       struct timespec slaveItEnd=mppa_slave_get_time();
       cout<<"Slave Run Iteration Time: " << mppa_slave_diff_time(slaveItStart,slaveItEnd) << endl;
 
 		}
 		if(cluster_id >= itMod) {
-
+            struct timespec modBarrierStart = mppa_slave_get_time();
 			#ifdef DEBUG
 			cout<<"SLAVE["<<cluster_id<<"]: is insided InOut Barrier for iteration "<<j<<endl;
 			#endif
@@ -964,11 +1062,14 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
 			mppa_barrier_wait(global_barrier);
+            struct timespec modBarrierEnd = mppa_slave_get_time();
+            // cout << "Time inside mod barriers: " << mppa_slave_diff_time(modBarrierStart, modBarrierEnd) << endl;
 		}
 		//finalArr.mppaFree();
 		//finalArr.auxFree();
 		mppa_close_barrier(global_barrier);
 	}
+
   struct timespec slaveEnd=mppa_slave_get_time();
   cout<<"Slave Run Time: " << mppa_slave_diff_time(slaveStart,slaveEnd) << endl;
 
@@ -982,6 +1083,7 @@ void StencilBase<Array, Mask,Args>::runMPPA(int cluster_id, int nb_threads, int 
 	#ifdef DEBUG
 	cout<<"SLAVE["<<cluster_id<<"]: closed write portal for finalArr"<<endl;
 	#endif
+    // mppa_exit(0);
 
 }
 #endif
@@ -993,7 +1095,7 @@ void StencilBase<Array, Mask,Args>::runIterativeMPPA(Array in, Array out, int it
 	size_t height = this->input.getHeight();
 	size_t depth = this->input.getDepth();
   size_t maskRange = this->mask.getRange();
-
+    // cout << "Print for test" << endl;
 	for(int i = 0; i < iterations; i++) {
 		if(i%2==0) {
 			this->runOpenMP(in, out, width, height, depth, maskRange, numThreads);
@@ -1771,18 +1873,20 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	//omp_set_num_threads(numThreads);
 	//size_t height = in.getHeight();
 	//size_t width = in.getWidth();
-  //size_t maskRange = this->mask.getRange();
+  // size_t maskRange = this->mask.getRange();
 	size_t hrange = height-maskRange;
 	size_t wrange = width-maskRange;
+    // printf("Height: %d, Width: %d, MaskRange: %d", height, width, maskRange);
 	#pragma omp parallel num_threads(numThreads)
 	{
-	//printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
-	#pragma forceinline recursive
-	#pragma ivdep
+	// printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
+        // printf("hrange: %d, wrange: %d\n", hrange, wrange);
 	#pragma omp for
 	for (size_t h = maskRange; h < hrange; h++){
-	//#pragma simd
+	// #pragma simd
 	for (size_t w = maskRange; w < wrange; w++){
+
+        // printf("NumThreads: %d", numThreads);
 		stencilKernel(in,out,this->mask,this->args,h,w);
 		//#pragma omp simd
 		//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
@@ -1792,6 +1896,12 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 		//__builtin_prefetch (in(h,w),0,1,3);
 	}}
 	}
+	// omp_set_num_threads(numThreads);
+	// #pragma omp parallel for
+	// for (int h = 0; h < in.getHeight(); h++){
+	// for (int w = 0; w < in.getWidth(); w++){
+	// 	stencilKernel(in,out,this->mask,this->args,h,w);
+	// }}
 }
 #endif
 
