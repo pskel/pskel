@@ -908,7 +908,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
    				//TBBStencil2D<Array,Mask,Args> tbbstencil(this->input, this->output, this->mask, this->args);
                                	//tbb::parallel_for(tbb::blocked_range<int>(0, this->input.getHeight()), tbbstencil);
 			//#else
-				this->runOpenMP(input, this->output, width, height, depth, maskRange, numThreads);
+				this->runOpenMP(this->input, this->output, width, height, depth, maskRange, numThreads);
 			//#endif
 		}else {
 			//#ifdef PSKEL_TBB
@@ -916,7 +916,7 @@ void StencilBase<Array, Mask,Args>::runIterativeCPU(size_t iterations, size_t nu
 				//TBBStencil2D<Array,Mask,Args> tbbstencil(this->output, this->input, this->mask, this->args);
                                	//tbb::parallel_for(tbb::blocked_range<int>(0, this->input.getHeight()), tbbstencil);	
 			//#else
-				this->runOpenMP(this->output, input, width, height, depth,  maskRange, numThreads);
+				this->runOpenMP(this->output, this->input, width, height, depth,  maskRange, numThreads);
 			//#endif
 		}
 		#else

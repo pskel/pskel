@@ -9,7 +9,7 @@
 #define MAX_EVENTS_GPU 7
 
 #ifdef QUADRO
-	#define NUM_GROUPS_CPU 6
+	#define NUM_GROUPS_CPU 9
 	#define MAX_EVENTS_CPU 5
 #else
 	#define NUM_GROUPS_CPU 8
@@ -59,7 +59,11 @@ namespace PSkelPAPI{
 								{"PAPI_L2_DCA",  "PAPI_L2_DCM", "PAPI_L2_LDM", "PAPI_L2_STM", ""},
 								{"PAPI_L2_DCR",  "PAPI_L2_DCW", "PAPI_L3_DCR", "PAPI_L3_DCW", ""},
 								{"PAPI_L3_TCA",  "PAPI_L3_TCM", "PAPI_L3_LDM", "",            ""},
-								{"PAPI_TOT_CYC", "PAPI_TOT_INS","PAPI_RES_STL","PAPI_REF_CYC","PAPI_FP_OPS"}
+								{"PAPI_TOT_CYC", "PAPI_TOT_INS","PAPI_RES_STL","PAPI_REF_CYC","PAPI_FP_OPS"},
+								{"PAPI_L1_DCM",  "PAPI_LST_INS",             "",            "",""},
+								{"PAPI_L1_LDM",  "PAPI_L1_STM",             "",            "",""},
+								{"PAPI_TLB_DM",  "PAPI_TLB_IM", "PAPI_TLB_TL",             "",""}
+							
 							};
 	#elif TESLA	
  	char const *EventNameCPU[NUM_GROUPS_CPU][MAX_EVENTS_CPU] = {
@@ -589,6 +593,11 @@ namespace PSkelPAPI{
 					printf("BR_MSP  = %.2f\n",(100.0*((double)values_cpu[1][4]/values_cpu[1][1])));
 					
 					printf("--------------------------------------------------------------------------------\n");
+					
+					printf("L1_DCH  = %.2f\n",(100.0f - 100.0*((double)values_cpu[6][0]/values_cpu[6][1])));
+				
+					printf("--------------------------------------------------------------------------------\n");
+					
 					printf("L2_DCM  = %.2f\n",(100.0*((double)values_cpu[2][1]/values_cpu[2][0])));
 					printf("L2_LDM  = %.2f\n",(100.0*((double)values_cpu[2][2]/values_cpu[2][1])));
 					printf("L2_STM  = %.2f\n",(100.0*((double)values_cpu[2][3]/values_cpu[2][1])));
