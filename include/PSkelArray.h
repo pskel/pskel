@@ -299,7 +299,7 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void copyTo(size_t sJump, size_t tJump, size_t offset);
+	void copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOffset);
 	#endif
 
 	#ifdef PSKEL_MPPA
