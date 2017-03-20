@@ -14,7 +14,7 @@
 #define ARGC_SLAVE 4
 // #define DEBUG
 // #define BUG_TEST
-// #define PRINT_OUT
+#define PRINT_OUT
 // #define TIME_EXEC
 // #define TIME_SEND
 #include "../../include/PSkel.h"
