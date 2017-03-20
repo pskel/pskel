@@ -207,8 +207,8 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 	size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
 	size_t totalSize = float(hTiling*wTiling);
 	int tiles = totalSize/nb_clusters;
-  //int hTmod = float(this->input.getHeight())/float(tilingHeight)
-  //int wTmod = float(this->input.getWidth())/float(tilingWidth)
+    //int hTmod = float(this->input.getHeight())/float(tilingHeight)
+    //int wTmod = float(this->input.getWidth())/float(tilingWidth)
 	int itMod = totalSize % nb_clusters;
 
 
@@ -222,7 +222,7 @@ void StencilBase<Array, Mask,Args>::mppaSlice(size_t tilingHeight, size_t tiling
 
 	barrier_t *barrierNbClusters;
 	outterIterations = ceil(float(iterations)/innerIterations);
-	Array inputCopy(this->input.getWidth(),this->input.getHeight());
+    Array inputCopy(this->input.getWidth(),this->input.getHeight());
     //Array outFinal(tilingWidth, totalSize*tilingHeight);
     this->output.portalReadAlloc(nb_clusters, 0);
 
