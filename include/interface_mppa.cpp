@@ -254,6 +254,9 @@ struct timespec mppa_slave_get_time(void) {
 }
 
 double mppa_master_diff_time(struct timeval begin, struct timeval end) {
+    std::cout << begin.tv_sec << ", " << begin.tv_usec << std::endl;
+    std::cout << end.tv_sec << ", " << end.tv_usec << std::endl;
+    std::cout << (end.tv_sec - begin.tv_sec) + (end.tv_usec - begin.tv_usec) << std::endl;
   return (end.tv_sec - begin.tv_sec) + ((end.tv_usec - begin.tv_usec)/1000000.0);
 }
 double mppa_slave_diff_time(struct timespec begin, struct timespec end) {

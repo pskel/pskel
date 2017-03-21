@@ -4,7 +4,7 @@
 
 #define PSKEL_MPPA
 #define MPPA_SLAVE
-#define DEBUG
+// #define DEBUG
 // #define PRINT_OUT
 // #define TIME_EXEC
 // #define TIME_SEND

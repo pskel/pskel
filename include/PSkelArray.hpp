@@ -413,15 +413,15 @@ void ArrayBase<T>::copyToo(size_t offsetSlave, size_t offsetMaster, int tam){
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t offset){
-	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(offset*realDepth);
+void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOffset){
+	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(sOffset*realDepth);
 	// printf("esize: %d, offset: %d, heightOffset: %d, widthOffset: %d, offset: %d\n", esize, offset, heightOffset, widthOffset, offset);
 	int sstride = sJump*sizeof(T);
 	int tstride = tJump*sizeof(T);
 	int ecount = this->height;
 	int size = this->width*sizeof(T);
 	// mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
-	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, 0);
+	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, tOffset);
 
 }
 #endif
