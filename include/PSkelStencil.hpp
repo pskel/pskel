@@ -939,7 +939,7 @@ namespace PSkel{
                     //       printf("InutB4(%d,%d):%d from cluster: %d\n",h,w, inputTmp(h,w), cluster_id);
                     //   }
                     // }
-
+                    //
                     // inputTmp.mppaClone(input);
                     // for(size_t h=0;h<inputTmp.getHeight();h++) {
                     // 	for(size_t w=0;w<inputTmp.getWidth();w++) {
@@ -1876,6 +1876,7 @@ namespace PSkel{
             // size_t maskRange = this->mask.getRange();
             size_t hrange = height-maskRange;
             size_t wrange = width-maskRange;
+            int count = 0;
             // printf("Height: %d, Width: %d, MaskRange: %d", height, width, maskRange);
 #pragma omp parallel num_threads(numThreads)
             {
@@ -1885,9 +1886,9 @@ namespace PSkel{
                 for (size_t h = maskRange; h < hrange; h++){
                     // #pragma simd
                     for (size_t w = maskRange; w < wrange; w++){
-
                         // printf("NumThreads: %d", numThreads);
                         stencilKernel(in,out,this->mask,this->args,h,w);
+                        count++;
                         //#pragma omp simd
                         //out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
 
@@ -1896,6 +1897,8 @@ namespace PSkel{
                         //__builtin_prefetch (in(h,w),0,1,3);
                     }}
             }
+
+            // cout << "DATA: "<< count << "RANGE: " << ((hrange-maskRange)*(wrange-maskRange)) << endl;
             // omp_set_num_threads(numThreads);
             // #pragma omp parallel for
             // for (int h = 0; h < in.getHeight(); h++){
