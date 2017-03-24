@@ -169,11 +169,9 @@ void ArrayBase<T>::mppaFree(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::auxFree(){
-	//if(this->mppaArray!=NULL){
+
 	free(this->aux);
-	//cudaFreeHost(this->hostArray);
 	this->aux = NULL;
-	//}
 }
 #endif
 
@@ -189,11 +187,11 @@ void ArrayBase<T>::hostAlloc(){
 
 template<typename T>
 void ArrayBase<T>::hostFree(){
-	//if(this->hostArray!=NULL){
+
 	free(this->hostArray);
-	//cudaFreeHost(this->hostArray);
+
 	this->hostArray = NULL;
-	//}
+
 }
 
 template<typename T>
@@ -367,7 +365,7 @@ void ArrayBase<T>::auxAlloc(){
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth, int baseWidth){
-	//this->aux[0] = size_t(heightOffset*(tilingHeight*hTiling)*realDepth)+size_t(widthOffset*tilingHeight*realDepth);
+
     this->aux[0] = heightOffset;
 	this->aux[1] = it;
 	this->aux[2] = subIterations;
@@ -415,12 +413,12 @@ void ArrayBase<T>::copyToo(size_t offsetSlave, size_t offsetMaster, int tam){
 template<typename T>
 void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOffset){
 	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(sOffset*realDepth);
-	// printf("esize: %d, offset: %d, heightOffset: %d, widthOffset: %d, offset: %d\n", esize, offset, heightOffset, widthOffset, offset);
+
 	int sstride = sJump*sizeof(T);
 	int tstride = tJump*sizeof(T);
 	int ecount = this->height;
 	int size = this->width*sizeof(T);
-	// mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
+
 	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, tOffset);
 
 }
@@ -431,7 +429,7 @@ template<typename T>
 void ArrayBase<T>::copyTo(){
 	T *mppaSlicePtr = (T*)(this->mppaArray);
 	mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), 0);
-	// mppa_async_write_portal(this->write_portal, mppaSlicePtr, this->memSize(), ecount, sstride, tstride, 0);
+
 
 }
 #endif

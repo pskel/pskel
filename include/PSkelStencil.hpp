@@ -150,7 +150,6 @@ namespace PSkel{
             size_t totalSize = float(hTiling*wTiling);
 
             int tiles = totalSize/nb_clusters;
-            //int wtiles = wTiling/nb_clusters;
 
             int itMod = totalSize % nb_clusters;
 
@@ -207,13 +206,10 @@ namespace PSkel{
             size_t hTiling = ceil(float(this->input.getHeight())/float(tilingHeight));
             size_t totalSize = float(hTiling*wTiling);
             int tiles = totalSize/nb_clusters;
-            //int hTmod = float(this->input.getHeight())/float(tilingHeight)
-            //int wTmod = float(this->input.getWidth())/float(tilingWidth)
             int itMod = totalSize % nb_clusters;
 
 
 
-            //this->output.portalReadAlloc(nb_clusters, 0);
             size_t outterIterations;
             size_t heightOffset;
             size_t widthOffset;
@@ -223,18 +219,9 @@ namespace PSkel{
             barrier_t *barrierNbClusters;
             outterIterations = ceil(float(iterations)/innerIterations);
             Array inputCopy(this->input.getWidth(),this->input.getHeight());
-            //Array outFinal(tilingWidth, totalSize*tilingHeight);
             this->output.portalReadAlloc(nb_clusters, 0);
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hr_timer_t totTimerMaster;
-            hr_timer_t sendTimerMaster;
-            hr_timer_t modTimerMaster;
-            //timer
-            hrt_start(&totTimerMaster);
-#endif
 
-            struct timeval masterStart = mppa_master_get_time();
 
             for(size_t it = 0; it<outterIterations; it++){
                 size_t subIterations = innerIterations;
@@ -247,31 +234,17 @@ namespace PSkel{
                     Array outputNumberHt[totalSize];
                     Array tmp;
                     ////////////////////////////////Number of clusters are higher//////////////
-#ifdef DEBUG
-                    cout<<"MASTER ["<<it<<"]: number of clusters are higher than number of tilings"<<endl;
-#endif
-
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier CREATED"<<endl;
-#endif
                     barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, totalSize);
 
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 1"<<endl;
-#endif
                     mppa_barrier_wait(barrierNbClusters);
 
                     for (int i = 0; i < totalSize; i++) {
                         outputNumberHt[i].portalAuxWriteAlloc(i);
                     }
 
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 2"<<endl;
-#endif
                     mppa_barrier_wait(barrierNbClusters);
 
                     int tS = 0;
-                    struct timeval masterAuxStart = mppa_master_get_time();
                     for (int ht = 0; ht < hTiling; ht++) {
                         for (int wt = 0; wt < wTiling; wt++) {
                             heightOffset = ht*tilingHeight;
@@ -279,13 +252,9 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             outputNumberHt[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             outputNumberHt[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-                            // outputNumberHt[tS].copyToAux();
-                            // outputNumberHt[tS].waitAuxWrite();
                             tS++;
                         }
                     }
-                    struct timeval masterAuxEnd = mppa_master_get_time();
-                    // cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
 
                     for (int i = 0; i < totalSize; i++) {
                         outputNumberHt[i].copyToAux();
@@ -297,25 +266,13 @@ namespace PSkel{
                     for (int i = 0; i < totalSize; i++) {
                         outputNumberHt[i].closeAuxWritePortal();
                     }
-                    // #ifdef DEBUG
-                    // 	cout<<"MASTER["<<it<<"]: Barrier 3"<<endl;
-                    // #endif
-                    // mppa_barrier_wait(barrierNbClusters);
 
                     for (int i = 0; i < totalSize; i++) {
                         slice[i].portalWriteAlloc(i);
                     }
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 3"<<endl;
-#endif
                     mppa_barrier_wait(barrierNbClusters);
                     tS = 0;
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_start(&sendTimerMaster);
-#endif
-                    // mppa_barrier_wait(barrierNbClusters);
-                    struct timeval masterSendStart = mppa_master_get_time();
 
                     for(int ht = 0; ht < hTiling; ht++) {
                         for(int wt = 0; wt < wTiling; wt++){
@@ -324,58 +281,26 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             slice[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
-                            //Array tmp(tiling.width, tiling.height);
-                            //tmp.mppaMasterCopy(slice[tS]);
-                            // slice[tS].mppaMasterClone(tmp);
-                            //slice[tS].copyTo();
-                            //slice[tS].waitWrite();
                             tS++;
                         }
                     }
-                    struct timeval masterSendEnd = mppa_master_get_time();
-                    // cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
-
-                    // for (int i = 0; i < totalSize; i++) {
-                    // }
                     for (int i = 0; i < totalSize; i++) {
                         slice[i].waitWrite();
                     }
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_stop(&sendTimerMaster);
-#endif
-                    // this->output.setTrigger(totalSize);
-                    // this->output.copyFrom();
-                    // mppa_barrier_wait(barrierNbClusters);
-                    // this->output.setTrigger(tilingHeight);
                     this->output.setTrigger(totalSize);
-                    // for (int i = 0; i < totalSize; i++) {
                     this->output.copyFrom();
-                    // }
                     for (int i = 0; i < totalSize; i++) {
-                        // slice[i].mppaFree();
                         slice[i].closeWritePortal();
                     }
-                    // #ifdef DEBUG
-                    // 	cout<<"MASTER["<<it<<"]: Barrier 4"<<endl;
-                    // #endif
 
                     mppa_close_barrier(barrierNbClusters);
-# if defined (DEBUG) || defined (TIME_SEND)
-                    cout << "Master Send Time: " << hrt_elapsed_time(&sendTimerMaster) << " from iteration " << it << endl;
-#endif
                 } else {
                     ///////////////////////////hTiling is higher///////////////////////////////
-#ifdef DEBUG
-                    cout<<"MASTER ["<<it<<"]: number of tiles are higher than number of clusters"<<endl;
-#endif
                     int counter = 0;
 
                     Array cluster[nb_clusters];
                     Array tmp;
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier CREATED"<<endl;
-#endif
                     barrierNbClusters = mppa_create_master_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE, nb_clusters);
 
                     Array outputNumberNb[nb_clusters];
@@ -388,22 +313,14 @@ namespace PSkel{
                     int ht = 0;
                     int wt = 0;
                     for(int i = 0; i < tiles; i++) {
-                        struct timeval masterBlastStart = mppa_master_get_time();
 
-#ifdef DEBUG
-                        cout<<"MASTER["<<it<<"]: Barrier 1 from tile: "<< i <<endl;
-#endif
                         mppa_barrier_wait(barrierNbClusters);
 
                         for (int i = 0; i < nb_clusters; i++) {
                             outputNumberNb[i].portalAuxWriteAlloc(i);
                         }
 
-#ifdef DEBUG
-                        cout<<"MASTER["<<it<<"]: Barrier 2 from tile: " << i <<endl;
-#endif
                         mppa_barrier_wait(barrierNbClusters);
-                        // mppa_barrier_wait(barrierNbClusters);
                         int tS = 0;
 
                         auxHt = baseItHt;
@@ -411,20 +328,15 @@ namespace PSkel{
                         if (auxWt == wTiling) {
                             auxHt++;
                             auxWt = 0;
-                            //baseItWt = 0;
                         }
-                        struct timeval masterAuxStart = mppa_master_get_time();
 
                         for (auxHt; auxHt < hTiling; auxHt++) {
-                            //auxWt = baseItWt;
                             for (auxWt; auxWt < wTiling; auxWt++) {
                                 heightOffset = auxHt*tilingHeight;
                                 widthOffset = auxWt*tilingWidth;
                                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                                 outputNumberNb[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                                 outputNumberNb[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-                                // outputNumberNb[tS].copyToAux();
-                                // outputNumberNb[tS].waitAuxWrite();
                                 tS++;
                                 if (tS >= nb_clusters) {
                                     auxHt = hTiling;
@@ -436,8 +348,6 @@ namespace PSkel{
                             }
 
                         }
-                        struct timeval masterAuxEnd = mppa_master_get_time();
-                        // cout<<"Master Set Aux Time: " << mppa_master_diff_time(masterAuxStart,masterAuxEnd) << endl;
 
                         for (int i = 0; i < nb_clusters; i++) {
                             outputNumberNb[i].copyToAux();
@@ -449,42 +359,20 @@ namespace PSkel{
                             outputNumberNb[i].closeAuxWritePortal();
                         }
 
-                        // #ifdef DEBUG
-                        // 	cout<<"MASTER["<<it<<"]: Barrier 3 from tile: "<< i <<endl;
-                        // #endif
-                        //mppa_barrier_wait(barrierNbClusters);
 
                         for (int i = 0; i < nb_clusters; i++) {
                             cluster[i].portalWriteAlloc(i);
                         }
-#ifdef DEBUG
-                        cout<<"MASTER["<<it<<"]: Barrier 3 from tile: " << i <<endl;
-#endif
                         mppa_barrier_wait(barrierNbClusters);
-                        // for (int j = 0; j < nb_clusters; j++)
                         tS = 0;
                         ht = baseItHt;
                         wt = baseItWt;
                         if (wt == wTiling) {
                             ht++;
                             wt = 0;
-                            //baseItWt = 0;
                         }
-                        // #ifdef DEBUG
-                        // 	cout<<"MASTER["<<it<<"]: Barrier 5 from tile: " << i <<endl;
-                        // #endif
-                        //mppa_barrier_wait(barrierNbClusters);
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-                        hrt_start(&sendTimerMaster);
-#endif
-                        struct timeval masterSendStart = mppa_master_get_time();
-                        struct timeval masterCopyItStart;
-                        struct timeval masterCopyItEnd;
-                        struct timeval masterSendItEnd;
 
                         for (ht; ht < hTiling; ht++) {
-                            //wt = baseItWt;
                             for (wt; wt < wTiling; wt++) {
                                 masterCopyItStart = mppa_master_get_time();
                                 heightOffset = ht*tilingHeight;
@@ -512,8 +400,6 @@ namespace PSkel{
                                     wt = wTiling;
                                 }
                                 masterSendItEnd = mppa_master_get_time();
-                                // cout<<"Master Copy Iteration Time: " << mppa_master_diff_time(masterCopyItStart, masterCopyItEnd) << " to cluster: " << tS <<  endl;
-                                // cout<<"Master Send Iteration Time: " << mppa_master_diff_time(masterCopyItStart, masterSendItEnd) << " to cluster: " << tS <<  endl;
 
                             }
                             if (wt == wTiling) {
@@ -521,60 +407,24 @@ namespace PSkel{
                             }
                         }
 
-                        // for (int i = 0; i < nb_clusters; i++) {
-                        //    cluster[i].copyTo();
-                        // }
-
 
                         for (int i = 0; i < nb_clusters; i++) {
                             cluster[i].waitWrite();
                         }
-                        struct timeval masterSendEnd = mppa_master_get_time();
-                        // cout<<"Master Send Time: " << mppa_master_diff_time(masterSendStart,masterSendEnd) << endl;
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-                        hrt_stop(&sendTimerMaster);
-#endif
-
-#ifdef DEBUG
-                        cout<<"MASTER["<<it<<"]: Waiting processed data from clusters"<<endl;
-#endif
 
 
-                        // #ifdef DEBUG
-                        // 	cout<<"MASTER["<<it<<"]: Barrier 6 from tile: " << i <<endl;
-                        // #endif
-                        //mppa_barrier_wait(barrierNbClusters);
 
-                        // this->output.setTrigger(tilingHeight);
                         this->output.setTrigger(nb_clusters);
-                        struct timeval masterRecvStart = mppa_master_get_time();
 
-                        // for (int i = 0; i < nb_clusters; i++) {
                         this->output.copyFrom();
-                        // }
-                        struct timeval masterRecvEnd = mppa_master_get_time();
-                        // cout<<"Master Recv Time: " << mppa_master_diff_time(masterRecvStart,masterRecvEnd) << endl;
-
-#ifdef DEBUG
-                        cout<<"MASTER["<<it<<"]: Received processed data from clusters"<<endl;
-#endif
 
 
                         for (int i = 0; i < nb_clusters; i++) {
-                            // cluster[i].mppaFree();
                             cluster[i].closeWritePortal();
                         }
 
-# if defined (DEBUG) || defined (TIME_SEND)
-                        cout << "Master Send Time: " << hrt_elapsed_time(&sendTimerMaster) << " from iteration: " << it << " and tile: " << i << endl;
-#endif
-                        struct timeval masterBlastEnd = mppa_master_get_time();
-                        // cout<<"Master Blast Time: " << mppa_master_diff_time(masterBlastStart,masterBlastEnd) << endl;
 
                     }
-                    struct timeval masterEnd = mppa_master_get_time();
-                    // cout<<"Master Total Time: " << mppa_master_diff_time(masterStart,masterEnd) << endl;
 
                     int hTilingMod = hTiling;
                     int wTilingMod = wTiling;
@@ -582,9 +432,6 @@ namespace PSkel{
                         hTilingMod = itMod;
                         wTilingMod = itMod;
                     }
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 4"<<endl;
-#endif
                     mppa_barrier_wait(barrierNbClusters);
 
                     for(int j = 0; j < itMod; j++) {
@@ -592,17 +439,12 @@ namespace PSkel{
                     }
 
                     mppa_barrier_wait(barrierNbClusters);
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 5"<<endl;
-#endif
-                    // mppa_barrier_wait(barrierNbClusters);
                     int tS = 0;
                     auxHt = baseItHt;
                     auxWt = baseItWt;
                     if (auxWt == wTilingMod) {
                         auxHt++;
                         auxWt = 0;
-                        //baseItWt = 0;
                     }
                     for (auxHt; auxHt < hTilingMod; auxHt++) {
                         for (auxWt; auxWt < wTilingMod; auxWt++) {
@@ -611,8 +453,6 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             outputNumberMod[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             outputNumberMod[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
-                            // outputNumberMod[tS].copyToAux();
-                            // outputNumberMod[tS].waitAuxWrite();
                             tS++;
                         }
                         auxWt = 0;
@@ -628,19 +468,12 @@ namespace PSkel{
                         outputNumberMod[i].closeAuxWritePortal();
                     }
 
-                    // #ifdef DEBUG
-                    // 	cout<<"MASTER["<<it<<"]: Barrier 9"<<endl;
-                    // #endif
-                    //mppa_barrier_wait(barrierNbClusters);
 
                     for(int j = 0; j < itMod; j++) {
                         cluster[j].portalWriteAlloc(j);
                     }
                     mppa_barrier_wait(barrierNbClusters);
 
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier 6"<<endl;
-#endif
 
                     tS = 0;
                     ht = baseItHt;
@@ -648,13 +481,8 @@ namespace PSkel{
                     if (wt == wTiling) {
                         ht++;
                         wt = 0;
-                        //baseItWt = 0;
                     }
 
-#if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_start(&modTimerMaster);
-#endif
-                    //mppa_barrier_wait(barrierNbClusters);
                     for (ht; ht < hTilingMod; ht++) {
                         for (wt; wt < wTilingMod; wt++) {
                             heightOffset = ht*tilingHeight;
@@ -662,31 +490,19 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
-                            // cluster[tS].copyTo();
-                            // cluster[tS].waitWrite();
                             tS++;
                         }
                         wt = 0;
                     }
-# if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_stop(&modTimerMaster);
-#endif
 
-                    // for (int i = 0; i < itMod; i++) {
-                    // cluster[i].copyTo();
-                    // }
                     for (int i = 0; i < itMod; i++) {
                         cluster[i].waitWrite();
                     }
                     this->output.setTrigger(itMod);
 
-                    // mppa_barrier_wait(barrierNbClusters);
 
                     this->output.copyFrom();
 
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Received processed data of remaining tiles from clusters"<<endl;
-#endif
 
                     for (int i = 0; i < itMod; i++) {
                         cluster[i].closeWritePortal();
@@ -694,14 +510,8 @@ namespace PSkel{
                     for(int i = 0; i < itMod; i++) {
                         outputNumberMod[i].auxFree();
                     }
-#ifdef DEBUG
-                    cout<<"MASTER["<<it<<"]: Barrier CLOSED"<<endl;
-#endif
                     mppa_close_barrier(barrierNbClusters);
 
-# if defined (DEBUG) || defined (TIME_SEND)
-                    cout << "Master Send Mod Time: "<< hrt_elapsed_time(&modTimerMaster) << " from iteration: " << it << endl;
-#endif
                 }
 
                 inputCopy.mppaMasterCopy(this->input);
@@ -711,27 +521,12 @@ namespace PSkel{
             }
 
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&totTimerMaster);
-#endif
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-            cout << "Master Total Time: "<< hrt_elapsed_time(&totTimerMaster) << endl;
-#endif
 
             inputCopy.mppaFree();
             this->output.closeReadPortal();
             this->output.mppaMasterCopy(this->input);
 
 
-#ifdef PRINT_OUT
-            for(size_t h=0;h<this->output.getHeight();h++) {
-                for(size_t w=0;w<this->output.getWidth();w++) {
-                    printf("FinalOutput(%d,%d):%d\n",h,w, output(h,w));
-                }
-            }
-
-#endif
         }
 #endif
 
@@ -749,9 +544,7 @@ namespace PSkel{
             if(totalSize < nb_clusters)
                 nb_clusters = totalSize;
             for (pid = 0; pid < nb_clusters; pid++) {
-                // printf("PID: %d", pid);
                 wait = mppa_waitpid(pid, NULL, 0);
-                // printf("Wait: %d", wait);
                 assert(wait != -1);
             }
         }
@@ -762,63 +555,11 @@ namespace PSkel{
     template<class Array, class Mask, class Args>
         void StencilBase<Array, Mask,Args>::scheduleMPPA(const char slave_bin_name[], int nb_clusters, int nb_threads, size_t tilingHeight, size_t tilingWidth, int iterations, int innerIterations){
 
-            struct timeval scheduleInit = mppa_master_get_time();
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            hr_timer_t scheduleTimerSpawn;
-            hr_timer_t scheduleTimerSlice;
-            hr_timer_t scheduleTimerWait;
-            hr_timer_t scheduleTimer;
-            // #endif
-
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_start(&scheduleTimer);
-            // #endif
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_start(&scheduleTimerSpawn);
-#endif
             this->spawn_slaves(slave_bin_name, tilingHeight, tilingWidth, nb_clusters, nb_threads, iterations, innerIterations);
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&scheduleTimerSpawn);
-#endif
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-            cout << "Schedule Time Spawn: "<< hrt_elapsed_time(&scheduleTimerSpawn) << endl;
-#endif
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_start(&scheduleTimerSlice);
-#endif
             this->mppaSlice(tilingHeight, tilingWidth, nb_clusters, iterations, innerIterations);
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&scheduleTimerSlice);
-#endif
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-            cout << "Schedule Slice Time: "<< hrt_elapsed_time(&scheduleTimerSlice) << endl;
-#endif
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_start(&scheduleTimerWait);
-#endif
             this->waitSlaves(nb_clusters, tilingHeight, tilingWidth);
-# if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&scheduleTimerWait);
-#endif
-
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&scheduleTimer);
-            // #endif
-
-# if defined (DEBUG) || defined (TIME_EXEC)
-            cout << "Schedule Wait Time: "<< hrt_elapsed_time(&scheduleTimerWait) << endl;
-#endif
-
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            cout << "Schedule Time: "<< hrt_elapsed_time(&scheduleTimer) << endl;
-            // #endif
-            struct timeval scheduleEnd = mppa_master_get_time();
-            cout << "ScheduleTime: " << mppa_master_diff_time(scheduleInit, scheduleEnd) << endl;
 
         }
 #endif
@@ -835,61 +576,25 @@ namespace PSkel{
             Array input;
             Array auxPortal;
             int *aux;
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            hr_timer_t totTimerSlave;
-            hr_timer_t compTimerSlave;
-            hr_timer_t sendTimerSlave;
-            //timer
-            hrt_start(&totTimerSlave);
-            // #endif
-
-#ifdef DEBUG
-            cout<<"SLAVE["<<cluster_id<<"]: opened finalArr portal in write mode"<<endl;
-#endif
-            struct timespec slaveStart=mppa_slave_get_time();
 
             for(int j = 0; j < outterIterations; j++) {
                 barrier_t *global_barrier = mppa_create_slave_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
                 for(int i = 0; i < nb_tiles; i++) {
                     mppa_barrier_wait(global_barrier);
-                    struct timespec slaveItStart=mppa_slave_get_time();
-                    struct timespec slaveItExtraStart=mppa_slave_get_time();
-
-                    //auxPortal.auxAlloc();
 
                     if(i == 0) {
                         auxPortal.portalAuxReadAlloc(1, cluster_id);
                         finalArr.portalWriteAlloc(0);
-#ifdef DEBUG
-                        cout<<"SLAVE["<<cluster_id<<"]: opened auxPortal in read mode for iteration #"<<j<<endl;
-#endif
                     }
 
-                    struct timespec slaveBarrierAuxStart=mppa_slave_get_time();
                     mppa_barrier_wait(global_barrier);
-                    struct timespec slaveBarrierAuxEnd=mppa_slave_get_time();
-                    // cout<<"Slave Barrier Aux Time: " << mppa_slave_diff_time(slaveBarrierAuxStart,slaveBarrierAuxEnd) << endl;
-
-                    struct timespec slaveItExtraEnd=mppa_slave_get_time();
-                    // cout<<"Slave Iteration Extra Time: " << mppa_slave_diff_time(slaveItExtraStart,slaveItExtraEnd) << endl;
-
-                    struct timespec slaveAuxRecvStart=mppa_slave_get_time();
                     auxPortal.copyFromAux();
-                    struct timespec slaveAuxRecvEnd=mppa_slave_get_time();
-                    // cout<<"Slave Recv Aux Time: " << mppa_slave_diff_time(slaveAuxRecvStart,slaveAuxRecvEnd) << endl;
-
-                    struct timespec slaveAuxStart=mppa_slave_get_time();
-
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: copied data from auxPortal"<<endl;
-#endif
 
                     aux = auxPortal.getAux();
 
                     int heightOffset = aux[0];
                     int it = aux[1];
                     int subIterations = aux[2];
-                    // int subIterations = 1;
                     int coreWidthOffset = aux[3];
                     int coreHeightOffset = aux[4];
                     int coreDepthOffset = aux[5];
@@ -897,42 +602,19 @@ namespace PSkel{
                     int coreHeight = aux[7];
                     int coreDepth = aux[8];
                     int h = aux[10];
-                    // int h = 128;
                     int w = aux[11];
-                    // int w = 128;
                     int d = aux[12];
-                    // int d = 1;
                     int widthOffset = aux[13];
                     int baseWidth = aux[14];
 
 
-#ifdef DEBUG
-                    // cout<< "SLAVE["<<cluster_id<<"]"<<endl;
-                    cout<<"SLAVE["<<cluster_id<<"]: values of h: " << h << " w: " << w << " d: " << d <<endl;
-#endif
-                    //mppa_barrier_wait(global_barrier);
                     tmp.mppaAlloc(w,h,d);
                     inputTmp.mppaAlloc(w,h,d);
                     outputTmp.mppaAlloc(w,h,d);
                     inputTmp.portalReadAlloc(1, cluster_id);
-                    struct timespec slaveAuxEnd=mppa_slave_get_time();
-                    // cout<<"Slave Aux Time: " << mppa_slave_diff_time(slaveAuxStart,slaveAuxEnd) << endl;
-
-                    struct timespec slaveBarrierInputStart=mppa_slave_get_time();
                     mppa_barrier_wait(global_barrier);
-                    struct timespec slaveBarrierInputEnd=mppa_slave_get_time();
-                    // cout<<"Slave Barrier Input Time: " << mppa_slave_diff_time(slaveBarrierInputStart, slaveBarrierInputEnd) <<  endl;
 
-
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: opened inputTmp portal in read mode of iteration #"<<j<<endl;
-#endif
-
-
-                    //mppa_barrier_wait(global_barrier);
-                    struct timespec slaveCopyStart=mppa_slave_get_time();
                     inputTmp.copyFrom();
-                    struct timespec slaveCopyEnd=mppa_slave_get_time();
                     // cout<<"Slave Copy Time: " << mppa_slave_diff_time(slaveCopyStart,slaveCopyEnd) << " from slave: " << cluster_id <<  endl;
                     // for(size_t h=0;h<inputTmp.getHeight();h++) {
                     //   for(size_t w=0;w<inputTmp.getWidth();w++) {
@@ -947,21 +629,7 @@ namespace PSkel{
                     //   }
                     // }
 
-                    // input.mppaFree();
-                    // input.auxFree();
-                    struct timespec slaveCompStart=mppa_slave_get_time();
-
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: is processing tile of iteration #"<<j<<" with "<<subIterations<<" subIterations"<<endl;
-#endif
-                    //time
-# if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_start(&compTimerSlave);
-#endif
-
-                    struct timespec slaveRunStart=mppa_slave_get_time();
                     this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
-                    struct timespec slaveRunEnd=mppa_slave_get_time();
                     // cout<<"Slave Computation Time: " << mppa_slave_diff_time(slaveRunStart, slaveRunEnd) <<  endl;
                     // for(size_t h=0;h<outputTmp.getHeight();h++) {
                     // 	for(size_t w=0;w<outputTmp.getWidth();w++) {
@@ -969,59 +637,18 @@ namespace PSkel{
                     //   }
                     // }
 
-# if defined (DEBUG) || defined (TIME_EXEC)
-                    hrt_stop(&compTimerSlave);
-                    cout << "Slave["<< cluster_id << "] Computation Time: " << hrt_elapsed_time(&compTimerSlave) << endl;
-#endif
-
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: finished processing tile of iteration #"<<j<<endl;
-#endif
-
                     if (subIterations%2==0) {
                         tmp.mppaMemCopy(inputTmp);
                     } else {
                         tmp.mppaMemCopy(outputTmp);
                     }
 
-                    struct timespec slaveSliceStart=mppa_slave_get_time();
-                    // Array fTmp;
                     finalArr.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-                    // finalArr.mppaClone(fTmp);
-                    struct timespec slaveSliceEnd=mppa_slave_get_time();
-                    // cout<<"Slave Final Slice Time: " << mppa_slave_diff_time(slaveSliceStart, slaveSliceEnd) <<  endl;
-
-
-                    // int slaveBaseHeight = 0;
-                    // int tam = finalArr.getWidth()*finalArr.getDepth();
                     int masterBaseWidth = (heightOffset*baseWidth) + widthOffset;
-                    // # if defined (DEBUG) || defined (TIME_EXEC)
-                    // 	hrt_start(&sendTimerSlave);
-                    // 	#endif
-                    // struct timespec sendStart=mppa_slave_get_time();
-                    //
-                    //       for (int i = 0; i < finalArr.getHeight(); i++) {
-                    //           finalArr.copyToo(slaveBaseHeight, masterBaseWidth, tam);
-                    //           slaveBaseHeight += finalArr.getWidth();
-                    //           masterBaseWidth += baseWidth;
-                    //       	  finalArr.waitWrite();
-                    //       }
-                    // struct timespec sendEnd=mppa_slave_get_time();
-                    // // cout<<"Slave Send Time: " << mppa_slave_diff_time(sendStart,sendEnd) << endl;
-                    // 	# if defined (DEBUG) || defined (TIME_EXEC)
-                    // 	hrt_stop(&sendTimerSlave);
-                    // 	#endif
-                    //mppa_barrier_wait(global_barrier);
                     finalArr.copyTo(coreWidth, baseWidth, 0, masterBaseWidth);
                     finalArr.waitWrite();
                     tmp.mppaFree();
                     tmp.auxFree();
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: copied tile data of iteration #"<<j<<" to master"<<endl;
-#endif
-
-
-                    // cout<<"Slave Input Size: " << inputTmp.getHeight() << ", " << inputTmp.getWidth() << endl;
                     inputTmp.mppaFree();
                     inputTmp.auxFree();
 
@@ -1029,61 +656,20 @@ namespace PSkel{
                     outputTmp.mppaFree();
                     outputTmp.auxFree();
 
-                    //auxPortal.mppaFree();
-                    // finalArr.mppaFree();
-                    // finalArr.auxFree();
                     inputTmp.closeReadPortal();
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: closed read portal of inputTmp for tile  of iteration #"<<j<<endl;
-#endif
+
                     if (i == (nb_tiles-1)) {
                         auxPortal.closeAuxReadPortal();
                         finalArr.closeWritePortal();
-#ifdef DEBUG
-                        cout<<"SLAVE["<<cluster_id<<"]: closed read portal of auxPortal for iteration #"<<j<<endl;
-#endif
-
                     }
-                    struct timespec slaveCompEnd=mppa_slave_get_time();
-                    // cout<<"Slave Run Computation Time: " << mppa_slave_diff_time(slaveCompStart,slaveCompEnd) << endl;
-
-                    struct timespec slaveItEnd=mppa_slave_get_time();
-                    // cout<<"Slave Run Iteration Time: " << mppa_slave_diff_time(slaveItStart,slaveItEnd) << endl;
-
                 }
                 if(cluster_id >= itMod) {
-                    struct timespec modBarrierStart = mppa_slave_get_time();
-#ifdef DEBUG
-                    cout<<"SLAVE["<<cluster_id<<"]: is insided InOut Barrier for iteration "<<j<<endl;
-#endif
-                    //mppa_barrier_wait(global_barrier);
-                    //mppa_barrier_wait(global_barrier);
-                    //mppa_barrier_wait(global_barrier);
                     mppa_barrier_wait(global_barrier);
                     mppa_barrier_wait(global_barrier);
                     mppa_barrier_wait(global_barrier);
-                    struct timespec modBarrierEnd = mppa_slave_get_time();
-                    // cout << "Time inside mod barriers: " << mppa_slave_diff_time(modBarrierStart, modBarrierEnd) << endl;
                 }
-                //finalArr.mppaFree();
-                //finalArr.auxFree();
                 mppa_close_barrier(global_barrier);
             }
-
-            struct timespec slaveEnd=mppa_slave_get_time();
-            cout<<"Slave Run Time: " << mppa_slave_diff_time(slaveStart,slaveEnd) << endl;
-
-            //time
-            // # if defined (DEBUG) || defined (TIME_EXEC)
-            hrt_stop(&totTimerSlave);
-            cout << "Slave["<< cluster_id << "] Total Time: "<< hrt_elapsed_time(&totTimerSlave) << endl;
-            cout << "Slave["<< cluster_id << "] Send Time: " << hrt_elapsed_time(&sendTimerSlave) << endl;
-            // #endif
-
-#ifdef DEBUG
-            cout<<"SLAVE["<<cluster_id<<"]: closed write portal for finalArr"<<endl;
-#endif
-            // mppa_exit(0);
 
         }
 #endif
@@ -1095,7 +681,6 @@ namespace PSkel{
             size_t height = this->input.getHeight();
             size_t depth = this->input.getDepth();
             size_t maskRange = this->mask.getRange();
-            // cout << "Print for test" << endl;
             for(int i = 0; i < iterations; i++) {
                 if(i%2==0) {
                     this->runOpenMP(in, out, width, height, depth, maskRange, numThreads);
@@ -1870,41 +1455,17 @@ namespace PSkel{
 #ifndef MPPA_MASTER
     template<class Array, class Mask, class Args>
         inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads){
-            //omp_set_num_threads(numThreads);
-            //size_t height = in.getHeight();
-            //size_t width = in.getWidth();
-            // size_t maskRange = this->mask.getRange();
             size_t hrange = height-maskRange;
             size_t wrange = width-maskRange;
             int count = 0;
-            // printf("Height: %d, Width: %d, MaskRange: %d", height, width, maskRange);
 #pragma omp parallel num_threads(numThreads)
             {
-                // printf("Thread %d computing CPU stencil kernel\n",omp_get_thread_num());
-                // printf("hrange: %d, wrange: %d\n", hrange, wrange);
 #pragma omp for
                 for (size_t h = maskRange; h < hrange; h++){
-                    // #pragma simd
                     for (size_t w = maskRange; w < wrange; w++){
-                        // printf("NumThreads: %d", numThreads);
                         stencilKernel(in,out,this->mask,this->args,h,w);
-                        count++;
-                        //#pragma omp simd
-                        //out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args.h);
-
-                        //__builtin_prefetch (&in(h-1,w),0,1,2);
-                        //__builtin_prefetch (&in(h+1,w),0,1,2);
-                        //__builtin_prefetch (in(h,w),0,1,3);
                     }}
             }
-
-            // cout << "DATA: "<< count << "RANGE: " << ((hrange-maskRange)*(wrange-maskRange)) << endl;
-            // omp_set_num_threads(numThreads);
-            // #pragma omp parallel for
-            // for (int h = 0; h < in.getHeight(); h++){
-            // for (int w = 0; w < in.getWidth(); w++){
-            // 	stencilKernel(in,out,this->mask,this->args,h,w);
-            // }}
         }
 #endif
 
