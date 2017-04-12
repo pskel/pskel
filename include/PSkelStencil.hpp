@@ -2203,11 +2203,11 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 	size_t hrange = height-maskRange;
 	size_t wrange = width-maskRange;
   	#ifdef CACHE_BLOCK
-	#define TH 32
-	#define TW 128
+	#define TH 64 
+	#define TW 64
 	#pragma omp parallel num_threads(numThreads)
 	{
-	#pragma ivdep
+	//#pragma ivdep
 	#pragma omp for
 	for(size_t hh = maskRange; hh < hrange;hh+=TH){
 	for(size_t ww = maskRange; ww < wrange; ww+=TW){
@@ -2217,9 +2217,9 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 			//__builtin_prefetch (&in(h+1,ww),0,3);
 			//__builtin_prefetch (&out(h,ww),1,1);	
 			//#pragma omp simd
-			#pragma vector aligned
+			//#pragma vector aligned
 			for(size_t w = ww; w < MIN(ww+TW,width-maskRange);w++){
-				#pragma forceinline recursive
+				//#pragma forceinline recursive
 				stencilKernel(in,out,this->mask, this->args,h,w);
 				//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w));
 				//__builtin_prefetch (&in(h-1,w),0,1,2);
