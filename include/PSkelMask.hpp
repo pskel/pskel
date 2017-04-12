@@ -290,15 +290,17 @@ void Mask2D<T>::set(size_t n, int h,int w){
 }
 */	
 template<typename T> template<typename V>
-__forceinline__ __host__ __device__ T Mask2D<T>::get(size_t n, Array2D<V> array, size_t h, size_t w){
+__forceinline __host__ __device__ T & Mask2D<T>::get(size_t n, Array2D<V> array, size_t h, size_t w) const{
 	#ifdef __CUDA_ARCH__
 		h += this->deviceMask[this->dimension*n];
 		w += this->deviceMask[this->dimension*n+1];
-		return (w<array.getWidth() && h<array.getHeight())?array(h,w):this->haloValue;
+		//return (w<array.getWidth() && h<array.getHeight())?array(h,w):this->haloValue;
+		return array(h,w);
 	#else
 		h += this->hostMask[this->dimension*n];
 		w += this->hostMask[this->dimension*n+1];
-		return (w<array.getWidth() && h<array.getHeight())?array(h,w):this->haloValue;
+		//return (w<array.getWidth() && h<array.getHeight())?array(h,w):this->haloValue;
+		return array(h,w);
 	#endif
 }
 	
