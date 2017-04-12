@@ -374,7 +374,7 @@ namespace PSkel{
 
                         for (ht; ht < hTiling; ht++) {
                             for (wt; wt < wTiling; wt++) {
-                                masterCopyItStart = mppa_master_get_time();
+                                // masterCopyItStart = mppa_master_get_time();
                                 heightOffset = ht*tilingHeight;
                                 widthOffset = wt*tilingWidth;
                                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
@@ -390,7 +390,7 @@ namespace PSkel{
                                 // cout<<"Tile size(" << ht <<","<< wt << ") is: H(" << tmp.getHeight() << ") ~ W(" << tmp.getWidth() << ")" << endl;
                                 // sleep(1);
                                 // cluster[tS].mppaMasterClone(tmp);
-                                masterCopyItEnd = mppa_master_get_time();
+                                // masterCopyItEnd = mppa_master_get_time();
                                 // cluster[tS].copyTo();
                                 tS++;
                                 if (tS >= nb_clusters) {
@@ -399,7 +399,7 @@ namespace PSkel{
                                     baseItWt = wt + 1;
                                     wt = wTiling;
                                 }
-                                masterSendItEnd = mppa_master_get_time();
+                                // masterSendItEnd = mppa_master_get_time();
 
                             }
                             if (wt == wTiling) {
