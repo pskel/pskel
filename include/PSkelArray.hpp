@@ -419,7 +419,7 @@ void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOf
 	int ecount = this->height;
 	int size = this->width*sizeof(T);
 
-	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, tOffset);
+	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, sizeof(T)*tOffset);
 
 }
 #endif

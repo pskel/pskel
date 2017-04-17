@@ -30,33 +30,33 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
     int numberA = 0;
     int numberI = 0;
     int level = arg.level;
-    // for (int z = 0; z < mask.size; z++) {
-    //   if(z < arg.internCircle) {
-    //     numberA += mask.get(z, input, h, w);
-    //
-    //   } else {
-    //     numberI += mask.get(z, input, h, w);
-    //     //printf("I: %d\n", numberI);
-    //   }
-    // }
-    //
-    for (int x = (level-2*level); x <= level; x++) {
-  		for (int y = (level-2*level); y <= level; y++) {
-  			if (x != 0 || y != 0) {
-            numberA += input(h+x, w+y);
-  			}
-  		}
+    for (int z = 0; z < mask.size; z++) {
+      if(z < arg.internCircle) {
+        numberA += mask.get(z, input, h, w);
+
+      } else {
+        numberI += mask.get(z, input, h, w);
+        //printf("I: %d\n", numberI);
+      }
     }
 
-  	for (int x = (2*level-4*level); x <= 2*level; x++) {
-  		for (int y = (2*level-4*level); y <= 2*level; y++) {
-  			if (x != 0 || y != 0) {
-  				if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
-					    numberI += input(h+x,w+y);
-  				}
-  			}
-  		}
-  	}
+    // for (int x = (level-2*level); x <= level; x++) {
+  	// 	for (int y = (level-2*level); y <= level; y++) {
+  	// 		if (x != 0 || y != 0) {
+    //         numberA += input(h+x, w+y);
+  	// 		}
+  	// 	}
+    // }
+    //
+  	// for (int x = (2*level-4*level); x <= 2*level; x++) {
+  	// 	for (int y = (2*level-4*level); y <= 2*level; y++) {
+  	// 		if (x != 0 || y != 0) {
+  	// 			if (!(x <= level && x >= -1*level && y <= level && y >= -1*level)) {
+	// 				    numberI += input(h+x,w+y);
+  	// 			}
+  	// 		}
+  	// 	}
+  	// }
     //printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
     // printf("Power of I: %f\n", totalPowerI);

@@ -281,6 +281,12 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             slice[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
+                            for(size_t h=0;h<slice[tS].getHeight();h++) {
+                                for(size_t w=0;w<slice[tS].getWidth();w++) {
+                                    printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
+                                }
+                            }
+
                             tS++;
                         }
                     }
@@ -290,10 +296,14 @@ namespace PSkel{
 
                     this->output.setTrigger(totalSize);
                     this->output.copyFrom();
+                    for(size_t h=0;h<output.getHeight();h++) {
+                        for(size_t w=0;w<output.getWidth();w++) {
+                            printf("Output(%d,%d):%d\n",h,w, output(h,w));
+                        }
+                    }
                     for (int i = 0; i < totalSize; i++) {
                         slice[i].closeWritePortal();
                     }
-
                     mppa_close_barrier(barrierNbClusters);
                 } else {
                     ///////////////////////////hTiling is higher///////////////////////////////
@@ -381,11 +391,11 @@ namespace PSkel{
                                 cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                                 cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
                                 // for (int i = 0; i < nb_clusters; i++) {
-                                //     for(size_t h=0;h<cluster[tS].getHeight();h++) {
-                                //         for(size_t w=0;w<cluster[tS].getWidth();w++) {
-                                //             printf("ClusterSlice(%d,%d):%d\n",h,w, cluster[tS](h,w));
-                                //         }
-                                //     }
+                                    for(size_t h=0;h<cluster[tS].getHeight();h++) {
+                                        for(size_t w=0;w<cluster[tS].getWidth();w++) {
+                                            printf("ClusterSlice(%d,%d):%d\n",h,w, cluster[tS](h,w));
+                                        }
+                                    }
                                 // }
                                 // cout<<"Tile size(" << ht <<","<< wt << ") is: H(" << tmp.getHeight() << ") ~ W(" << tmp.getWidth() << ")" << endl;
                                 // sleep(1);
@@ -418,6 +428,11 @@ namespace PSkel{
 
                         this->output.copyFrom();
 
+                        for(size_t h=0;h<output.getHeight();h++) {
+                            for(size_t w=0;w<output.getWidth();w++) {
+                                printf("Output(%d,%d):%d\n",h,w, output(h,w));
+                            }
+                        }
 
                         for (int i = 0; i < nb_clusters; i++) {
                             cluster[i].closeWritePortal();
@@ -616,11 +631,11 @@ namespace PSkel{
 
                     inputTmp.copyFrom();
                     // cout<<"Slave Copy Time: " << mppa_slave_diff_time(slaveCopyStart,slaveCopyEnd) << " from slave: " << cluster_id <<  endl;
-                    // for(size_t h=0;h<inputTmp.getHeight();h++) {
-                    //   for(size_t w=0;w<inputTmp.getWidth();w++) {
-                    //       printf("InutB4(%d,%d):%d from cluster: %d\n",h,w, inputTmp(h,w), cluster_id);
-                    //   }
-                    // }
+                    for(size_t h=0;h<inputTmp.getHeight();h++) {
+                      for(size_t w=0;w<inputTmp.getWidth();w++) {
+                          printf("InutB4(%d,%d):%d from cluster: %d\n",h,w, inputTmp(h,w), cluster_id);
+                      }
+                    }
                     //
                     // inputTmp.mppaClone(input);
                     // for(size_t h=0;h<inputTmp.getHeight();h++) {
@@ -631,11 +646,11 @@ namespace PSkel{
 
                     this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
                     // cout<<"Slave Computation Time: " << mppa_slave_diff_time(slaveRunStart, slaveRunEnd) <<  endl;
-                    // for(size_t h=0;h<outputTmp.getHeight();h++) {
-                    // 	for(size_t w=0;w<outputTmp.getWidth();w++) {
-                    //   	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
-                    //   }
-                    // }
+                    for(size_t h=0;h<outputTmp.getHeight();h++) {
+                    	for(size_t w=0;w<outputTmp.getWidth();w++) {
+                      	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
+                      }
+                    }
 
                     if (subIterations%2==0) {
                         tmp.mppaMemCopy(inputTmp);
@@ -644,8 +659,15 @@ namespace PSkel{
                     }
 
                     finalArr.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-                    int masterBaseWidth = (heightOffset*baseWidth) + widthOffset;
-                    finalArr.copyTo(coreWidth, baseWidth, 0, masterBaseWidth);
+                    for(size_t h=0;h<finalArr.getHeight();h++) {
+                        for(size_t w=0;w<finalArr.getWidth();w++) {
+                            printf("finalArr(%d,%d):%d, cluster[%d]\n",h,w, finalArr(h,w), cluster_id);
+                        }
+                    }
+                    //TODO CHANGE BASEWITDH TO BASEHEIGHT
+                    int masterBaseWidth = ((heightOffset*baseWitdh) + widthOffset);
+                    cout << "CoreWidth: " << coreWidth << "BaseWidth: " << baseWidth << "MasterBaseWidth: " << masterBaseWidth << endl;
+                    finalArr.copyTo(coreWidth, baseWidth, (coreHeightOffset*coreHeight)+coreWidthOffset, masterBaseWidth);
                     finalArr.waitWrite();
                     tmp.mppaFree();
                     tmp.auxFree();
@@ -1455,17 +1477,23 @@ namespace PSkel{
 #ifndef MPPA_MASTER
     template<class Array, class Mask, class Args>
         inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP(Array in, Array out, size_t width, size_t height, size_t depth, size_t maskRange, size_t numThreads){
-            size_t hrange = height-maskRange;
-            size_t wrange = width-maskRange;
-            int count = 0;
-#pragma omp parallel num_threads(numThreads)
-            {
-#pragma omp for
-                for (size_t h = maskRange; h < hrange; h++){
-                    for (size_t w = maskRange; w < wrange; w++){
-                        stencilKernel(in,out,this->mask,this->args,h,w);
+//             size_t hrange = height-maskRange;
+//             size_t wrange = width-maskRange;
+//             int count = 0;
+// #pragma omp parallel num_threads(numThreads)
+//             {
+// #pragma omp for
+//                 for (size_t h = maskRange; h < hrange; h++){
+//                     for (size_t w = maskRange; w < wrange; w++){
+//                         stencilKernel(in,out,this->mask,this->args,h,w);
+//                     }}
+//             }
+            omp_set_num_threads(numThreads);
+#pragma omp parallel for
+            for (int h = 0; h < in.getHeight(); h++){
+                for (int w = 0; w < in.getWidth(); w++){
+                    stencilKernel(in,out,this->mask,this->args,h,w);
                     }}
-            }
         }
 #endif
 
