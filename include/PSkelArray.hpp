@@ -68,7 +68,7 @@ ArrayBase<T>::ArrayBase(size_t width, size_t height, size_t depth){
 	this->read_portal = 0;
 	this->aux_write_portal = 0;
 	this->aux_read_portal = 0;
-	this->aux = (int *) malloc(sizeof(size_t*) * 15);
+	this->aux = (int *) malloc(sizeof(size_t*) * 16);
 	if(size()>0) this->mppaAlloc();
 	#else
 		if(size()>0) this->hostAlloc();
@@ -264,6 +264,8 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realWidth = array.realWidth;
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
+    std::cout << "widthOffset: " << widthOffset << "heightOffset: " << heightOffset << std::endl;
+    std::cout << "ArrayWidthOffset: " << array.widthOffset << "ArrayHeightOffset: " << array.heightOffset <<std::endl;
 	#ifdef MPPA_MASTER
 
 	#endif
@@ -354,17 +356,17 @@ int* ArrayBase<T>::getAux(){
 }
 #endif
 
-#ifdef PSKEL_MPPA
-template<typename T>
-void ArrayBase<T>::auxAlloc(){
-	this->aux = (int *) malloc(sizeof(size_t*) * 13);
-	assert(this->aux != NULL);
-}
-#endif
+// #ifdef PSKEL_MPPA
+// template<typename T>
+// void ArrayBase<T>::auxAlloc(){
+// 	this->aux = (int *) malloc(sizeof(size_t*) * 13);
+// 	assert(this->aux != NULL);
+// }
+// #endif
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth, int baseWidth){
+void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth, int baseWidth, int baseHeight){
 
     this->aux[0] = heightOffset;
 	this->aux[1] = it;
@@ -381,6 +383,7 @@ void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIter
 	this->aux[12] = depth;
     this->aux[13] = widthOffset;
     this->aux[14] = baseWidth;
+    this->aux[15] = baseHeight;
 
 
 }
@@ -389,7 +392,7 @@ void ArrayBase<T>::setAux(int heightOffset, int widthOffset, int it, int subIter
 #ifdef PSKEL_MPPA
 template<typename T>
 void ArrayBase<T>::copyToAux(){
-	mppa_async_write_portal(this->aux_write_portal, this->aux, (sizeof(int) * 15), 0);
+	mppa_async_write_portal(this->aux_write_portal, this->aux, (sizeof(int) * 16), 0);
 }
 #endif
 
@@ -411,13 +414,15 @@ void ArrayBase<T>::copyToo(size_t offsetSlave, size_t offsetMaster, int tam){
 
 #ifdef PSKEL_MPPA
 template<typename T>
-void ArrayBase<T>::copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOffset){
-	T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(sOffset*realDepth);
+void ArrayBase<T>::copyTo(int coreHeight, int coreWidth, size_t sJump, size_t tJump, size_t sOffset, size_t tOffset){
+	// T *mppaSlicePtr = &((this->mppaArray) + size_t(sOffset*realDepth));
+    T *mppaSlicePtr = (T*)(this->mppaArray) + size_t(sOffset*realDepth);
+
 
 	int sstride = sJump*sizeof(T);
 	int tstride = tJump*sizeof(T);
-	int ecount = this->height;
-	int size = this->width*sizeof(T);
+	int ecount = coreHeight;
+	int size = coreWidth*sizeof(T);
 
 	mppa_async_write_stride_portal(this->write_portal, mppaSlicePtr, size, ecount, sstride, tstride, sizeof(T)*tOffset);
 
@@ -478,7 +483,7 @@ void ArrayBase<T>::portalAuxReadAlloc(int trigger, int nb_cluster){
 	char path[25];
 	#ifdef MPPA_SLAVE
 		sprintf(path, "/mppa/portal/%d:%d", nb_cluster, (21 + nb_cluster));
-    	this->aux_read_portal = mppa_create_read_portal(path, this->aux, (sizeof(int) * 15), trigger, NULL);
+    	this->aux_read_portal = mppa_create_read_portal(path, this->aux, (sizeof(int) * 16), trigger, NULL);
 	#endif
 }
 #endif

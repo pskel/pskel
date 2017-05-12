@@ -57,7 +57,7 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
   	// 		}
   	// 	}
   	// }
-    //printf("A: %d\n", numberA);
+    // printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
     // printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {

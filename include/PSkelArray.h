@@ -283,7 +283,7 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth, int baseWidth);
+	void setAux(int heightOffset, int widthOffset, int it, int subIterations, size_t coreWidthOffset, size_t coreHeightOffset, size_t coreDepthOffset, size_t coreWidth, size_t coreHeight, size_t coreDepth, int outterIterations, size_t height, size_t width, size_t depth, int baseWidth, int baseHeight);
 	#endif
 
 	#ifdef PSKEL_MPPA
@@ -299,7 +299,7 @@ public:
 	#endif
 
 	#ifdef PSKEL_MPPA
-	void copyTo(size_t sJump, size_t tJump, size_t sOffset, size_t tOffset);
+	void copyTo(int coreHeight,int coreWidth, size_t sJump, size_t tJump, size_t sOffset, size_t tOffset);
 	#endif
 
 	#ifdef PSKEL_MPPA

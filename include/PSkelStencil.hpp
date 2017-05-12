@@ -251,7 +251,8 @@ namespace PSkel{
                             widthOffset = wt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             outputNumberHt[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            outputNumberHt[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
+                            outputNumberHt[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth(), this->input.getHeight());
+                            cout << "Tiling Height Offset: " << tiling.heightOffset << "Tiling Width Offset: " << tiling.widthOffset << "Tiling Core Height Offset: " << tiling.coreHeightOffset << "Tiling Core Width Offset: " << tiling.coreHeightOffset << endl;
                             tS++;
                         }
                     }
@@ -280,7 +281,7 @@ namespace PSkel{
                             widthOffset = wt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            slice[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
+                            slice[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
                             for(size_t h=0;h<slice[tS].getHeight();h++) {
                                 for(size_t w=0;w<slice[tS].getWidth();w++) {
                                     printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
@@ -346,7 +347,7 @@ namespace PSkel{
                                 widthOffset = auxWt*tilingWidth;
                                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                                 outputNumberNb[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                                outputNumberNb[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
+                                outputNumberNb[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth(), this->input.getHeight());
                                 tS++;
                                 if (tS >= nb_clusters) {
                                     auxHt = hTiling;
@@ -389,7 +390,7 @@ namespace PSkel{
                                 widthOffset = wt*tilingWidth;
                                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                                 cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                                cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
+                                cluster[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
                                 // for (int i = 0; i < nb_clusters; i++) {
                                     for(size_t h=0;h<cluster[tS].getHeight();h++) {
                                         for(size_t w=0;w<cluster[tS].getWidth();w++) {
@@ -467,7 +468,7 @@ namespace PSkel{
                             widthOffset = auxWt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             outputNumberMod[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            outputNumberMod[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth());
+                            outputNumberMod[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth(), this->input.getHeight());
                             tS++;
                         }
                         auxWt = 0;
@@ -504,7 +505,7 @@ namespace PSkel{
                             widthOffset = wt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            cluster[tS].copyTo(this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
+                            cluster[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
                             tS++;
                         }
                         wt = 0;
@@ -622,8 +623,8 @@ namespace PSkel{
                     int widthOffset = aux[13];
                     int baseWidth = aux[14];
 
-
-                    tmp.mppaAlloc(w,h,d);
+                    cout << "HeightOffset Slave: " << heightOffset << "WidthOffset Slave: " << widthOffset << " ["<< cluster_id << " ]" <<endl;
+                    finalArr.mppaAlloc(w,h,d);
                     inputTmp.mppaAlloc(w,h,d);
                     outputTmp.mppaAlloc(w,h,d);
                     inputTmp.portalReadAlloc(1, cluster_id);
@@ -653,24 +654,27 @@ namespace PSkel{
                     }
 
                     if (subIterations%2==0) {
-                        tmp.mppaMemCopy(inputTmp);
+                        finalArr.mppaMemCopy(inputTmp);
                     } else {
-                        tmp.mppaMemCopy(outputTmp);
+                        finalArr.mppaMemCopy(outputTmp);
                     }
 
-                    finalArr.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-                    for(size_t h=0;h<finalArr.getHeight();h++) {
-                        for(size_t w=0;w<finalArr.getWidth();w++) {
-                            printf("finalArr(%d,%d):%d, cluster[%d]\n",h,w, finalArr(h,w), cluster_id);
-                        }
-                    }
-                    //TODO CHANGE BASEWITDH TO BASEHEIGHT
-                    int masterBaseWidth = ((heightOffset*baseWitdh) + widthOffset);
+                    coreTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
+                    // int hOff = finalArr.getWidth()*coreHeightOffset;
+                    // int wOff = coreWidthOffset;
+                    // printf("hOff: %d, wOff: %d\n", hOff, wOff);
+                    // for(size_t h = 0;h<coreHeight;h++) {
+                        // for(size_t w = 0;w<coreWidth;w++) {
+                            // printf("finalArr(%d,%d):%d, cluster[%d]\n",h,w, finalArr(hOff+h,wOff+w), cluster_id);
+                        // }
+                    // }
+                    //TODO CHANGE SOFFSET!
+                    int masterBaseWidth = ((heightOffset*baseWidth) + widthOffset);
                     cout << "CoreWidth: " << coreWidth << "BaseWidth: " << baseWidth << "MasterBaseWidth: " << masterBaseWidth << endl;
-                    finalArr.copyTo(coreWidth, baseWidth, (coreHeightOffset*coreHeight)+coreWidthOffset, masterBaseWidth);
+                    finalArr.copyTo(coreHeight, coreWidth, h, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseWidth);
                     finalArr.waitWrite();
-                    tmp.mppaFree();
-                    tmp.auxFree();
+                    finalArr.mppaFree();
+                    finalArr.auxFree();
                     inputTmp.mppaFree();
                     inputTmp.auxFree();
 
