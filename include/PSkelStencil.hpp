@@ -623,7 +623,6 @@ namespace PSkel{
                     int widthOffset = aux[13];
                     int baseWidth = aux[14];
 
-                    cout << "HeightOffset Slave: " << heightOffset << "WidthOffset Slave: " << widthOffset << " ["<< cluster_id << " ]" <<endl;
                     finalArr.mppaAlloc(w,h,d);
                     inputTmp.mppaAlloc(w,h,d);
                     outputTmp.mppaAlloc(w,h,d);
@@ -631,22 +630,8 @@ namespace PSkel{
                     mppa_barrier_wait(global_barrier);
 
                     inputTmp.copyFrom();
-                    // cout<<"Slave Copy Time: " << mppa_slave_diff_time(slaveCopyStart,slaveCopyEnd) << " from slave: " << cluster_id <<  endl;
-                    for(size_t h=0;h<inputTmp.getHeight();h++) {
-                      for(size_t w=0;w<inputTmp.getWidth();w++) {
-                          printf("InutB4(%d,%d):%d from cluster: %d\n",h,w, inputTmp(h,w), cluster_id);
-                      }
-                    }
-                    //
-                    // inputTmp.mppaClone(input);
-                    // for(size_t h=0;h<inputTmp.getHeight();h++) {
-                    // 	for(size_t w=0;w<inputTmp.getWidth();w++) {
-                    //   	  printf("InputAfter(%d,%d):%d\n",h,w, inputTmp(h,w));
-                    //   }
-                    // }
 
                     this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
-                    // cout<<"Slave Computation Time: " << mppa_slave_diff_time(slaveRunStart, slaveRunEnd) <<  endl;
                     for(size_t h=0;h<outputTmp.getHeight();h++) {
                     	for(size_t w=0;w<outputTmp.getWidth();w++) {
                       	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
@@ -659,18 +644,7 @@ namespace PSkel{
                         finalArr.mppaMemCopy(outputTmp);
                     }
 
-                    coreTmp.hostSlice(tmp, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
-                    // int hOff = finalArr.getWidth()*coreHeightOffset;
-                    // int wOff = coreWidthOffset;
-                    // printf("hOff: %d, wOff: %d\n", hOff, wOff);
-                    // for(size_t h = 0;h<coreHeight;h++) {
-                        // for(size_t w = 0;w<coreWidth;w++) {
-                            // printf("finalArr(%d,%d):%d, cluster[%d]\n",h,w, finalArr(hOff+h,wOff+w), cluster_id);
-                        // }
-                    // }
-                    //TODO CHANGE SOFFSET!
                     int masterBaseWidth = ((heightOffset*baseWidth) + widthOffset);
-                    cout << "CoreWidth: " << coreWidth << "BaseWidth: " << baseWidth << "MasterBaseWidth: " << masterBaseWidth << endl;
                     finalArr.copyTo(coreHeight, coreWidth, h, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseWidth);
                     finalArr.waitWrite();
                     finalArr.mppaFree();
