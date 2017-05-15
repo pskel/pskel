@@ -60,15 +60,15 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
     // printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
     // printf("Power of I: %f\n", totalPowerI);
-    if(numberA - totalPowerI < 0) {
-		output(h,w) = 0; //without color and inhibitor
-    }
-    else if(numberA - totalPowerI > 0) {
-		output(h,w) = 1;//with color and active
-    }
-    else {
+    // if(numberA - totalPowerI < 0) {
+	// 	output(h,w) = 0; //without color and inhibitor
+    // }
+    // else if(numberA - totalPowerI > 0) {
+	// 	output(h,w) = 1;//with color and active
+    // }
+    // else {
 		output(h,w) = input(h,w);//doesn't change
-    }
+    // }
   }
 }
 

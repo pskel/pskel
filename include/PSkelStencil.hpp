@@ -252,7 +252,7 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             outputNumberHt[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             outputNumberHt[tS].setAux(heightOffset, widthOffset, it, subIterations, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth, outterIterations, tiling.height, tiling.width, tiling.depth, this->input.getWidth(), this->input.getHeight());
-                            cout << "Tiling Height Offset: " << tiling.heightOffset << "Tiling Width Offset: " << tiling.widthOffset << "Tiling Core Height Offset: " << tiling.coreHeightOffset << "Tiling Core Width Offset: " << tiling.coreHeightOffset << endl;
+                            // cout << "Tiling Height Offset: " << tiling.heightOffset << "Tiling Width Offset: " << tiling.widthOffset << "Tiling Core Height Offset: " << tiling.coreHeightOffset << "Tiling Core Width Offset: " << tiling.coreHeightOffset << endl;
                             tS++;
                         }
                     }
@@ -282,11 +282,11 @@ namespace PSkel{
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                             slice[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
-                            for(size_t h=0;h<slice[tS].getHeight();h++) {
-                                for(size_t w=0;w<slice[tS].getWidth();w++) {
-                                    printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
-                                }
-                            }
+                            // for(size_t h=0;h<slice[tS].getHeight();h++) {
+                            //     for(size_t w=0;w<slice[tS].getWidth();w++) {
+                            //         printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
+                            //     }
+                            // }
 
                             tS++;
                         }
@@ -297,11 +297,15 @@ namespace PSkel{
 
                     this->output.setTrigger(totalSize);
                     this->output.copyFrom();
+                    printf("Output: ");
                     for(size_t h=0;h<output.getHeight();h++) {
+                        printf("\n");
                         for(size_t w=0;w<output.getWidth();w++) {
-                            printf("Output(%d,%d):%d\n",h,w, output(h,w));
+                            printf(" %d ", output(h,w));
                         }
+                        printf("\n");
                     }
+
                     for (int i = 0; i < totalSize; i++) {
                         slice[i].closeWritePortal();
                     }
@@ -392,11 +396,11 @@ namespace PSkel{
                                 cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
                                 cluster[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
                                 // for (int i = 0; i < nb_clusters; i++) {
-                                    for(size_t h=0;h<cluster[tS].getHeight();h++) {
-                                        for(size_t w=0;w<cluster[tS].getWidth();w++) {
-                                            printf("ClusterSlice(%d,%d):%d\n",h,w, cluster[tS](h,w));
-                                        }
-                                    }
+                                    // for(size_t h=0;h<cluster[tS].getHeight();h++) {
+                                    //     for(size_t w=0;w<cluster[tS].getWidth();w++) {
+                                    //         printf("ClusterSlice(%d,%d):%d\n",h,w, cluster[tS](h,w));
+                                    //     }
+                                    // }
                                 // }
                                 // cout<<"Tile size(" << ht <<","<< wt << ") is: H(" << tmp.getHeight() << ") ~ W(" << tmp.getWidth() << ")" << endl;
                                 // sleep(1);
@@ -429,9 +433,11 @@ namespace PSkel{
 
                         this->output.copyFrom();
 
+                        printf("Output: ");
                         for(size_t h=0;h<output.getHeight();h++) {
+                            printf("\n");
                             for(size_t w=0;w<output.getWidth();w++) {
-                                printf("Output(%d,%d):%d\n",h,w, output(h,w));
+                                printf(" %d ", output(h,w));
                             }
                         }
 
@@ -632,11 +638,11 @@ namespace PSkel{
                     inputTmp.copyFrom();
 
                     this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
-                    for(size_t h=0;h<outputTmp.getHeight();h++) {
-                    	for(size_t w=0;w<outputTmp.getWidth();w++) {
-                      	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
-                      }
-                    }
+                    // for(size_t h=0;h<outputTmp.getHeight();h++) {
+                    // 	for(size_t w=0;w<outputTmp.getWidth();w++) {
+                    //   	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
+                    //   }
+                    // }
 
                     if (subIterations%2==0) {
                         finalArr.mppaMemCopy(inputTmp);
@@ -644,8 +650,16 @@ namespace PSkel{
                         finalArr.mppaMemCopy(outputTmp);
                     }
 
-                    int masterBaseWidth = ((heightOffset*baseWidth) + widthOffset);
-                    finalArr.copyTo(coreHeight, coreWidth, h, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseWidth);
+
+                    coreTmp.hostSlice(finalArr, coreWidthOffset, coreHeightOffset, coreDepthOffset, coreWidth, coreHeight, coreDepth);
+                    for(size_t h=0;h<coreTmp.getHeight();h++) {
+                        for(size_t w=0;w<coreTmp.getWidth();w++) {
+                            printf("finalArr(%d,%d):%d, cluster[%d]\n",h,w, coreTmp(h,w), cluster_id);
+                        }
+                    }
+
+                    int masterBaseOffset = ((heightOffset*baseWidth) + widthOffset);
+                    finalArr.copyTo(coreHeight, coreWidth, h, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseOffset);
                     finalArr.waitWrite();
                     finalArr.mppaFree();
                     finalArr.auxFree();

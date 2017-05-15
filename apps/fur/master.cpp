@@ -120,8 +120,8 @@ int main(int argc, char **argv){
 	srand(1234);
 	for(int h=0;h<height;h++) {
 	    for(int w=0;w<width;w++) {
-	    	// inputGrid(h,w) = h*width+w;
-            inputGrid(h,w) = rand()%2;
+	    	inputGrid(h,w) = h*width+w;
+            // inputGrid(h,w) = rand()%2;
 	        #ifdef PRINT_OUT
 //                printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
             printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));

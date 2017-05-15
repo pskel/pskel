@@ -264,8 +264,8 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	this->realWidth = array.realWidth;
 	this->realHeight = array.realHeight;
 	this->realDepth = array.realDepth;
-    std::cout << "widthOffset: " << widthOffset << "heightOffset: " << heightOffset << std::endl;
-    std::cout << "ArrayWidthOffset: " << array.widthOffset << "ArrayHeightOffset: " << array.heightOffset <<std::endl;
+    std::cout << "Print barrier for management: " << std::endl;
+    // std::cout << "ArrayWidthOffset: " << array.widthOffset << "ArrayHeightOffset: " << array.heightOffset <<std::endl;
 	#ifdef MPPA_MASTER
 
 	#endif
