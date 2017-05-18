@@ -2,21 +2,21 @@
 // Copyright (c) 2015, Alyson D. Pereira <alyson.deives@outlook.com>,
 //					   Rodrigo C. O. Rocha <rcor.cs@gmail.com>
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 // list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
+//
 // 3. Neither the name of the copyright holder nor the names of its contributors
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@ public:
 	Mask mask;
 	Array input;
 	Array output;
-	
+
 	size_t iterations;
 
 	//global offsets that define the tiling
@@ -57,7 +57,7 @@ public:
 	size_t depth;
 
 	//core offsets represent the inner margin
-	//that consist of the halo region (neighbourhood) for 
+	//that consist of the halo region (neighbourhood) for
 	//the given iterations
 	size_t coreWidthOffset;
 	size_t coreHeightOffset;
@@ -99,7 +99,7 @@ public:
 		this->coreWidth = width; //set the width for the logical tile region
 		this->coreHeight = height; //set the height for the logical tile region
 		this->coreDepth = depth; //set the depth for the logical tile region
-		
+
 		size_t maskRange = mask.getRange()*iterations;
 
 		int widthExtra = 0;
@@ -135,11 +135,11 @@ public:
 		depth = depth+(maskRange*2)-depthExtra;
 		if((depthOffset+depth)>this->input.getDepth())
 			depth = this->input.getDepth()-depthOffset;
-		
+
 		this->coreWidthOffset -= widthOffset; //final value of core width offset
 		this->coreHeightOffset -= heightOffset; //final value of core height offset
 		this->coreDepthOffset -= depthOffset; //final value of core depth offset
-		
+
 		this->widthOffset = widthOffset;
 		this->heightOffset = heightOffset;
 		this->depthOffset = depthOffset;

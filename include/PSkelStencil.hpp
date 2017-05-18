@@ -281,12 +281,12 @@ namespace PSkel{
                             widthOffset = wt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             slice[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            slice[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
-                            // for(size_t h=0;h<slice[tS].getHeight();h++) {
-                            //     for(size_t w=0;w<slice[tS].getWidth();w++) {
-                            //         printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
-                            //     }
-                            // }
+                            slice[tS].copyTo(tiling.height, tiling.width, this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
+                            for(size_t h=0;h<slice[tS].getHeight();h++) {
+                                for(size_t w=0;w<slice[tS].getWidth();w++) {
+                                    printf("ClusterSlice(%d,%d):%d\n",h,w, slice[tS](h,w));
+                                }
+                            }
 
                             tS++;
                         }
@@ -394,7 +394,7 @@ namespace PSkel{
                                 widthOffset = wt*tilingWidth;
                                 tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                                 cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                                cluster[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
+                                cluster[tS].copyTo(tiling.height, tiling.width, this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
                                 // for (int i = 0; i < nb_clusters; i++) {
                                     // for(size_t h=0;h<cluster[tS].getHeight();h++) {
                                     //     for(size_t w=0;w<cluster[tS].getWidth();w++) {
@@ -511,7 +511,7 @@ namespace PSkel{
                             widthOffset = wt*tilingWidth;
                             tiling.tile(subIterations, widthOffset, heightOffset, 0, tilingWidth, tilingHeight, 1);
                             cluster[tS].hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
-                            cluster[tS].copyTo(tiling.height, tiling.width, tiling.width, tiling.width, (tiling.heightOffset*tiling.width)+tiling.widthOffset, 0);
+                            cluster[tS].copyTo(tiling.height, tiling.width, this->input.getWidth(), tiling.width, (tiling.heightOffset*this->input.getWidth())+tiling.widthOffset, 0);
                             tS++;
                         }
                         wt = 0;
@@ -637,12 +637,18 @@ namespace PSkel{
 
                     inputTmp.copyFrom();
 
+                    for(size_t h=0;h<inputTmp.getHeight();h++) {
+                    	for(size_t w=0;w<inputTmp.getWidth();w++) {
+                      	  printf("Arrived(%d,%d):%d\n",h,w, inputTmp(h,w));
+                      }
+                    }
+
                     this->runIterativeMPPA(inputTmp, outputTmp, subIterations, nb_threads);
-                    // for(size_t h=0;h<outputTmp.getHeight();h++) {
-                    // 	for(size_t w=0;w<outputTmp.getWidth();w++) {
-                    //   	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
-                    //   }
-                    // }
+                    for(size_t h=0;h<outputTmp.getHeight();h++) {
+                    	for(size_t w=0;w<outputTmp.getWidth();w++) {
+                      	  printf("Computated(%d,%d):%d\n",h,w, outputTmp(h,w));
+                      }
+                    }
 
                     if (subIterations%2==0) {
                         finalArr.mppaMemCopy(inputTmp);

@@ -124,8 +124,8 @@ int main(int argc, char **argv){
             // inputGrid(h,w) = rand()%2;
 	        #ifdef PRINT_OUT
 //                printf("In position %d, %d we have %d\n", h, w, inputGrid(h,w));
-            printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
             #endif
+            printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
             outputGrid(h,w) = 0;
         }
     }
