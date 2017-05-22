@@ -54,9 +54,9 @@ int main(int argc, char **argv){
 
 	for(size_t h=0;h<inputGrid.getHeight();h++) {
 		for(size_t w=0;w<inputGrid.getWidth();w++) {
-			//inputGrid(h,w) = 1.0 + w*0.1 + h*0.01;
-			inputGrid(h,w) = h*inputGrid.getWidth() + w;
-		    //printf("inputGrid(%d,%d) = %f;\n", h, w, inputGrid(h,w));
+			inputGrid(h,w) = 1.0 + w*0.1 + h*0.01;
+			// inputGrid(h,w) = h*inputGrid.getWidth() + w;
+		    printf("inputGrid(%d,%d) = %f;\n", h, w, inputGrid(h,w));
 		}
 	}
 
