@@ -27,17 +27,17 @@ struct Arguments
 namespace PSkel{
 __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<int> mask, Arguments arg, size_t h, size_t w){
     // printf("StencilKernel Enter!");
-    // int numberA = 0;
-    // int numberI = 0;
-    // int level = arg.level;
+    int numberA = 0;
+    int numberI = 0;
+    int level = arg.level;
     // for (int z = 0; z < mask.size; z++) {
-      // if(z < arg.internCircle) {
-        // numberA += mask.get(z, input, h, w);
-
-      // } else {
-        // numberI += mask.get(z, input, h, w);
-        //printf("I: %d\n", numberI);
-      // }
+    //   if(z < arg.internCircle) {
+    //     numberA += mask.get(z, input, h, w);
+    //
+    //   } else {
+    //     numberI += mask.get(z, input, h, w);
+    //     //printf("I: %d\n", numberI);
+    //   }
     // }
 
     for (int x = (level-2*level); x <= level; x++) {
@@ -57,9 +57,9 @@ __parallel__ void stencilKernel(Array2D<int> input,Array2D<int> output,Mask2D<in
   			}
   		}
   	}
-    printf("A: %d\n", numberA);
+    // printf("A: %d\n", numberA);
     float totalPowerI = numberI*(arg.power);// The power of Inhibitors
-    printf("Power of I: %f\n", totalPowerI);
+    // printf("Power of I: %f\n", totalPowerI);
     if(numberA - totalPowerI < 0) {
 		output(h,w) = 0; //without color and inhibitor
     }

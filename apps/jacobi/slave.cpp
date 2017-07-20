@@ -23,19 +23,19 @@ struct Arguments{
 };
 
 namespace PSkel{
-  __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask, Arguments args, size_t i, size_t j){
+  __parallel__ void stencilKernel(Array2D<float> input,Array2D<float> output,Mask2D<float> mask, Arguments args, size_t h, size_t w){
       //printf("MaskGet(0): %f\n", mask.get(0, input, h, w));
       //printf("MaskGet(1): %f\n", mask.get(1, input, h, w));
       //printf("MaskGet(2): %f\n", mask.get(2, input, h, w));
       //printf("MaskGet(3): %f\n", mask.get(3, input, h, w));
       //printf("factor: %f\n", factor);
-
-      // output(h,w) = 0.25*(mask.get(0,input,h,w) + mask.get(1,input,h,w) +
-      //   mask.get(2,input,h,w) + mask.get(3,input,h,w) - 4*factor*factor );
+      // float factor = args.factor;
+      output(h,w) = 0.25*(mask.get(0,input,h,w) + mask.get(1,input,h,w) +
+        mask.get(2,input,h,w) + mask.get(3,input,h,w) - 4*args.h*args.h );
 
       //printf("OutputValor: %f\n", output(h,w));
 
-	    output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) + input(i+1,j) - args.h);
+	    // output(i,j) = 0.25f * ( input(i-1,j) + (input(i,j-1) + input(i,j+1)) + input(i+1,j) - args.h);
   }
 }
 
@@ -77,7 +77,7 @@ int main(int argc,char **argv) {
 
   Arguments args;
   	//args.h = 1.f / (float) x_max;
-  args.h = 4.f / (float) (width*width);
+  args.h = 4.f / (float) (realWidth*realWidth);
 
   Array2D<float> partInput(width, height);
   Array2D<float> output(width, height);

@@ -301,7 +301,7 @@ namespace PSkel{
                     for(size_t h=0;h<output.getHeight();h++) {
                         printf("\n");
                         for(size_t w=0;w<output.getWidth();w++) {
-                            printf(" %d ", output(h,w));
+                            printf(" %f ", output(h,w));
                         }
                         printf("\n");
                     }
@@ -437,7 +437,7 @@ namespace PSkel{
                         for(size_t h=0;h<output.getHeight();h++) {
                             printf("\n");
                             for(size_t w=0;w<output.getWidth();w++) {
-                                printf(" %d ", output(h,w));
+                                printf(" %f ", output(h,w));
                             }
                         }
 
@@ -598,7 +598,6 @@ namespace PSkel{
             Array input;
             Array auxPortal;
             int *aux;
-
             for(int j = 0; j < outterIterations; j++) {
                 barrier_t *global_barrier = mppa_create_slave_barrier(BARRIER_SYNC_MASTER, BARRIER_SYNC_SLAVE);
                 for(int i = 0; i < nb_tiles; i++) {
