@@ -664,7 +664,7 @@ namespace PSkel{
                     }
 
                     int masterBaseOffset = ((heightOffset*baseWidth) + widthOffset);
-                    finalArr.copyTo(coreHeight, coreWidth, h, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseOffset);
+                    finalArr.copyTo(coreHeight, coreWidth, w, baseWidth, (inputTmp.getWidth()*coreHeightOffset)+coreWidthOffset, masterBaseOffset);
                     finalArr.waitWrite();
                     finalArr.mppaFree();
                     finalArr.auxFree();

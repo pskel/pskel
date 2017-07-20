@@ -1,0 +1,246 @@
+IODDR0@0.0: RM 0: width: 1024
+IODDR0@0.0: RM 0: height: 1024
+IODDR0@0.0: RM 0: tilingHeight: 128
+IODDR0@0.0: RM 0: tilingWidth: 128
+IODDR0@0.0: RM 0: iterations: 1
+IODDR0@0.0: RM 0: innerIterations: 1
+IODDR0@0.0: RM 0: nb_clusters: 16
+IODDR0@0.0: RM 0: nb_threads: 16
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Print barrier for management: 
+IODDR0@0.0: RM 0: Slave Time: 3.29857
+IODDR0@0.0: RM 0: Slave Time: 2.36825
+IODDR0@0.0: RM 0: Slave Time: 2.34367
+IODDR0@0.0: RM 0: Slave Time: 2.4867
+IODDR0@0.0: RM 0: Slave Time: 2.82544
+IODDR0@0.0: RM 0: Slave Time: 1.76895
+IODDR0@0.0: RM 0: Slave Time: 2.70718
+IODDR0@0.0: RM 0: Slave Time: 3.07054
+IODDR0@0.0: RM 0: Slave Time: 3.07832
+IODDR0@0.0: RM 0: Slave Time: 1.54056
+IODDR0@0.0: RM 0: Slave Time: 1.89545
+IODDR0@0.0: RM 0: Slave Time: 1.54847
+IODDR0@0.0: RM 0: Slave Time: 2.00547
+IODDR0@0.0: RM 0: Slave Time: 2.94363
+IODDR0@0.0: RM 0: Slave Time: 2.13199
+IODDR0@0.0: RM 0: Slave Time: 1.76053
+IODDR0@0.0: RM 0: Master Time: 567993600, 500232
+IODDR0@0.0: RM 0: 567993600, 920714
+IODDR0@0.0: RM 0: 420482
+IODDR0@0.0: RM 0: 0.420482
+====== BOARD 0 ======
+
+ - Acquisition time: 4.77 s
+ - MPPA 0 Power
+   - Power (avg): 5.52 W
+   - Energy     : 26.31 J
