@@ -11,7 +11,7 @@
 
 //#include "../utils/hr_time.h"
 
-
+#include <papi.h>
 using namespace std;
 using namespace PSkel;
 
