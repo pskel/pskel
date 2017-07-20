@@ -3,7 +3,7 @@ CUDAC = nvcc
 OPTIMUS = optirun #remover este valor se não estiver em um sistema OPTIMUS (notebook)
 CUDA_LIB_PATH = /usr/local/cuda-5.5/lib64
 CUDAFLAGS = --compiler-bindir /usr/bin/gcc-4.8 -O3 -Xcompiler -ftree-vectorize -Xcompiler -msse4 #-I/usr/local/cuda-5.5/extras/CUPTI/include -ccbin g++  -Xcompiler -Wall
-CXXFLAGS = -O3 -w -lpapi
+CXXFLAGS = -O3 -w
 GENCONDE = -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\"
 OMP_TBB = -fopenmp -lgomp -ltbb
 GCCLIB = -lgomp -fopenmp -lpapi

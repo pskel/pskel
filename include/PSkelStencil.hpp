@@ -721,7 +721,7 @@ namespace PSkel{
 #ifdef PSKEL_TBB
             this->runTBB(this->input, this->output, numThreads);
 #else
-            this->runOpenMP(this->input, this->output, numThreads);
+            this->runOpenMP(this->input, this->output, this->input.getWidth(), this->input.getHeight(), this->input.getDepth(), this->mask.getRange(), numThreads);
 #endif
         }
 #endif

@@ -4,11 +4,11 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-
+#include <assert.h>
 //#define PSKEL_SHARED_MASK
-// #define PSKEL_PAPI
+#define PSKEL_PAPI
 #include "../../../include/PSkel.h"
-#include <papi.h>
+//#include <papi.h>
 //#include "../utils/hr_time.h"
 
 #include <papi.h>
@@ -155,7 +155,7 @@ int main(int argc, char **argv){
 					//myfile << "1\n";
 			//	}
 		  	//else cout << "Unable to open file";
-			printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
+			//printf("inputGrid(%d,%d) = %d;\n", h, w, inputGrid(h,w));
 		}
 	}
 
@@ -170,11 +170,11 @@ int main(int argc, char **argv){
 		case 0:
 			//hrt_start(&timer);
 			stencil.runSequential();
-			for(int i = 0; i < outputGrid.getHeight(); i++){
-				for(int j = 0; j < outputGrid.getWidth(); j++){
-					printf("FinalOutput(%d,%d):%d\n", i, j, outputGrid(i, j));
-				}
-			}
+			//for(int i = 0; i < outputGrid.getHeight(); i++){
+			//	for(int j = 0; j < outputGrid.getWidth(); j++){
+			//		printf("FinalOutput(%d,%d):%d\n", i, j, outputGrid(i, j));
+			//	}
+			//}
 			//hrt_stop(&timer);
 			break;
         case 1:
@@ -185,7 +185,6 @@ int main(int argc, char **argv){
             stencil.runIterativeCPU(iterations,numCPUThreads);
 						#ifdef PSKEL_PAPI
 						PSkelPAPI::papi_stop(PSkelPAPI::RAPL,0);
-						PSkelPAPI::print_profile_values(PSkelPAPI::RAPL);
 						#endif
             //for(int i = 0; i < outputGrid.getHeight();i++) {
              //   for(int j = 0; j < outputGrid.getWidth();j++) {
@@ -226,6 +225,7 @@ int main(int argc, char **argv){
     //}
 	//cout << hrt_elapsed_time(&timer) << endl;
 	#ifdef PSkel_PAPI
+	PSkelPAPI::print_profile_values(PSkelPAPI::RAPL,0);
 	PSkelPAPI::shutdown();
 	#endif
 	inputGrid.hostFree();
