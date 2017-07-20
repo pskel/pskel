@@ -1,0 +1,34 @@
+IODDR0@0.0: RM 0: width: 12288
+IODDR0@0.0: RM 0: height: 12288
+IODDR0@0.0: RM 0: tilingHeight: 128
+IODDR0@0.0: RM 0: tilingWidth: 128
+IODDR0@0.0: RM 0: iterations: 30
+IODDR0@0.0: RM 0: innerIterations: 10
+IODDR0@0.0: RM 0: nb_clusters: 16
+IODDR0@0.0: RM 0: nb_threads: 16
+IODDR0@0.0: RM 0: Slave Time: 309.734
+IODDR0@0.0: RM 0: Slave Time: 309.015
+IODDR0@0.0: RM 0: Slave Time: 308.652
+IODDR0@0.0: RM 0: Slave Time: 308.195
+IODDR0@0.0: RM 0: Slave Time: 308.787
+IODDR0@0.0: RM 0: Slave Time: 308.779
+IODDR0@0.0: RM 0: Slave Time: 308.416
+IODDR0@0.0: RM 0: Slave Time: 309.6
+IODDR0@0.0: RM 0: Slave Time: 309.379
+IODDR0@0.0: RM 0: Slave Time: 309.608
+IODDR0@0.0: RM 0: Slave Time: 308.187
+IODDR0@0.0: RM 0: Slave Time: 308.077
+IODDR0@0.0: RM 0: Slave Time: 308.423
+IODDR0@0.0: RM 0: Slave Time: 309.244
+IODDR0@0.0: RM 0: Slave Time: 309.008
+IODDR0@0.0: RM 0: Slave Time: 309.371
+IODDR0@0.0: RM 0: Master Time: 567993672, 250044
+IODDR0@0.0: RM 0: 567993994, 180492
+IODDR0@0.0: RM 0: -69230
+IODDR0@0.0: RM 0: 321.93
+====== BOARD 0 ======
+
+ - Acquisition time: 396.62 s
+ - MPPA 0 Power
+   - Power (avg): 9.11 W
+   - Energy     : 3614.81 J

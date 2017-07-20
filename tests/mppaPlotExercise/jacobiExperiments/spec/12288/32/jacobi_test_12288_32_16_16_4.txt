@@ -1,0 +1,26 @@
+IODDR0@0.0: RM 0: Slave Time: 152.946
+IODDR0@0.0: RM 0: Slave Time: 153.757
+IODDR0@0.0: RM 0: Slave Time: 153.285
+IODDR0@0.0: RM 0: Slave Time: 153.993
+IODDR0@0.0: RM 0: Slave Time: 154.131
+IODDR0@0.0: RM 0: Slave Time: 153.639
+IODDR0@0.0: RM 0: Slave Time: 154.469
+IODDR0@0.0: RM 0: Slave Time: 154.002
+IODDR0@0.0: RM 0: Slave Time: 154.486
+IODDR0@0.0: RM 0: Slave Time: 153.056
+IODDR0@0.0: RM 0: Slave Time: 153.419
+IODDR0@0.0: RM 0: Slave Time: 153.774
+IODDR0@0.0: RM 0: Slave Time: 153.065
+IODDR0@0.0: RM 0: Slave Time: 153.301
+IODDR0@0.0: RM 0: Slave Time: 154.241
+IODDR0@0.0: RM 0: Slave Time: 154.705
+IODDR0@0.0: RM 0: Master Time: 567993648, 810120
+IODDR0@0.0: RM 0: 567993815, 300002
+IODDR0@0.0: RM 0: -509951
+IODDR0@0.0: RM 0: 166.49
+====== BOARD 0 ======
+
+ - Acquisition time: 217.70 s
+ - MPPA 0 Power
+   - Power (avg): 7.70 W
+   - Energy     : 1676.89 J
