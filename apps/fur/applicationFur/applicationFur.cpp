@@ -6,7 +6,9 @@
 #include <fstream>
 #include <assert.h>
 //#define PSKEL_SHARED_MASK
+#define PSKEL_OMP
 #define PSKEL_PAPI
+#define PSKEL_PAPI_DEBUG
 #include "../../../include/PSkel.h"
 //#include <papi.h>
 //#include "../utils/hr_time.h"
@@ -224,7 +226,7 @@ int main(int argc, char **argv){
     //    }
     //}
 	//cout << hrt_elapsed_time(&timer) << endl;
-	#ifdef PSkel_PAPI
+	#ifdef PSKEL_PAPI
 	PSkelPAPI::print_profile_values(PSkelPAPI::RAPL,0);
 	PSkelPAPI::shutdown();
 	#endif
