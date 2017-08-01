@@ -1,16 +1,2 @@
-IODDR0@0.0: RM 0: Slave Time: 60.4852
-IODDR0@0.0: RM 0: Slave Time: 60.7134
-IODDR0@0.0: RM 0: Slave Time: 60.2316
-IODDR0@0.0: RM 0: Slave Time: 59.9017
-IODDR0@0.0: RM 0: Slave Time: 60.2561
-IODDR0@0.0: RM 0: Slave Time: 59.6643
-IODDR0@0.0: RM 0: Slave Time: 61.1873
-IODDR0@0.0: RM 0: Slave Time: 60.8237
-IODDR0@0.0: RM 0: Slave Time: 61.1951
-IODDR0@0.0: RM 0: Slave Time: 60.8483
-IODDR0@0.0: RM 0: Slave Time: 59.7832
-IODDR0@0.0: RM 0: Slave Time: 59.7746
-IODDR0@0.0: RM 0: Slave Time: 60.1214
-IODDR0@0.0: RM 0: Slave Time: 61.0689
-IODDR0@0.0: RM 0: Slave Time: 60.4934
-IODDR0@0.0: RM 0: Slave Time: 61.3215
+Name rapl:::PACKAGE_ENERGY:PACKAGE0 --- Code: 0x4000002e
+rapl:::PACKAGE_ENERGY:PACKAGE0           1081.105957 J	(Average Power 57.1W)

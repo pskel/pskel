@@ -27,6 +27,7 @@ done
                 -e "label='$label'"                                            \
                 -e "yformat='$yformat'"                                        \
                 -e "scale='$scale'"                                            \
+                -e "app='${app^}'" \
                 -e "appA='$DATADIR/tmpTime${app}32.txt'"                      \
                 -e "appB='$DATADIR/tmpTime${app}64.txt'"                      \
                 -e "appC='$DATADIR/tmpTime${app}128.txt'"                     \

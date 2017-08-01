@@ -1,3 +1,4 @@
+set encoding utf8
 # Input
 set datafile separator " "
 
@@ -9,8 +10,8 @@ load "gnuplot/settings.gnuplot"
 
 # X Axis
 set xrange[-1:8]
-set xtics ("2" 0, "4" 1, "6" 2, "8" 3, "10" 4, "12" 5, "14" 6, "16" 7)
-set xlabel "Number of Clusters"
+set xtics ("1" 0, "2" 1, "4" 2, "6" 3, "8" 4, "10" 5, "12" 6, "14" 7, "16" 8)
+set xlabel "Número de Clusters"
 
 # Y Axis
 set ytic

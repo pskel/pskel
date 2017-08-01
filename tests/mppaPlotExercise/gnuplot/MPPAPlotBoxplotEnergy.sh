@@ -13,6 +13,7 @@ yformat="%1.1f"
                 -e "label='$label'"                                            \
                 -e "yformat='$yformat'"                                        \
                 -e "scale='$scale'"                                            \
+                -e "app='${app^}'"\
                 -e "appA='$DATADIR/energyTiles32Plot.txt'"                      \
                 -e "appB='$DATADIR/energyTiles64Plot.txt'"                      \
                 -e "appC='$DATADIR/energyTiles128Plot.txt'"                     \

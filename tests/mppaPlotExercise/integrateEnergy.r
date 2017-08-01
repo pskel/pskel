@@ -17,15 +17,17 @@ require(MESS)
 # y <- (testRstudioAUC$X2)
 # data <- auc(x, y, type='spline')
 # write.table(data,quote=FALSE,append=TRUE,row.names=FALSE,col.names=FALSE,sep=" ", "energyPlot.txt")
-for(i in seq(from=2, to=16, by=2)){
-    infile <- paste(i,".txt",sep="")
+# for(i in seq(from=2, to=16, by=2)){
+            infile <- 'tmpTeslaMeanTimefur.txt'
     # outfile <- paste(i,"-edit.txt",sep="")
     testRstudioAUC <- read_delim(infile, " ", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
-    x <- (testRstudioAUC$X1)
-    y <- (testRstudioAUC$X2)
-    data <- auc(x, y, type='spline')
+    testRstudioAUC
+    x <- (testRstudioAUC$X2)
+    x
+    # y <- (testRstudioAUC$X2)
+    sd(x)
     # data <- read.table(infile,header=TRUE,sep=",",row.names=NULL)
     # colnames(data)[1] = "time"
-    write.table(data,quote=FALSE,append=TRUE,row.names=FALSE,col.names=FALSE,sep=" ", "energyPlot.txt")
-}
+    # write.table(data,quote=FALSE,append=TRUE,row.names=FALSE,col.names=FALSE,sep=" ", "energyPlot.txt")
+# }
 # sink()

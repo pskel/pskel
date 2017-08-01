@@ -1,7 +1,7 @@
 SOURCEPATH=$1
 DATADIR=$2
 PLOTDIR=$3
-label=$4
+label="Tempo de Execução(s)"
 scale=$5
 yformat="%1.1f"
 
@@ -35,7 +35,7 @@ done
 # $DATADIR/getSpeedup.sh $DATADIR "Jacobi"
 
             gnuplot                                                            \
-                -e "label='Execution Time\(s\)'"                               \
+                -e "label='$label'"                               \
                 -e "yformat='$yformat'"                                        \
                 -e "scale='$scale'"                                            \
                 -e "fur='$DATADIR/tmpTimeFur.txt'"                             \

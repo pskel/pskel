@@ -1,0 +1,20 @@
+PAPI_VERSION     :    5      5       1
+
+Converting rapl group events name to code...
+Name rapl:::PACKAGE_ENERGY:PACKAGE0 --- Code: 0x4000002e
+Name rapl:::PP0_ENERGY:PACKAGE0 --- Code: 0x4000002f
+Name rapl:::DRAM_ENERGY:PACKAGE0 --- Code: 0x40000030
+Name rapl:::PACKAGE_ENERGY:PACKAGE1 --- Code: 0x40000031
+Name rapl:::PP0_ENERGY:PACKAGE1 --- Code: 0x40000032
+Name rapl:::DRAM_ENERGY:PACKAGE1 --- Code: 0x40000033
+Start profiling for group 0 of component RAPL...
+CPU_time	20.1458
+Stop profiling for group 0 of component RAPL. Took 20.146s...
+
+--------------------------------------------------------------------------------
+rapl:::PACKAGE_ENERGY:PACKAGE0           1090.930115 J	(Average Power 54.2W)
+rapl:::PP0_ENERGY:PACKAGE0                  0.000000 J	(Average Power 0.0W)
+rapl:::DRAM_ENERGY:PACKAGE0               607.497803 J	(Average Power 30.2W)
+rapl:::PACKAGE_ENERGY:PACKAGE1            347.360168 J	(Average Power 17.2W)
+rapl:::PP0_ENERGY:PACKAGE1                  0.000000 J	(Average Power 0.0W)
+rapl:::DRAM_ENERGY:PACKAGE1               272.594666 J	(Average Power 13.5W)

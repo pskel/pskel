@@ -1,6 +1,7 @@
+set encoding utf8
 # Input
 set datafile separator " "
-
+set title app
 # Output
 set terminal postscript eps enhanced color size 2.5,2
 set output outfile
@@ -8,7 +9,7 @@ set output outfile
 load "gnuplot/settings.gnuplot"
 
 # X Axis
-set xtics ('2048' 0, '4096' 1, '8192' 2, '12288' 3) rotate by 30 right nomirror
+set xtics ('2048²' 0, '4096²' 1, '8192²' 2, '12288²' 3)
 
 # Y Axis
 set ytic
