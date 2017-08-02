@@ -27,7 +27,7 @@ set ylabel label
 YAXIS = "set format y yformat; \
 		 set yrange [0:]"
 
-LEGEND = "set key inside top left height 1 width 1 box lw 1 font ',12' title 'Tile Size' samplen 1.5"
+LEGEND = "set key inside top left height 1 width 1 box lw 1 font ',12' title 'Tamanho do Tile' samplen 1.5"
 
 @YAXIS
 @LEGEND
