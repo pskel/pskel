@@ -71,7 +71,7 @@ epstopdf                     \
 # > ${DATADIR}/tmpTimeValues.txt
 rm -r $PLOTDIR/PreviewPlot.eps
 rm -r $PLOTDIR/Comparison${tp}Tiles${qnt}.eps
-rm -r $DATADIR/tmpTimeMPPA.txt
-rm -r $DATADIR/tmpEnergyMPPA.txt
-rm -r $DATADIR/tmpTeslaTime.txt
-rm -r $DATADIR/tmpTeslaEnergy.txt
+# rm -r $DATADIR/tmpTimeMPPA.txt
+# rm -r $DATADIR/tmpEnergyMPPA.txt
+# rm -r $DATADIR/tmpTeslaTime.txt
+# rm -r $DATADIR/tmpTeslaEnergy.txt

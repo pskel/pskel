@@ -1,7 +1,7 @@
 SOURCEPATH=$1
 DATADIR=$2
 PLOTDIR=$3
-label="Tempo de Execução(s)"
+label="Tempo de Execução (s)"
 scale=$5
 yformat="%1.1f"
 
