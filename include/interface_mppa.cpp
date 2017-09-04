@@ -30,6 +30,7 @@
 //-------------------------------------------------------------------------------
 
 #include <mppa/osconfig.h>
+#include <HAL/hal/core/mp.h>
 #include "interface_mppa.h"
 
 void set_path_name(char *path, char *template_path, int rx, int tag) {
