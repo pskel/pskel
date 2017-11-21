@@ -1570,15 +1570,18 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 							//	#ifdef PSKEL_TBB
 							//		this->runTBB(inputCopy, outputCPU, numThreads);
 							//	#else
-									this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+									this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads-1);
 							//	#endif
 							}else {
 							//	#ifdef PSKEL_TBB
 							//		this->runTBB(outputCPU, inputCopy, numThreads);
 							//	#else
-									this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+									this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads-1);
 							//	#endif
 							}
+
+							// At the end of each iteration we remove one redundant line (equal to the maskRange)
+							tbbHeight -= maskRange;
 							#endif
 						}//end for
 						/*
@@ -2244,6 +2247,15 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 		for (size_t w = maskRange; w < wrange; w++){
 			//#pragma forceinline recursive
 			stencilKernel(in,out,this->mask,this->args,h,w);
+			/*
+			int neighbors =  (in(h-1,w-1) + in(h-1,w) + in(h-1,w+1))  +
+                     	(in(h,w-1)   + in(h,w+1)) + 
+    		     	(in(h+1,w-1) + in(h+1,w) + in(h+1,w+1));
+
+			int c2 = (neighbors == 2);
+			 int c3 = (neighbors == 3);
+			 out(h,w) = in(h,w) * c2 + c3;
+			*/
 			//#pragma omp simd
 			//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args);
 			
