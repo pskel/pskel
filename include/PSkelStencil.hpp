@@ -40,9 +40,19 @@
 
 //#include <malloc.h>
 //#include <xmmintrin.h>
+
+#include <mutex>         
+#include <condition_variable>
+
 using namespace std;
 
 namespace PSkel{
+
+std::mutex mtx;          // mutex for critical section
+std::condition_variable cv; // condition variable for critical section  
+bool ready = false;
+bool processed = false;
+
 
 #ifdef PSKEL_CUDA
 //********************************************************************************************
@@ -1284,380 +1294,773 @@ void StencilBase<Array, Mask,Args>::runIterativeGPU(size_t iterations, size_t GP
 	}
 	#endif
 
-	#ifdef PSKEL_CUDA
-	template<class Array, class Mask, class Args>
-	void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
-		//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
-		double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
-		if(GPUBlockSizeX==0){
-			int device;
-			cudaGetDevice(&device);
-			cudaDeviceProp deviceProperties;
-			cudaGetDeviceProperties(&deviceProperties, device);
-			//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
-			GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
-			//int minGridSize, blockSize;
-			//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
-			//GPUBlockSize = blockSize;
-			//cout << "GPUBlockSize: "<<GPUBlockSize<<endl;
-			//int maxActiveBlocks;
-			//cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks, stencilTilingCU, GPUBlockSize, 0);
-			//float occupancy = (maxActiveBlocks * GPUBlockSize / deviceProperties.warpSize) / 
-			//    (float)(deviceProperties.maxThreadsPerMultiProcessor / 
-			//            deviceProperties.warpSize);
-			//printf("Launched blocks of size %d. Theoretical occupancy: %f\n", GPUBlockSize, occupancy);
-		}
-		//mask.deviceAlloc();
-		//mask.copyToDevice();
-
-		StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
-		StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
-		Array inputGPU;
-		Array outputGPU;
-		Array tmp;
-		Array inputCPU;
-		Array inputCopy;
-		Array outputCPU;
-		Array coreTmp;
-		Array coreOutput;
-		
-		size_t gpuHeight = ceil(this->input.getHeight()*gpuFactor);
-		size_t cpuHeight = this->input.getHeight()-gpuHeight;
-				
-		gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
-		cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-		inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-		/*Core Area*/
-		outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-		inputGPU.deviceAlloc();
-		outputGPU.deviceAlloc();
-		/*
-		cout<<"GPU width offset\t"<<gpuTiling.width<<endl;
-		cout<<"GPU height offset\t"<<gpuTiling.height<<endl;
-		cout<<"GPU depth offset\t"<<gpuTiling.depth<<endl;
-
-		cout<<"GPU width offset\t"<<gpuTiling.widthOffset<<endl;
-		cout<<"GPU height offset\t"<<gpuTiling.heightOffset<<endl;
-		cout<<"GPU depth offset\t"<<gpuTiling.depthOffset<<endl;
-
-		cout<<"GPU Corewidth offset\t"<<gpuTiling.coreWidthOffset<<endl;
-		cout<<"GPU Coreheight offset\t"<<gpuTiling.coreHeightOffset<<endl;
-		cout<<"GPU Coredepth offset\t"<<gpuTiling.coreDepthOffset<<endl;
-
-		cout<<"GPU width \t"<<outputGPU.getWidth()<<endl;
-		cout<<"GPU height \t"<<outputGPU.getHeight()<<endl;
-		cout<<"GPU depth \t"<<outputGPU.getDepth()<<endl;
-		cout<<"GPU size \t"<<outputGPU.size()<<endl;
-		*/
-		//inputGPU.copyToDevice();
-						
-		//tmp.hostAllocPinned(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-		
-		//cudaStream_t stream1;
-		//gpuErrchk ( cudaStreamCreate(&stream1) );					
-		//gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*sizeof(float), cudaMemcpyHostToDevice) );
-						
-		
-		size_t maskRange = this->mask.getRange();
-		/*
-		cout<<"CPU width offset\t"<<cpuTiling.widthOffset<<endl;
-		cout<<"CPU height offset\t"<<cpuTiling.heightOffset<<endl;
-		cout<<"CPU depth offset\t"<<cpuTiling.depthOffset<<endl;
-
-		cout<<"CPU Corewidth offset\t"<<cpuTiling.coreWidthOffset<<endl;
-		cout<<"CPU Coreheight offset\t"<<cpuTiling.coreHeightOffset<<endl;
-		cout<<"CPU Coredepth offset\t"<<cpuTiling.coreDepthOffset<<endl;
-		*/
-
-		/* Ghost + Core Area */
-		inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-		
-		/* Core Area */
-		outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
-		
-		//inputGPU.hostAllocPinned();
-		//outputGPU.hostAllocPinned();
-		/*
-		cout<<"CPU width \t"<<inputCPU.getWidth()<<endl;
-		cout<<"CPU height \t"<<inputCPU.getHeight()<<endl;
-		cout<<"CPU depth \t"<<inputCPU.getDepth()<<endl;
-		cout<<"CPU size \t"<<inputCPU.size()<<endl;
-		*/
-
-				
-		Array inputTBB;
-		Array outputTBB;									
-		size_t tbbWidth = inputCPU.getWidth();
-		size_t tbbHeight = inputCPU.getHeight();
-		size_t tbbDepth = inputCPU.getDepth();
-		inputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
-		outputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
-						
-		/*
-		cout<<"CPU output width \t"<<outputCPU.getWidth()<<endl;
-		cout<<"CPU output height \t"<<outputCPU.getHeight()<<endl;
-		cout<<"CPU output \t"<<outputCPU.getDepth()<<endl;
-		cout<<"CPU output \t"<<outputCPU.size()<<endl;
-		*/
-
-
-		/*
-		double startMemMove = omp_get_wtime();
-		//memmove(inputTBB2.hostArray,inputCPU.hostArray,inputTBB2.size()*sizeof(float));
-
-		#pragma omp parallel for
-		for(size_t h = 0;h<inputCPU.getHeight();++h){
-			for(size_t w=0;w<inputCPU.getWidth();++w){
-				inputTBB(h,w) = inputCPU(h,w);
-				//outputTBB(h,w) = outputCPU(h,w);
-			}
-		}
-
-		double endMemMove = omp_get_wtime();
-		cout<<"Memmove_time\t"<<endMemMove-startMemMove<<endl;
-		*/
-		//#ifdef PSKEL_TBB
-		//tbb::task_scheduler_init init(numThreads-1);
-		//static tbb::affinity_partitioner ap;
-		//TBBStencil2D<Array,Mask,Args> tbbstencil(inputCopy, outputCPU, this->mask, this->args); 	
-		//#endif
-		if(this->input.getHeight()==1){
-			
-		}
-		else{
-			if(cpuHeight==0) 
-				this->runIterativeGPU(iterations, GPUBlockSizeX,GPUBlockSizeY);
-			else if(gpuHeight==0) 
-				this->runIterativeCPU(iterations, numThreads);
-			else{
-				start = omp_get_wtime();
-				omp_set_num_threads(2);
-				omp_set_nested(1);
-				//printf("Main thread %d starting parallel section\n",omp_get_thread_num());
-				//cout<<"Input size "<<input.size()<<endl;
-				//startPinnedCopy = omp_get_wtime();
-				//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));
-				//cudaHostRegister(inputGPU.hostArray, inputGPU.size()*sizeof(float),cudaHostRegisterPortable);
-				//cudaHostRegister(outputGPU.hostArray, outputGPU.size()*sizeof(float),cudaHostRegisterPortable);
-				//endPinnedCopy = omp_get_wtime();
-				//cout<<"memcpy time: "<<s2-s1<<endl;
-						
-				#pragma omp parallel sections
-				{
-					#pragma omp section         
-					{//begin GPU
-						//printf("Thread %d computing GPU Partition\n",omp_get_thread_num());
-						startGPU = omp_get_wtime();
-						mask.deviceAlloc();
-						mask.copyToDevice();
-
-
-						//gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
-						
-						//inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-						
-						//outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-
-						//inputGPU.deviceAlloc();
-						//#pragma forceinline 
-						//inputGPU.copyToDevice();
-					
-						//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));		
-						//cudaStream_t stream2;
-						//gpuErrchk ( cudaStreamCreate(&stream2) );
-						cudaHostRegister(inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(),cudaHostRegisterPortable);
-						gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(), cudaMemcpyHostToDevice) );
-						cudaHostUnregister(inputGPU.hostArray);
-						//outputGPU.deviceAlloc();
-						//tmp.hostAlloc(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-						
-						//CUDA kernel execution
-						this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
-						
-						//tmp.hostAllocPinned(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-						size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth();
-						cudaHostRegister(outputGPU.hostArray, coreSize*inputGPU.typeSize(),cudaHostRegisterPortable);
-						if(iterations%2==0){
-							//tmp.copyFromDevicePinned(inputGPU);
-							gpuErrchk ( cudaMemcpy(outputGPU.hostArray, inputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
-						}
-						else{	
-							//tmp.copyFromDevicePinned(outputGPU);
-							gpuErrchk ( cudaMemcpy(outputGPU.hostArray, outputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
-						}
-						cudaHostUnregister(outputGPU.hostArray);
-						
-						//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
-						//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
-						
-						endGPU = omp_get_wtime();
-						//printf("Thread %d finished GPU Partition\n",omp_get_thread_num());
-					}//end GPU section
-					
-					//printf("Thread %d entering parallel section\n",omp_get_thread_num());
-					#pragma omp section
-					{//begin CPU
-						//printf("Thread %d computing CPU Partition\n",omp_get_thread_num());
-						//printf("%f Running CPU iterations\n",omp_get_wtime());
-						
-						startCPU = omp_get_wtime();
-						
-						#pragma omp parallel for num_threads(numThreads-1)
-						for(size_t h = 0;h<tbbHeight;++h){
-							for(size_t w=0;w<tbbWidth;++w){
-								inputTBB(h,w) = inputCPU(h,w);
-								//outputTBB(h,w) = outputCPU(h,w);
-							}
-						}
-
-						//endCPU = omp_get_wtime();
-						//cout<<"TBBCopy_time\t"<<endCPU-startCPU<<endl;
-
-						//cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-						
-						//inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-						//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-
-						////inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-						////outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-						
-						 //size_t width = inputTBB.getWidth();
-						 //size_t height = inputTBB.getHeight();
-						 //size_t depth = inputTBB.getDepth();
-						//Array inputCopy;
-						//Array inputTBB;
-											
-						//inputTBB.hostScalableAlloc(width,height,depth);
-						//memmove(inputTBB.hostArray,inputCPU.hostArray,width*height*depth*sizeof(float));
-						
-						//inputCopy.hostClone(inputCPU);
-						//startCPU = omp_get_wtime();
-						
-						#ifdef PSKEL_TBB
-						TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
-						tbb::task_scheduler_init init(numThreads-1);
-						tbb::affinity_partitioner ap;
-						#endif
-		
-						//cout<<"oi1"<<endl;													
-																		
-						for(size_t it = 0; it<iterations; it++){
-							#ifdef PSKEL_TBB
-							//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
-							//inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
-							//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
-							//size_t width = inputTBB.getWidth();
-							//size_t height = inputTBB.getHeight();
-							//size_t depth = inputTBB.getDepth();
-
-							//cout<<"oi "<<height<<" "<<maskRange<<endl;
-							//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
-							//cout<<"input height: "<<inputTBB.getHeight()<<endl;
-							//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
-							//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
-							tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
-							//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
-							//
-							//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
-							//outputTBB.hostSlice(outputTBB,0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
-							
-							//cout<<"oi3"<<endl;
-							tbbstencil.swap();
-							//cout<<"oi4"<<endl;
-							//cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
-							#else
-							if(it%2==0){
-							//	#ifdef PSKEL_TBB
-							//		this->runTBB(inputCopy, outputCPU, numThreads);
-							//	#else
-									this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
-							//	#endif
-							}else {
-							//	#ifdef PSKEL_TBB
-							//		this->runTBB(outputCPU, inputCopy, numThreads);
-							//	#else
-									this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
-							//	#endif
-							}
-							#endif
-						}//end for
-						/*
-						#ifdef PSKEL_TBB
-						//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
-						//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
-						//TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputCPU,this->mask, this->args);
-						//size_t tbbHeight2 = outputTBB.getHeight();
-						//cout<<"height input: "<<outputTBB.getHeight()<<endl;
-						//cout<<"height output: "<<outputCPU.getHeight()<<endl;
-						//cout<<"output offset: "<<outputCPU.getHeightOffset()<<endl;
-						tbbstencil.set(outputTBB,outputCPU);
-						tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
-						#else
-							this->runOpenMP(outputTBB, outputCPU, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);	
-						#endif
-						*/
-						if((iterations%2)==1)
-							 outputCPU.hostMemCopy(outputTBB);
-						else
-							outputCPU.hostMemCopy(inputTBB);
-						//if((iterations%2)==1) tbbstencil.swap();
-						//inputCopy.hostFree();
-						//size_t coreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
-						//cout<<"CPU coreOffset size: "<<coreOffset<<endl;
-						//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
-						
-						
-						//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
-						
-						
-						//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
-						
-						
-						endCPU = omp_get_wtime();
-						//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
-					}//end CPU section
-				}//end parallel omp sections
-				//startCopy = omp_get_wtime();
-				//printf("Main thread %d finished parallel section\n",omp_get_thread_num());
-				//if(iterations%2==0)
-				//	tmp.copyFromDevice(inputGPU);
-				//else
-				//	tmp.copyFromDevice(outputGPU);	
-				//Array coreTmp;
-				//Array coreOutput;
-				//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
-				//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
-				//memcpy(output.hostArray,tmp.hostGPUArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));				
-				//coreOutput.hostPinnedMemCopy(coreTmp);
-				//tmp.hostFree();
-				//
-				//size_t cpuCoreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
-				//size_t cpuOffset = cpuTiling.width*(cpuTiling.coreHeightOffset);
-				//cout<<"CPU coreOffset size: "<<cpuCoreOffset<<endl;
-				//memcpy(this->output.hostArray + cpuCoreOffset, outputTBB.hostArray + cpuOffset,cpuTiling.coreWidth*cpuTiling.coreHeight*sizeof(float));		
-			
-				//cout<<"memcpying pinned to malloc"<<endl;	
-				//memcpy(output.hostArray,output.hostArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));
-						
-
-				//endCopy = omp_get_wtime();
-				end = omp_get_wtime();
-			}//end if partitioned
-		}//end if input.getHeight()
-		//cudaDeviceSynchronize();
-		//cout<<"Pinned_time\t"<<endPinnedCopy-startPinnedCopy<<endl;	
-		cout<<"CPU_time\t"<<endCPU-startCPU<<endl;
-		cout<<"GPU_time\t"<<endGPU-startGPU<<endl;
-		//cout<<"Copy time\t"<<endCopy-startCopy<<endl;
-		cout<<"Total_time\t"<<end-start<<endl;
-		tmp.hostFree();
-		inputCopy.hostFree();
-		inputGPU.deviceFree();
-		outputGPU.deviceFree();
-		mask.deviceFree();
-		//cudaStreamDestroy(stream1);
+#ifdef PSKEL_CUDA
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
+	double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
+	if(GPUBlockSizeX==0){
+		int device;
+		cudaGetDevice(&device);
+		cudaDeviceProp deviceProperties;
+		cudaGetDeviceProperties(&deviceProperties, device);
+		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
+		GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
+		//int minGridSize, blockSize;
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
+		//GPUBlockSize = blockSize;
+		//cout << "GPUBlockSize: "<<GPUBlockSize<<endl;
+		//int maxActiveBlocks;
+		//cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks, stencilTilingCU, GPUBlockSize, 0);
+		//float occupancy = (maxActiveBlocks * GPUBlockSize / deviceProperties.warpSize) / 
+		//    (float)(deviceProperties.maxThreadsPerMultiProcessor / 
+		//            deviceProperties.warpSize);
+		//printf("Launched blocks of size %d. Theoretical occupancy: %f\n", GPUBlockSize, occupancy);
 	}
-	#endif 
+	//mask.deviceAlloc();
+	//mask.copyToDevice();
+
+	StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
+	Array inputGPU;
+	Array outputGPU;
+	Array tmp;
+	Array inputCPU;
+	Array inputCopy;
+	Array outputCPU;
+	Array coreTmp;
+	Array coreOutput;
+	
+	size_t gpuHeight = ceil(this->input.getHeight()*gpuFactor);
+	size_t cpuHeight = this->input.getHeight()-gpuHeight;
+			
+	gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+	cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	/*Core Area*/
+	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	inputGPU.deviceAlloc();
+	outputGPU.deviceAlloc();
+	/*
+	cout<<"GPU width offset\t"<<gpuTiling.width<<endl;
+	cout<<"GPU height offset\t"<<gpuTiling.height<<endl;
+	cout<<"GPU depth offset\t"<<gpuTiling.depth<<endl;
+
+	cout<<"GPU width offset\t"<<gpuTiling.widthOffset<<endl;
+	cout<<"GPU height offset\t"<<gpuTiling.heightOffset<<endl;
+	cout<<"GPU depth offset\t"<<gpuTiling.depthOffset<<endl;
+
+	cout<<"GPU Corewidth offset\t"<<gpuTiling.coreWidthOffset<<endl;
+	cout<<"GPU Coreheight offset\t"<<gpuTiling.coreHeightOffset<<endl;
+	cout<<"GPU Coredepth offset\t"<<gpuTiling.coreDepthOffset<<endl;
+
+	cout<<"GPU width \t"<<outputGPU.getWidth()<<endl;
+	cout<<"GPU height \t"<<outputGPU.getHeight()<<endl;
+	cout<<"GPU depth \t"<<outputGPU.getDepth()<<endl;
+	cout<<"GPU size \t"<<outputGPU.size()<<endl;
+	*/
+	//inputGPU.copyToDevice();
+					
+	//tmp.hostAllocPinned(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	
+	//cudaStream_t stream1;
+	//gpuErrchk ( cudaStreamCreate(&stream1) );					
+	//gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*sizeof(float), cudaMemcpyHostToDevice) );
+					
+	
+	size_t maskRange = this->mask.getRange();
+	/*
+	cout<<"CPU width offset\t"<<cpuTiling.widthOffset<<endl;
+	cout<<"CPU height offset\t"<<cpuTiling.heightOffset<<endl;
+	cout<<"CPU depth offset\t"<<cpuTiling.depthOffset<<endl;
+
+	cout<<"CPU Corewidth offset\t"<<cpuTiling.coreWidthOffset<<endl;
+	cout<<"CPU Coreheight offset\t"<<cpuTiling.coreHeightOffset<<endl;
+	cout<<"CPU Coredepth offset\t"<<cpuTiling.coreDepthOffset<<endl;
+	*/
+
+	/* Ghost + Core Area */
+	inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+	
+	/* Core Area */
+	outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
+	
+	//inputGPU.hostAllocPinned();
+	//outputGPU.hostAllocPinned();
+	/*
+	cout<<"CPU width \t"<<inputCPU.getWidth()<<endl;
+	cout<<"CPU height \t"<<inputCPU.getHeight()<<endl;
+	cout<<"CPU depth \t"<<inputCPU.getDepth()<<endl;
+	cout<<"CPU size \t"<<inputCPU.size()<<endl;
+	*/
+
+			
+	Array inputTBB;
+	Array outputTBB;									
+	size_t tbbWidth = inputCPU.getWidth();
+	size_t tbbHeight = inputCPU.getHeight();
+	size_t tbbDepth = inputCPU.getDepth();
+	inputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+	outputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+					
+	/*
+	cout<<"CPU output width \t"<<outputCPU.getWidth()<<endl;
+	cout<<"CPU output height \t"<<outputCPU.getHeight()<<endl;
+	cout<<"CPU output \t"<<outputCPU.getDepth()<<endl;
+	cout<<"CPU output \t"<<outputCPU.size()<<endl;
+	*/
+
+
+	/*
+	double startMemMove = omp_get_wtime();
+	//memmove(inputTBB2.hostArray,inputCPU.hostArray,inputTBB2.size()*sizeof(float));
+
+	#pragma omp parallel for
+	for(size_t h = 0;h<inputCPU.getHeight();++h){
+		for(size_t w=0;w<inputCPU.getWidth();++w){
+			inputTBB(h,w) = inputCPU(h,w);
+			//outputTBB(h,w) = outputCPU(h,w);
+		}
+	}
+
+	double endMemMove = omp_get_wtime();
+	cout<<"Memmove_time\t"<<endMemMove-startMemMove<<endl;
+	*/
+	//#ifdef PSKEL_TBB
+	//tbb::task_scheduler_init init(numThreads-1);
+	//static tbb::affinity_partitioner ap;
+	//TBBStencil2D<Array,Mask,Args> tbbstencil(inputCopy, outputCPU, this->mask, this->args); 	
+	//#endif
+	if(this->input.getHeight()==1){
+		
+	}
+	else{
+		if(cpuHeight==0) 
+			this->runIterativeGPU(iterations, GPUBlockSizeX,GPUBlockSizeY);
+		else if(gpuHeight==0) 
+			this->runIterativeCPU(iterations, numThreads);
+		else{
+			start = omp_get_wtime();
+			omp_set_num_threads(2);
+			omp_set_nested(1);
+			//printf("Main thread %d starting parallel section\n",omp_get_thread_num());
+			//cout<<"Input size "<<input.size()<<endl;
+			//startPinnedCopy = omp_get_wtime();
+			//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));
+			//cudaHostRegister(inputGPU.hostArray, inputGPU.size()*sizeof(float),cudaHostRegisterPortable);
+			//cudaHostRegister(outputGPU.hostArray, outputGPU.size()*sizeof(float),cudaHostRegisterPortable);
+			//endPinnedCopy = omp_get_wtime();
+			//cout<<"memcpy time: "<<s2-s1<<endl;
+					
+			#pragma omp parallel sections
+			{
+				#pragma omp section         
+				{//begin GPU
+					//printf("Thread %d computing GPU Partition\n",omp_get_thread_num());
+					startGPU = omp_get_wtime();
+					mask.deviceAlloc();
+					mask.copyToDevice();
+
+
+					//gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+					
+					//inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+					
+					//outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+
+					//inputGPU.deviceAlloc();
+					//#pragma forceinline 
+					//inputGPU.copyToDevice();
+				
+					//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));		
+					//cudaStream_t stream2;
+					//gpuErrchk ( cudaStreamCreate(&stream2) );
+					cudaHostRegister(inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(),cudaHostRegisterPortable);
+					gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(), cudaMemcpyHostToDevice) );
+					cudaHostUnregister(inputGPU.hostArray);
+					//outputGPU.deviceAlloc();
+					//tmp.hostAlloc(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+					
+					//CUDA kernel execution
+					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
+					
+					//tmp.hostAllocPinned(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+					size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth();
+					cudaHostRegister(outputGPU.hostArray, coreSize*inputGPU.typeSize(),cudaHostRegisterPortable);
+					if(iterations%2==0){
+						//tmp.copyFromDevicePinned(inputGPU);
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, inputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+					}
+					else{	
+						//tmp.copyFromDevicePinned(outputGPU);
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, outputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+					}
+					cudaHostUnregister(outputGPU.hostArray);
+					
+					//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+					//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+					
+					endGPU = omp_get_wtime();
+					//printf("Thread %d finished GPU Partition\n",omp_get_thread_num());
+				}//end GPU section
+				
+				//printf("Thread %d entering parallel section\n",omp_get_thread_num());
+				#pragma omp section
+				{//begin CPU
+					//printf("Thread %d computing CPU Partition\n",omp_get_thread_num());
+					//printf("%f Running CPU iterations\n",omp_get_wtime());
+					
+					startCPU = omp_get_wtime();
+					
+					#pragma omp parallel for num_threads(numThreads-1)
+					for(size_t h = 0;h<tbbHeight;++h){
+						for(size_t w=0;w<tbbWidth;++w){
+							inputTBB(h,w) = inputCPU(h,w);
+							//outputTBB(h,w) = outputCPU(h,w);
+						}
+					}
+
+					//endCPU = omp_get_wtime();
+					//cout<<"TBBCopy_time\t"<<endCPU-startCPU<<endl;
+
+					//cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					
+					//inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+					//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+
+					////inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					////outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					
+					 //size_t width = inputTBB.getWidth();
+					 //size_t height = inputTBB.getHeight();
+					 //size_t depth = inputTBB.getDepth();
+					//Array inputCopy;
+					//Array inputTBB;
+										
+					//inputTBB.hostScalableAlloc(width,height,depth);
+					//memmove(inputTBB.hostArray,inputCPU.hostArray,width*height*depth*sizeof(float));
+					
+					//inputCopy.hostClone(inputCPU);
+					//startCPU = omp_get_wtime();
+					
+					#ifdef PSKEL_TBB
+					TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
+					tbb::task_scheduler_init init(numThreads-1);
+					tbb::affinity_partitioner ap;
+					#endif
+	
+					//cout<<"oi1"<<endl;													
+																	
+					for(size_t it = 0; it<iterations; it++){
+						#ifdef PSKEL_TBB
+						//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
+						//inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+						//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+						//size_t width = inputTBB.getWidth();
+						//size_t height = inputTBB.getHeight();
+						//size_t depth = inputTBB.getDepth();
+
+						//cout<<"oi "<<height<<" "<<maskRange<<endl;
+						//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
+						//cout<<"input height: "<<inputTBB.getHeight()<<endl;
+						//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
+						//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
+						tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+						//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
+						//
+						//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+						//outputTBB.hostSlice(outputTBB,0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+						
+						//cout<<"oi3"<<endl;
+						tbbstencil.swap();
+						//cout<<"oi4"<<endl;
+						//cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
+						#else
+						if(it%2==0){
+						//	#ifdef PSKEL_TBB
+						//		this->runTBB(inputCopy, outputCPU, numThreads);
+						//	#else
+								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+						//	#endif
+						}else {
+						//	#ifdef PSKEL_TBB
+						//		this->runTBB(outputCPU, inputCopy, numThreads);
+						//	#else
+								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+						//	#endif
+						}
+						#endif
+					}//end for
+					/*
+					#ifdef PSKEL_TBB
+					//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
+					//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
+					//TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputCPU,this->mask, this->args);
+					//size_t tbbHeight2 = outputTBB.getHeight();
+					//cout<<"height input: "<<outputTBB.getHeight()<<endl;
+					//cout<<"height output: "<<outputCPU.getHeight()<<endl;
+					//cout<<"output offset: "<<outputCPU.getHeightOffset()<<endl;
+					tbbstencil.set(outputTBB,outputCPU);
+					tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+					#else
+						this->runOpenMP(outputTBB, outputCPU, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);	
+					#endif
+					*/
+					if((iterations%2)==1)
+						 outputCPU.hostMemCopy(outputTBB);
+					else
+						outputCPU.hostMemCopy(inputTBB);
+					//if((iterations%2)==1) tbbstencil.swap();
+					//inputCopy.hostFree();
+					//size_t coreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
+					//cout<<"CPU coreOffset size: "<<coreOffset<<endl;
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					endCPU = omp_get_wtime();
+					//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
+				}//end CPU section
+			}//end parallel omp sections
+			//startCopy = omp_get_wtime();
+			//printf("Main thread %d finished parallel section\n",omp_get_thread_num());
+			//if(iterations%2==0)
+			//	tmp.copyFromDevice(inputGPU);
+			//else
+			//	tmp.copyFromDevice(outputGPU);	
+			//Array coreTmp;
+			//Array coreOutput;
+			//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			//memcpy(output.hostArray,tmp.hostGPUArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));				
+			//coreOutput.hostPinnedMemCopy(coreTmp);
+			//tmp.hostFree();
+			//
+			//size_t cpuCoreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
+			//size_t cpuOffset = cpuTiling.width*(cpuTiling.coreHeightOffset);
+			//cout<<"CPU coreOffset size: "<<cpuCoreOffset<<endl;
+			//memcpy(this->output.hostArray + cpuCoreOffset, outputTBB.hostArray + cpuOffset,cpuTiling.coreWidth*cpuTiling.coreHeight*sizeof(float));		
+		
+			//cout<<"memcpying pinned to malloc"<<endl;	
+			//memcpy(output.hostArray,output.hostArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));
+					
+
+			//endCopy = omp_get_wtime();
+			end = omp_get_wtime();
+		}//end if partitioned
+	}//end if input.getHeight()
+	//cudaDeviceSynchronize();
+	//cout<<"Pinned_time\t"<<endPinnedCopy-startPinnedCopy<<endl;	
+	cout<<"CPU_time\t"<<endCPU-startCPU<<endl;
+	cout<<"GPU_time\t"<<endGPU-startGPU<<endl;
+	//cout<<"Copy time\t"<<endCopy-startCopy<<endl;
+	cout<<"Total_time\t"<<end-start<<endl;
+	tmp.hostFree();
+	inputCopy.hostFree();
+	inputGPU.deviceFree();
+	outputGPU.deviceFree();
+	mask.deviceFree();
+	//cudaStreamDestroy(stream1);
+}
+#endif 
+
+#ifdef PSKEL_CUDA
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+	//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
+	double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
+	if(GPUBlockSizeX==0){
+		int device;
+		cudaGetDevice(&device);
+		cudaDeviceProp deviceProperties;
+		cudaGetDeviceProperties(&deviceProperties, device);
+		//GPUBlockSize = deviceProperties.maxThreadsPerBlock/2;
+		GPUBlockSizeX = GPUBlockSizeY = deviceProperties.warpSize;
+		//int minGridSize, blockSize;
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, stencilTilingCU, 0, in.size());
+		//GPUBlockSize = blockSize;
+		//cout << "GPUBlockSize: "<<GPUBlockSize<<endl;
+		//int maxActiveBlocks;
+		//cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks, stencilTilingCU, GPUBlockSize, 0);
+		//float occupancy = (maxActiveBlocks * GPUBlockSize / deviceProperties.warpSize) / 
+		//    (float)(deviceProperties.maxThreadsPerMultiProcessor / 
+		//            deviceProperties.warpSize);
+		//printf("Launched blocks of size %d. Theoretical occupancy: %f\n", GPUBlockSize, occupancy);
+	}
+	//mask.deviceAlloc();
+	//mask.copyToDevice();
+
+	StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
+	Array inputGPU;
+	Array outputGPU;
+	Array tmp;
+	Array inputCPU;
+	Array inputCopy;
+	Array outputCPU;
+	Array coreTmp;
+	Array coreOutput;
+	Array inputTBB;
+	Array outputTBB;									
+	
+	size_t gpuHeight = ceil(this->input.getHeight()*gpuFactor);
+	size_t cpuHeight = this->input.getHeight()-gpuHeight;
+			
+	gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+	cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	/*Core Area*/
+	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	inputGPU.deviceAlloc();
+	outputGPU.deviceAlloc();
+	/*
+	cout<<"GPU width offset\t"<<gpuTiling.width<<endl;
+	cout<<"GPU height offset\t"<<gpuTiling.height<<endl;
+	cout<<"GPU depth offset\t"<<gpuTiling.depth<<endl;
+
+	cout<<"GPU width offset\t"<<gpuTiling.widthOffset<<endl;
+	cout<<"GPU height offset\t"<<gpuTiling.heightOffset<<endl;
+	cout<<"GPU depth offset\t"<<gpuTiling.depthOffset<<endl;
+
+	cout<<"GPU Corewidth offset\t"<<gpuTiling.coreWidthOffset<<endl;
+	cout<<"GPU Coreheight offset\t"<<gpuTiling.coreHeightOffset<<endl;
+	cout<<"GPU Coredepth offset\t"<<gpuTiling.coreDepthOffset<<endl;
+
+	cout<<"GPU width \t"<<outputGPU.getWidth()<<endl;
+	cout<<"GPU height \t"<<outputGPU.getHeight()<<endl;
+	cout<<"GPU depth \t"<<outputGPU.getDepth()<<endl;
+	cout<<"GPU size \t"<<outputGPU.size()<<endl;
+	*/
+	//inputGPU.copyToDevice();
+					
+	//tmp.hostAllocPinned(gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	
+	//cudaStream_t stream1;
+	//gpuErrchk ( cudaStreamCreate(&stream1) );					
+	//gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*sizeof(float), cudaMemcpyHostToDevice) );
+					
+	
+	size_t maskRange = this->mask.getRange();
+	/*
+	cout<<"CPU width offset\t"<<cpuTiling.widthOffset<<endl;
+	cout<<"CPU height offset\t"<<cpuTiling.heightOffset<<endl;
+	cout<<"CPU depth offset\t"<<cpuTiling.depthOffset<<endl;
+
+	cout<<"CPU Corewidth offset\t"<<cpuTiling.coreWidthOffset<<endl;
+	cout<<"CPU Coreheight offset\t"<<cpuTiling.coreHeightOffset<<endl;
+	cout<<"CPU Coredepth offset\t"<<cpuTiling.coreDepthOffset<<endl;
+	*/
+
+	/* Ghost + Core Area */
+	inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+	
+	/* Core Area */
+	outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
+	
+	//inputGPU.hostAllocPinned();
+	//outputGPU.hostAllocPinned();
+	/*
+	cout<<"CPU width \t"<<inputCPU.getWidth()<<endl;
+	cout<<"CPU height \t"<<inputCPU.getHeight()<<endl;
+	cout<<"CPU depth \t"<<inputCPU.getDepth()<<endl;
+	cout<<"CPU size \t"<<inputCPU.size()<<endl;
+	*/
+		
+	size_t tbbWidth = inputCPU.getWidth();
+	size_t tbbHeight = inputCPU.getHeight();
+	size_t tbbDepth = inputCPU.getDepth();
+	inputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+	outputTBB.hostScalableAlloc(tbbWidth,tbbHeight,tbbDepth);
+					
+	/*
+	cout<<"CPU output width \t"<<outputCPU.getWidth()<<endl;
+	cout<<"CPU output height \t"<<outputCPU.getHeight()<<endl;
+	cout<<"CPU output \t"<<outputCPU.getDepth()<<endl;
+	cout<<"CPU output \t"<<outputCPU.size()<<endl;
+	*/
+
+
+	/*
+	double startMemMove = omp_get_wtime();
+	//memmove(inputTBB2.hostArray,inputCPU.hostArray,inputTBB2.size()*sizeof(float));
+
+	#pragma omp parallel for
+	for(size_t h = 0;h<inputCPU.getHeight();++h){
+		for(size_t w=0;w<inputCPU.getWidth();++w){
+			inputTBB(h,w) = inputCPU(h,w);
+			//outputTBB(h,w) = outputCPU(h,w);
+		}
+	}
+
+	double endMemMove = omp_get_wtime();
+	cout<<"Memmove_time\t"<<endMemMove-startMemMove<<endl;
+	*/
+	//#ifdef PSKEL_TBB
+	//tbb::task_scheduler_init init(numThreads-1);
+	//static tbb::affinity_partitioner ap;
+	//TBBStencil2D<Array,Mask,Args> tbbstencil(inputCopy, outputCPU, this->mask, this->args); 	
+	//#endif
+	if(this->input.getHeight()==1){
+		std::cout<<"Error! Input has height 1"<<std::endl;
+	}
+	else{
+		if(cpuHeight==0) 
+			this->runIterativeGPU(iterations, GPUBlockSizeX,GPUBlockSizeY);
+		else if(gpuHeight==0) 
+			this->runIterativeCPU(iterations, numThreads);
+		else{
+			start = omp_get_wtime();
+			omp_set_num_threads(2);
+			omp_set_nested(1);
+			//printf("Main thread %d starting parallel section\n",omp_get_thread_num());
+			//cout<<"Input size "<<input.size()<<endl;
+			//startPinnedCopy = omp_get_wtime();
+			//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));
+			//cudaHostRegister(inputGPU.hostArray, inputGPU.size()*sizeof(float),cudaHostRegisterPortable);
+			//cudaHostRegister(outputGPU.hostArray, outputGPU.size()*sizeof(float),cudaHostRegisterPortable);
+			//endPinnedCopy = omp_get_wtime();
+			//cout<<"memcpy time: "<<s2-s1<<endl;
+					
+			#pragma omp parallel sections
+			{
+				#pragma omp section         
+				{//begin GPU
+					//printf("Thread %d computing GPU Partition\n",omp_get_thread_num());
+					startGPU = omp_get_wtime();
+					mask.deviceAlloc();
+					mask.copyToDevice();
+					
+					// Pinned memory copy
+					cudaHostRegister(inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(),cudaHostRegisterPortable);
+					gpuErrchk ( cudaMemcpy(inputGPU.deviceArray, inputGPU.hostArray, inputGPU.size()*inputGPU.typeSize(), cudaMemcpyHostToDevice) );
+					cudaHostUnregister(inputGPU.hostArray);
+					
+					// CUDA kernel execution
+					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
+					
+					size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth();
+					cudaHostRegister(outputGPU.hostArray, coreSize*inputGPU.typeSize(),cudaHostRegisterPortable);
+					if(iterations%2==0){
+						//tmp.copyFromDevicePinned(inputGPU);
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, inputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+					}
+					else{	
+						//tmp.copyFromDevicePinned(outputGPU);
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, outputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+					}
+					cudaHostUnregister(outputGPU.hostArray);
+					
+					//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+					//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+					
+					endGPU = omp_get_wtime();
+					//printf("Thread %d finished GPU Partition\n",omp_get_thread_num());
+					
+					// GPU thread halo copy semaphore
+					{
+					    std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return ready;});
+					    
+					    std::cout << "GPU thread is ready to copy Halo!\n";
+					    
+					    // Manual unlocking is done before notifying, to avoid waking up
+						// the waiting thread only to block again (see notify_one for details)
+						lk.unlock();
+						cv.notify_one();
+						
+						std::cout << "GPU thread has notified!\n";
+					}
+				}//end GPU section
+				
+				//printf("Thread %d entering parallel section\n",omp_get_thread_num());
+				#pragma omp section
+				{//begin CPU
+					//printf("Thread %d computing CPU Partition\n",omp_get_thread_num());
+					//printf("%f Running CPU iterations\n",omp_get_wtime());
+					
+					startCPU = omp_get_wtime();
+					
+					#pragma omp parallel for num_threads(numThreads-1)
+					for(size_t h = 0;h<tbbHeight;++h){
+						for(size_t w=0;w<tbbWidth;++w){
+							inputTBB(h,w) = inputCPU(h,w);
+							//outputTBB(h,w) = outputCPU(h,w);
+						}
+					}
+
+					//endCPU = omp_get_wtime();
+					//cout<<"TBBCopy_time\t"<<endCPU-startCPU<<endl;
+
+					//cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					
+					//inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+					//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+
+					////inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					////outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+					
+					 //size_t width = inputTBB.getWidth();
+					 //size_t height = inputTBB.getHeight();
+					 //size_t depth = inputTBB.getDepth();
+					//Array inputCopy;
+					//Array inputTBB;
+										
+					//inputTBB.hostScalableAlloc(width,height,depth);
+					//memmove(inputTBB.hostArray,inputCPU.hostArray,width*height*depth*sizeof(float));
+					
+					//inputCopy.hostClone(inputCPU);
+					//startCPU = omp_get_wtime();
+					
+					#ifdef PSKEL_TBB
+					TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
+					tbb::task_scheduler_init init(numThreads-1);
+					tbb::affinity_partitioner ap;
+					#endif
+	
+					//cout<<"oi1"<<endl;													
+																	
+					for(size_t it = 0; it<iterations; it++){
+						#ifdef PSKEL_TBB
+						//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
+						//inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+						//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+						//size_t width = inputTBB.getWidth();
+						//size_t height = inputTBB.getHeight();
+						//size_t depth = inputTBB.getDepth();
+
+						//cout<<"oi "<<height<<" "<<maskRange<<endl;
+						//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
+						//cout<<"input height: "<<inputTBB.getHeight()<<endl;
+						//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
+						//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
+						tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+						//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
+						//
+						//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+						//outputTBB.hostSlice(outputTBB,0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+						
+						//cout<<"oi3"<<endl;
+						tbbstencil.swap();
+						//cout<<"oi4"<<endl;
+						//cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
+						#else
+						if(it%2==0){
+						//	#ifdef PSKEL_TBB
+						//		this->runTBB(inputCopy, outputCPU, numThreads);
+						//	#else
+								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+						//	#endif
+						}else {
+						//	#ifdef PSKEL_TBB
+						//		this->runTBB(outputCPU, inputCopy, numThreads);
+						//	#else
+								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+						//	#endif
+						}
+						#endif
+					}//end for
+					/*
+					#ifdef PSKEL_TBB
+					//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
+					//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
+					//TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputCPU,this->mask, this->args);
+					//size_t tbbHeight2 = outputTBB.getHeight();
+					//cout<<"height input: "<<outputTBB.getHeight()<<endl;
+					//cout<<"height output: "<<outputCPU.getHeight()<<endl;
+					//cout<<"output offset: "<<outputCPU.getHeightOffset()<<endl;
+					tbbstencil.set(outputTBB,outputCPU);
+					tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+					#else
+						this->runOpenMP(outputTBB, outputCPU, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);	
+					#endif
+					*/
+					if((iterations%2)==1)
+						 outputCPU.hostMemCopy(outputTBB);
+					else
+						outputCPU.hostMemCopy(inputTBB);
+					//if((iterations%2)==1) tbbstencil.swap();
+					//inputCopy.hostFree();
+					//size_t coreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
+					//cout<<"CPU coreOffset size: "<<coreOffset<<endl;
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					//memcpy(this->output.hostArray, outputTBB.hostArray + coreOffset,(this->output.size()-coreOffset)*sizeof(float));		
+					
+					
+					endCPU = omp_get_wtime();
+					//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
+					
+					// Semaphore waiting for GPU to finish
+					{
+						std::lock_guard<std::mutex> lk(mtx);
+						ready = true;
+						std::cout << "CPU Signal for GPU halo copy processing\n";
+					}
+					cv.notify_one();
+					
+					// wait for the worker
+					{
+						std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return processed;});
+					}
+					
+					std::cout<<"CPU thread is ready for halo copy\n";
+					
+					
+				}//end CPU section
+			}//end parallel omp sections
+			//startCopy = omp_get_wtime();
+			//printf("Main thread %d finished parallel section\n",omp_get_thread_num());
+			//if(iterations%2==0)
+			//	tmp.copyFromDevice(inputGPU);
+			//else
+			//	tmp.copyFromDevice(outputGPU);	
+			//Array coreTmp;
+			//Array coreOutput;
+			//coreTmp.hostSlice(tmp, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			//coreOutput.hostSlice(outputGPU, gpuTiling.coreWidthOffset, gpuTiling.coreHeightOffset, gpuTiling.coreDepthOffset, gpuTiling.coreWidth, gpuTiling.coreHeight, gpuTiling.coreDepth);
+			//memcpy(output.hostArray,tmp.hostGPUArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));				
+			//coreOutput.hostPinnedMemCopy(coreTmp);
+			//tmp.hostFree();
+			//
+			//size_t cpuCoreOffset = cpuTiling.width*(cpuTiling.coreHeightOffset+cpuTiling.heightOffset);
+			//size_t cpuOffset = cpuTiling.width*(cpuTiling.coreHeightOffset);
+			//cout<<"CPU coreOffset size: "<<cpuCoreOffset<<endl;
+			//memcpy(this->output.hostArray + cpuCoreOffset, outputTBB.hostArray + cpuOffset,cpuTiling.coreWidth*cpuTiling.coreHeight*sizeof(float));		
+		
+			//cout<<"memcpying pinned to malloc"<<endl;	
+			//memcpy(output.hostArray,output.hostArray,gpuTiling.coreWidth*gpuTiling.coreHeight*sizeof(float));
+					
+
+			//endCopy = omp_get_wtime();
+			end = omp_get_wtime();
+		}//end if partitioned
+	}//end if input.getHeight()
+	//cudaDeviceSynchronize();
+	//cout<<"Pinned_time\t"<<endPinnedCopy-startPinnedCopy<<endl;	
+	cout<<"CPU_time\t"<<endCPU-startCPU<<endl;
+	cout<<"GPU_time\t"<<endGPU-startGPU<<endl;
+	//cout<<"Copy time\t"<<endCopy-startCopy<<endl;
+	cout<<"Total_time\t"<<end-start<<endl;
+	tmp.hostFree();
+	inputCopy.hostFree();
+	inputGPU.deviceFree();
+	outputGPU.deviceFree();
+	mask.deviceFree();
+	//cudaStreamDestroy(stream1);
+}
+#endif 
+
+
 
 	#ifdef PSKEL_CUDA
 	template<class Array, class Mask, class Args>

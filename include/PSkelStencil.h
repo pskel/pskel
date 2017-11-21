@@ -272,6 +272,7 @@ public:
 	 * \param[in] GPUBlockSizeY the block size (y dimension) used for the GPU processing the stencil kernel.
 	 **/
 	void runIterativePartition(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
+	void runIterativePartitionStaged(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
 	void runIterativePartition2(size_t iterations, float gpuFactor, size_t numThreads=0, size_t GPUBlockSizeX=32, size_t GPUBlockSizeY=4);
 	#endif
 
