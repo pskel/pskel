@@ -139,7 +139,7 @@ void ArrayBase<T>::hostScalableAlloc(size_t _width, size_t _height, size_t _dept
 	this->realDepth = _depth;
 	//Alloc scalable memory
 	this->hostArray = NULL;
-	#ifdef PSKEL_TBB
+	#ifdef PSKEL_TBBALLOC
 	this->hostScalableAlloc();
 	#else
 	std::cout<<"Warning! Allocating non-scalable memory"<<std::endl;
@@ -189,19 +189,24 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #endif
 	#endif
-	#ifdef PSKEL_TBB
-	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
-	    std::cout<<"Host scalable memory allocated"<<std::endl;
+	#ifdef PSKEL_TBBALLOC
+	    //this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
+	    //std::cout<<"Host scalable memory allocated"<<std::endl;
+	    this->hostScalableAlloc();
     	#else
             //this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
 	    //std::cout<<"Host scalable memory allocated"<<std::endl;
 	    //this->hostArray = (T*) calloc(size(), sizeof(T));
             //this->hostArray = (T*) malloc(size()*sizeof(T));
  	    this->hostArray = (T*) _mm_malloc(size()*sizeof(T),16); /* aligned malloc */
+	    std::cout << "Aligned memory allocated" << std::endl;
     	#endif
 	#ifdef DEBUG
 		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
 	#endif
+	}
+	else{
+		std::cout << "Host Array Pointer already allocated" << std::endl;
 	}
 
 }
