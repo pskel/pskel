@@ -220,6 +220,9 @@ public:
 	template<typename Arrays>
 	void hostSlice(Arrays array, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t width, size_t height, size_t depth);
 
+	template<typename Arrays>
+	void updateHalo(Arrays array, size_t height_offset, size_t halo_size, bool gpu_flag);
+
 	/**
 	 * Creates a clone, in the host (main) memory, of the array given as argument.
 	 * The clone is a copy of the array in a different memory space.

@@ -153,7 +153,7 @@ public:
 		this->height = height;
 		this->depth = depth;
 	
-		/*
+		
 		std::cout<<"-----------------------"<<std::endl;
 		std::cout<<"STENCIL TILING after:"<<std::endl;
 		std::cout<<"width: "<<width <<std::endl;
@@ -166,7 +166,7 @@ public:
 		std::cout<<"coreHeightOffset: "<<this->coreHeightOffset<<std::endl;
 		std::cout<<"coreDepthOffset: "<<this->coreDepthOffset<<std::endl;
 		std::cout<<"-----------------------"<<std::endl;
-		*/
+		
 	}	
 	
 };

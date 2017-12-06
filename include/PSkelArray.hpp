@@ -387,6 +387,29 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 	#endif
 }
 
+template<typename T>
+template<typename Array>
+void ArrayBase<T>::updateHalo(Array array, size_t height_offset, size_t halo_size, bool gpu_flag){
+	//std::cout << "Update Halo Method\n";
+	T* devicePtr = (T*)(this->deviceArray) + size_t(height_offset*this->width*this->depth);
+	
+	if(gpu_flag){
+		/* Copy CPU Halo to GPU */
+		//T* hostPtr = (T*)(this->hostArray) + size_t(height_offset*this->width*this->depth);
+		T* devicePtr = (T*)(this->deviceArray) + size_t(height_offset*this->width*this->depth);
+		cudaHostRegister(array.hostArray, halo_size*this->width*this->depth*sizeof(T), cudaHostRegisterPortable);
+		gpuErrchk ( cudaMemcpyAsync(devicePtr, array.hostArray, halo_size*this->width*this->depth*sizeof(T),cudaMemcpyHostToDevice) );
+		cudaHostUnregister(array.hostArray);
+	}
+	else{
+		/* Copy GPU Halo to CPU*/
+		T* devicePtr = (T*)(array.deviceArray) + size_t((height_offset-halo_size)*this->width*this->depth);
+		gpuErrchk ( cudaMemcpyAsync(this->hostArray, devicePtr, halo_size*this->width*this->depth*sizeof(T),cudaMemcpyDeviceToHost) );
+	}
+	
+}
+
+
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
 template<typename T> template<typename Arrays>
 void ArrayBase<T>::hostClone(Arrays array){
