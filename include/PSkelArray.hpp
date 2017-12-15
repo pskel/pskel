@@ -139,7 +139,7 @@ void ArrayBase<T>::hostScalableAlloc(size_t _width, size_t _height, size_t _dept
 	this->realDepth = _depth;
 	//Alloc scalable memory
 	this->hostArray = NULL;
-	#ifdef PSKEL_TBB
+	#ifdef PSKEL_TBBALLOC
 	this->hostScalableAlloc();
 	#else
 	std::cout<<"Warning! Allocating non-scalable memory"<<std::endl;
@@ -189,19 +189,24 @@ __forceinline__ void ArrayBase<T>::hostAlloc(){
             //cudaMemset(this->hostArray, 0, size()*sizeof(T));
         #endif
 	#endif
-	#ifdef PSKEL_TBB
-	    this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
-	    std::cout<<"Host scalable memory allocated"<<std::endl;
+	#ifdef PSKEL_TBBALLOC
+	    //this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
+	    //std::cout<<"Host scalable memory allocated"<<std::endl;
+	    this->hostScalableAlloc();
     	#else
             //this->hostArray = (T*) scalable_malloc(size()*sizeof(T));	
 	    //std::cout<<"Host scalable memory allocated"<<std::endl;
 	    //this->hostArray = (T*) calloc(size(), sizeof(T));
             //this->hostArray = (T*) malloc(size()*sizeof(T));
  	    this->hostArray = (T*) _mm_malloc(size()*sizeof(T),16); /* aligned malloc */
+	    std::cout << "Aligned memory allocated" << std::endl;
     	#endif
 	#ifdef DEBUG
 		printf("Array allocated at address %p\n",(void*)&(this->hostArray));
 	#endif
+	}
+	else{
+		std::cout << "Host Array Pointer already allocated" << std::endl;
 	}
 
 }
@@ -381,6 +386,29 @@ void ArrayBase<T>::hostSlice(Arrays array, size_t widthOffset, size_t heightOffs
 		 (void*)&(array.hostArray),this->widthOffset,this->heightOffset,this->depthOffset,(void*)&(this->hostGet(0,0,0)));
 	#endif
 }
+
+template<typename T>
+template<typename Array>
+void ArrayBase<T>::updateHalo(Array array, size_t height_offset, size_t halo_size, bool gpu_flag){
+	//std::cout << "Update Halo Method\n";
+	T* devicePtr = (T*)(this->deviceArray) + size_t(height_offset*this->width*this->depth);
+	
+	if(gpu_flag){
+		/* Copy CPU Halo to GPU */
+		//T* hostPtr = (T*)(this->hostArray) + size_t(height_offset*this->width*this->depth);
+		T* devicePtr = (T*)(this->deviceArray) + size_t(height_offset*this->width*this->depth);
+		cudaHostRegister(array.hostArray, halo_size*this->width*this->depth*sizeof(T), cudaHostRegisterPortable);
+		gpuErrchk ( cudaMemcpyAsync(devicePtr, array.hostArray, halo_size*this->width*this->depth*sizeof(T),cudaMemcpyHostToDevice) );
+		cudaHostUnregister(array.hostArray);
+	}
+	else{
+		/* Copy GPU Halo to CPU*/
+		T* devicePtr = (T*)(array.deviceArray) + size_t((height_offset-halo_size)*this->width*this->depth);
+		gpuErrchk ( cudaMemcpyAsync(this->hostArray, devicePtr, halo_size*this->width*this->depth*sizeof(T),cudaMemcpyDeviceToHost) );
+	}
+	
+}
+
 
 //TODO: Alterar para retornar um Array ao invÃ©s de receber por parametro
 template<typename T> template<typename Arrays>

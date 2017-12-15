@@ -50,8 +50,8 @@ namespace PSkel{
 
 std::mutex mtx;          // mutex for critical section
 std::condition_variable cv; // condition variable for critical section  
-bool ready = false;
-bool processed = false;
+bool cpu_ready = false;
+bool gpu_ready = false;
 
 
 #ifdef PSKEL_CUDA
@@ -1580,15 +1580,16 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 						//	#ifdef PSKEL_TBB
 						//		this->runTBB(inputCopy, outputCPU, numThreads);
 						//	#else
-								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads-1);
 						//	#endif
 						}else {
 						//	#ifdef PSKEL_TBB
 						//		this->runTBB(outputCPU, inputCopy, numThreads);
 						//	#else
-								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
+								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads-1);
 						//	#endif
 						}
+						tbbHeight-=maskRange;		
 						#endif
 					}//end for
 					/*
@@ -1671,7 +1672,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartition(size_t iterations, flo
 
 #ifdef PSKEL_CUDA
 template<class Array, class Mask, class Args>
-void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
+void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iterations, size_t subiterations, float gpuFactor, size_t numThreads, size_t GPUBlockSizeX, size_t GPUBlockSizeY){
 	//numThreads = (numThreads==0)?omp_get_num_procs():numThreads;
 	double start, startCPU, startGPU, end, endCPU,endGPU, startCopy, endCopy, startPinnedCopy, endPinnedCopy;
 	if(GPUBlockSizeX==0){
@@ -1710,14 +1711,29 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 	
 	size_t gpuHeight = ceil(this->input.getHeight()*gpuFactor);
 	size_t cpuHeight = this->input.getHeight()-gpuHeight;
-			
-	gpuTiling.tile(iterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
-	cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+
+	/* Tiling based on subiterations */
+	std::cout<<"GPU Tiling\n";	
+	
+	gpuTiling.tile(subiterations, 0,0,0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+
+	std::cout<<"CPU Tiling\n";
+	
+	cpuTiling.tile(subiterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+
+
 	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+
 	/*Core Area*/
 	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
 	inputGPU.deviceAlloc();
 	outputGPU.deviceAlloc();
+
+	/* CPU and GPU Ghost Zone Halo Size */
+	size_t haloSize = cpuTiling.coreHeightOffset * inputGPU.getWidth() * inputGPU.getDepth() * inputGPU.typeSize();
+	size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth() * outputGPU.typeSize();
+			
+
 	/*
 	cout<<"GPU width offset\t"<<gpuTiling.width<<endl;
 	cout<<"GPU height offset\t"<<gpuTiling.height<<endl;
@@ -1784,27 +1800,6 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 	cout<<"CPU output \t"<<outputCPU.size()<<endl;
 	*/
 
-
-	/*
-	double startMemMove = omp_get_wtime();
-	//memmove(inputTBB2.hostArray,inputCPU.hostArray,inputTBB2.size()*sizeof(float));
-
-	#pragma omp parallel for
-	for(size_t h = 0;h<inputCPU.getHeight();++h){
-		for(size_t w=0;w<inputCPU.getWidth();++w){
-			inputTBB(h,w) = inputCPU(h,w);
-			//outputTBB(h,w) = outputCPU(h,w);
-		}
-	}
-
-	double endMemMove = omp_get_wtime();
-	cout<<"Memmove_time\t"<<endMemMove-startMemMove<<endl;
-	*/
-	//#ifdef PSKEL_TBB
-	//tbb::task_scheduler_init init(numThreads-1);
-	//static tbb::affinity_partitioner ap;
-	//TBBStencil2D<Array,Mask,Args> tbbstencil(inputCopy, outputCPU, this->mask, this->args); 	
-	//#endif
 	if(this->input.getHeight()==1){
 		std::cout<<"Error! Input has height 1"<<std::endl;
 	}
@@ -1815,17 +1810,10 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 			this->runIterativeCPU(iterations, numThreads);
 		else{
 			start = omp_get_wtime();
+			int outerIterations = iterations/subiterations; //check division
 			omp_set_num_threads(2);
 			omp_set_nested(1);
-			//printf("Main thread %d starting parallel section\n",omp_get_thread_num());
-			//cout<<"Input size "<<input.size()<<endl;
-			//startPinnedCopy = omp_get_wtime();
-			//memcpy(inputGPU.hostGPUArray,input.hostArray,inputGPU.getWidth()*inputGPU.getHeight()*sizeof(float));
-			//cudaHostRegister(inputGPU.hostArray, inputGPU.size()*sizeof(float),cudaHostRegisterPortable);
-			//cudaHostRegister(outputGPU.hostArray, outputGPU.size()*sizeof(float),cudaHostRegisterPortable);
-			//endPinnedCopy = omp_get_wtime();
-			//cout<<"memcpy time: "<<s2-s1<<endl;
-					
+							
 			#pragma omp parallel sections
 			{
 				#pragma omp section         
@@ -1841,17 +1829,66 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 					cudaHostUnregister(inputGPU.hostArray);
 					
 					// CUDA kernel execution
-					this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
+					for(size_t it = 0; it < outerIterations; it++){
+						//processed = false;
+						this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
 					
-					size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth();
-					cudaHostRegister(outputGPU.hostArray, coreSize*inputGPU.typeSize(),cudaHostRegisterPortable);
+					
+						// GPU thread halo copy semaphore
+						{
+						std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return cpu_ready;});
+					    
+						std::cout << "GPU thread received CPU signal!\n";
+							
+					//	inputGPU.updateHalo(outputTBB, gpuTiling.height - cpuTiling.heightOffset, cpuTiling.coreHeightOffset, 1);
+					// 	void* devicePtr = (void*) (inputGPU.deviceArray) + size_t((gpuHeight-cpuTiling.coreHeightOffset)*inputGPU.getWidth()*inputGPU.getDepth());
+					
+						/* Copy GPU Data to CPU Halo Zone */
+					/*	cudaHostRegister(inputTBB.hostArray, cpuTiling.coreHeightOffset * inputGPU.getWidth() * inputGPU.getDepth() * inputGPU.typeSize(), cudaHostRegisterPortable);
+						gpuErrchk ( cudaMemcpy( inputTBB.hostArray, 
+									inputGPU.deviceArray + size_t((gpuHeight-cpuTiling.coreHeightOffset)*inputGPU.getWidth()*inputGPU.getDepth()),
+							                cpuTiling.coreHeightOffset * inputGPU.getWidth()*inputGPU.getDepth()*inputGPU.typeSize(),
+									cudaMemcpyDeviceToHost) );
+						cudaHostUnregister(inputTBB.hostArray);
+					*/
+						gpu_ready = true;
+						// Manual unlocking is done before notifying, to avoid waking up
+						// the waiting thread only to block again (see notify_one for details)
+						
+						lk.unlock();
+						cv.notify_one();
+						}
+		
+						std::cout << "GPU thread has copied!\n";
+						
+						{
+						std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return !cpu_ready;});
+					    
+						std::cout << "GPU thread is ready for next iterations!\n";
+						gpu_ready = false;
+						// Manual unlocking is done before notifying, to avoid waking up
+						// the waiting thread only to block again (see notify_one for details)
+						
+						lk.unlock();
+						cv.notify_one();
+						}
+					
+
+					}	
+					
+
+					// Copy GPU Core Area
+					//size_t coreSize = gpuHeight*outputGPU.getWidth()*outputGPU.getDepth();
+					cudaHostRegister(outputGPU.hostArray, coreSize ,cudaHostRegisterPortable);
 					if(iterations%2==0){
 						//tmp.copyFromDevicePinned(inputGPU);
-						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, inputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, inputGPU.deviceArray, coreSize, cudaMemcpyDeviceToHost) );
 					}
 					else{	
 						//tmp.copyFromDevicePinned(outputGPU);
-						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, outputGPU.deviceArray, coreSize*inputGPU.typeSize(), cudaMemcpyDeviceToHost) );
+						gpuErrchk ( cudaMemcpy(outputGPU.hostArray, outputGPU.deviceArray, coreSize, cudaMemcpyDeviceToHost) );
 					}
 					cudaHostUnregister(outputGPU.hostArray);
 					
@@ -1861,22 +1898,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 					endGPU = omp_get_wtime();
 					//printf("Thread %d finished GPU Partition\n",omp_get_thread_num());
 					
-					// GPU thread halo copy semaphore
-					{
-					    std::unique_lock<std::mutex> lk(mtx);
-						cv.wait(lk, []{return ready;});
-					    
-					    std::cout << "GPU thread is ready to copy Halo!\n";
-					    
-					    // Manual unlocking is done before notifying, to avoid waking up
-						// the waiting thread only to block again (see notify_one for details)
-						lk.unlock();
-						cv.notify_one();
-						
-						std::cout << "GPU thread has notified!\n";
-					}
-				}//end GPU section
-				
+				}//end GPU section							
 				//printf("Thread %d entering parallel section\n",omp_get_thread_num());
 				#pragma omp section
 				{//begin CPU
@@ -1893,78 +1915,112 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 						}
 					}
 
-					//endCPU = omp_get_wtime();
-					//cout<<"TBBCopy_time\t"<<endCPU-startCPU<<endl;
-
-					//cpuTiling.tile(iterations, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
 					
-					//inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-					//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
-
-					////inputCPU.hostSlice(this->input, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-					////outputCPU.hostSlice(this->output, 0, gpuHeight, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
-					
-					 //size_t width = inputTBB.getWidth();
-					 //size_t height = inputTBB.getHeight();
-					 //size_t depth = inputTBB.getDepth();
-					//Array inputCopy;
-					//Array inputTBB;
-										
-					//inputTBB.hostScalableAlloc(width,height,depth);
-					//memmove(inputTBB.hostArray,inputCPU.hostArray,width*height*depth*sizeof(float));
-					
-					//inputCopy.hostClone(inputCPU);
-					//startCPU = omp_get_wtime();
-					
-					#ifdef PSKEL_TBB
-					TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
-					tbb::task_scheduler_init init(numThreads-1);
-					tbb::affinity_partitioner ap;
-					#endif
-	
-					//cout<<"oi1"<<endl;													
-																	
-					for(size_t it = 0; it<iterations; it++){
 						#ifdef PSKEL_TBB
-						//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
-						//inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
-						//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
-						//size_t width = inputTBB.getWidth();
-						//size_t height = inputTBB.getHeight();
-						//size_t depth = inputTBB.getDepth();
-
-						//cout<<"oi "<<height<<" "<<maskRange<<endl;
-						//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
-						//cout<<"input height: "<<inputTBB.getHeight()<<endl;
-						//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
-						//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
-						tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
-						//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
-						//
-						//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
-						//outputTBB.hostSlice(outputTBB,0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
-						
-						//cout<<"oi3"<<endl;
-						tbbstencil.swap();
-						//cout<<"oi4"<<endl;
-						//cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
-						#else
-						if(it%2==0){
-						//	#ifdef PSKEL_TBB
-						//		this->runTBB(inputCopy, outputCPU, numThreads);
-						//	#else
-								this->runOpenMP(inputTBB, outputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
-						//	#endif
-						}else {
-						//	#ifdef PSKEL_TBB
-						//		this->runTBB(outputCPU, inputCopy, numThreads);
-						//	#else
-								this->runOpenMP(outputTBB, inputTBB, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);
-						//	#endif
-						}
+						TBBStencil2D<Array,Mask,Args> tbbstencil(inputTBB,outputTBB,this->mask, this->args); 
+						tbb::task_scheduler_init init(numThreads-1);
+						tbb::affinity_partitioner ap;
 						#endif
-					}//end for
-					/*
+		
+						//cout<<"oi1"<<endl;													
+						
+						for(size_t it2 = 0; it2<outerIterations; it2++){
+						//ready = false;
+						for(size_t it = 0; it<subiterations; it++){
+							#ifdef PSKEL_TBB
+							//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
+							//inputCopy.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+							//outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.heightOffset+it, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-it, cpuTiling.depth);
+							//size_t width = inputTBB.getWidth();
+							//size_t height = inputTBB.getHeight();
+							//size_t depth = inputTBB.getDepth();
+
+							//cout<<"oi "<<height<<" "<<maskRange<<endl;
+							//size_t tbbHeight = inputTBB.getHeight(); // use if redimension the input
+							//cout<<"input height: "<<inputTBB.getHeight()<<endl;
+							//cout<<"input offset: "<<inputTBB.getHeightOffset()<<endl;
+							//cout<<"output offset: "<<outputTBB.getHeightOffset()<<endl;
+							tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
+							//tbb::parallel_for(tbb::blocked_range2d<size_t>(maskRange,tbbHeight-maskRange,maskRange,tbbWidth-maskRange), tbbstencil);
+							//
+							//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+							//outputTBB.hostSlice(outputTBB,0, 1, 0, tbbWidth, tbbHeight2, tbbDepth);
+							
+							//cout<<"oi3"<<endl;
+							tbbstencil.swap();
+							//cout<<"oi4"<<endl;
+							//cout<<"It "<<it<<" height "<<inputCopy.getHeight()<<" heightOffset "<<inputCopy.getHeightOffset()<<"real height "<<inputCopy.getRealHeight()<<endl;
+							#else
+							if(it%2==0){
+							//	#ifdef PSKEL_TBB
+							//		this->runTBB(inputCopy, outputCPU, numThreads);
+							//	#else
+									this->runOpenMP(inputTBB, outputTBB, tbbWidth, inputTBB.getHeight(), tbbDepth, maskRange, numThreads-1);
+							//	#endif
+							}else {
+							//	#ifdef PSKEL_TBB
+							//		this->runTBB(outputCPU, inputCopy, numThreads);
+							//	#else
+									this->runOpenMP(outputTBB, inputTBB, tbbWidth, inputTBB.getHeight(), tbbDepth, maskRange, numThreads-1);
+							//	#endif
+							}
+
+							// At the end of each iteration we remove one redundant line (equal to the maskRange)
+							// Todo create hostslice
+							//tbbHeight -= maskRange;
+							//std::cout << "Swap\n";
+							inputTBB.hostSlice(inputTBB, 0, maskRange, 0, inputTBB.getWidth(), inputTBB.getHeight(), inputTBB.getDepth()) ;
+							outputTBB.hostSlice(outputTBB, 0, maskRange, 0, outputTBB.getWidth(), outputTBB.getHeight(), outputTBB.getDepth()) ;
+							//outputTBB.heightOffset += maskRange;
+							#endif
+						}//end for subiterations
+
+
+						// Semaphore waiting for GPU to finish
+						{
+						std::lock_guard<std::mutex> lk(mtx);
+						cpu_ready = true;
+						std::cout << "CPU Signal for GPU Ready\n";
+						}
+						cv.notify_one();
+						
+						// wait for the worker
+						{
+						std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return gpu_ready;});
+						}
+											
+						std::cout << "CPU thread received GPU signal for halo copy\n";
+
+						//inputTBB.updateHalo(outputGPU, gpuTiling.height  -  cpuTiling.heightOffset, cpuTiling.coreHeightOffset, 0);
+						/*
+ 						cudaHostRegister(inputTBB.hostArray + (cpuTiling.coreHeightOffset * inputGPU.getWidth() * inputGPU.getDepth()),
+								 cpuTiling.coreHeightOffset * inputTBB.getWidth() * inputTBB.getDepth() * inputTBB.typeSize(), 
+								 cudaHostRegisterPortable);
+                                                gpuErrchk ( cudaMemcpy( inputGPU.deviceArray + (gpuHeight * inputTBB.getWidth() * inputTBB.getDepth()),
+									inputTBB.hostArray + (cpuTiling.coreHeightOffset * inputTBB.getWidth() * inputTBB.getDepth()),
+                                                                        cpuTiling.coreHeightOffset * inputTBB.getWidth()*inputTBB.getDepth()*inputTBB.typeSize(),
+                                                                        cudaMemcpyHostToDevice) );
+                                                cudaHostUnregister(inputTBB.hostArray);
+						*/
+						//std::cout << "CPU thread done with halo copy\n";
+						{
+						std::lock_guard<std::mutex> lk(mtx);
+						cpu_ready = false;
+						std::cout << "CPU Signal for GPU Next iteration\n";
+						}
+						cv.notify_all();
+						
+						// wait for the worker
+						{
+						std::unique_lock<std::mutex> lk(mtx);
+						cv.wait(lk, []{return !gpu_ready;});
+						}
+						
+						std::cout << "CPU is ready for Next iteration\n";
+
+						}//end outer
+						/*
 					#ifdef PSKEL_TBB
 					//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
 					//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
@@ -1999,23 +2055,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 					endCPU = omp_get_wtime();
 					//printf("Thread %d finished CPU iterations\n",omp_get_thread_num());
 					
-					// Semaphore waiting for GPU to finish
-					{
-						std::lock_guard<std::mutex> lk(mtx);
-						ready = true;
-						std::cout << "CPU Signal for GPU halo copy processing\n";
-					}
-					cv.notify_one();
-					
-					// wait for the worker
-					{
-						std::unique_lock<std::mutex> lk(mtx);
-						cv.wait(lk, []{return processed;});
-					}
-					
-					std::cout<<"CPU thread is ready for halo copy\n";
-					
-					
+										
 				}//end CPU section
 			}//end parallel omp sections
 			//startCopy = omp_get_wtime();
@@ -2190,8 +2230,8 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 			//stencilTilingCU<<<DimGrid, DimBlock>>>(in, out, this->mask, this->args, 0,0,0,in.getWidth(),in.getHeight(),in.getDepth());
 			stencilTilingCU<<<dimGrid, dimBlock>>>(in, out, this->mask, this->args,maskRange,in.getWidth(),in.getHeight(),in.getDepth());
 		#endif
-		gpuErrchk( cudaPeekAtLastError() );
-	gpuErrchk( cudaDeviceSynchronize() );
+		//gpuErrchk( cudaPeekAtLastError() );
+		//gpuErrchk( cudaDeviceSynchronize() );
 }
 #endif
 
@@ -2647,6 +2687,15 @@ inline __attribute__((always_inline)) void Stencil2D<Array,Mask,Args>::runOpenMP
 		for (size_t w = maskRange; w < wrange; w++){
 			//#pragma forceinline recursive
 			stencilKernel(in,out,this->mask,this->args,h,w);
+			/*
+			int neighbors =  (in(h-1,w-1) + in(h-1,w) + in(h-1,w+1))  +
+                     	(in(h,w-1)   + in(h,w+1)) + 
+    		     	(in(h+1,w-1) + in(h+1,w) + in(h+1,w+1));
+
+			int c2 = (neighbors == 2);
+			 int c3 = (neighbors == 3);
+			 out(h,w) = in(h,w) * c2 + c3;
+			*/
 			//#pragma omp simd
 			//out(h,w) = 0.25f * (in(h-1,w) + in(h,w-1) + in(h,w+1) + in(h+1,w)-this->args);
 			

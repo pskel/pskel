@@ -83,6 +83,13 @@ public:
 	 * \param[in] depth depth of the logical tile region.
 	 **/
 	void tile(size_t iterations, size_t widthOffset, size_t heightOffset, size_t depthOffset, size_t width, size_t height, size_t depth){
+		/*std::cout<<"-----------------------"<<std::endl;
+		std::cout<<"STENCIL TILING original:"<<std::endl;
+		std::cout<<"width: "<<width <<std::endl;
+		std::cout<<"height: "<<height<<std::endl;
+		std::cout<<"depth: "<<depth<<std::endl;
+		std::cout<<"-----------------------"<<std::endl;
+		*/
 		this->iterations = iterations;
 		//check for unaligned tiling
 		if((widthOffset+width)>this->input.getWidth())
@@ -145,7 +152,23 @@ public:
 		this->width = width;
 		this->height = height;
 		this->depth = depth;
-	}
+	
+		
+		std::cout<<"-----------------------"<<std::endl;
+		std::cout<<"STENCIL TILING after:"<<std::endl;
+		std::cout<<"width: "<<width <<std::endl;
+		std::cout<<"height: "<<height<<std::endl;
+		std::cout<<"depth: "<<depth<<std::endl;
+		std::cout<<"widthOffset: "<<widthOffset <<std::endl;
+		std::cout<<"heightOffset: "<<heightOffset<<std::endl;
+		std::cout<<"depthOffset: "<<depthOffset<<std::endl;
+		std::cout<<"coreWidthOffset: "<<this->coreWidthOffset<<std::endl;
+		std::cout<<"coreHeightOffset: "<<this->coreHeightOffset<<std::endl;
+		std::cout<<"coreDepthOffset: "<<this->coreDepthOffset<<std::endl;
+		std::cout<<"-----------------------"<<std::endl;
+		
+	}	
+	
 };
 
 }
