@@ -1977,7 +1977,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 					tbb::parallel_for(tbb::blocked_range<size_t>(0,tbbHeight-maskRange), tbbstencil, ap);
 					#else
 						this->runOpenMP(outputTBB, outputCPU, tbbWidth, tbbHeight, tbbDepth, maskRange, numThreads);	
-					#endif
+					v#endif
 					*/
 					if((iterations%2)==1)
 						 outputCPU.hostMemCopy(outputTBB);
