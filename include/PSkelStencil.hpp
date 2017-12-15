@@ -1830,11 +1830,11 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 					
 					// CUDA kernel execution
 					for(size_t it = 0; it < outerIterations; it++){
-						//processed = false;
+						gpu_ready = false;
+						cout<< "Starting GPU outer iterations #" << it <<"\n";
 						this->runIterativeTilingCUDA(inputGPU, outputGPU, gpuTiling, GPUBlockSizeX, GPUBlockSizeY);
-					
-					
-						// GPU thread halo copy semaphore
+						std::cout << "GPU is waiting for CPU signal\n";
+					// GPU thread halo copy semaphore
 						{
 						std::unique_lock<std::mutex> lk(mtx);
 						cv.wait(lk, []{return cpu_ready;});
@@ -1852,16 +1852,17 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 									cudaMemcpyDeviceToHost) );
 						cudaHostUnregister(inputTBB.hostArray);
 					*/
+						
 						gpu_ready = true;
 						// Manual unlocking is done before notifying, to avoid waking up
 						// the waiting thread only to block again (see notify_one for details)
 						
 						lk.unlock();
-						cv.notify_one();
+						cv.notify_all();
 						}
-		
-						std::cout << "GPU thread has copied!\n";
 						
+						std::cout << "GPU thread has notified!\n";
+					/*	
 						{
 						std::unique_lock<std::mutex> lk(mtx);
 						cv.wait(lk, []{return !cpu_ready;});
@@ -1874,7 +1875,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 						lk.unlock();
 						cv.notify_one();
 						}
-					
+					*/
 
 					}	
 					
@@ -1925,7 +1926,8 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 						//cout<<"oi1"<<endl;													
 						
 						for(size_t it2 = 0; it2<outerIterations; it2++){
-						//ready = false;
+						cpu_ready = false;
+						std::cout<<"Starting CPU outeriteration #"<<it2<<"\n";
 						for(size_t it = 0; it<subiterations; it++){
 							#ifdef PSKEL_TBB
 							//cpuTiling.tile(iterations-it, 0, gpuHeight, 0, width, height, depth);
@@ -1969,21 +1971,21 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 							// Todo create hostslice
 							//tbbHeight -= maskRange;
 							//std::cout << "Swap\n";
-							inputTBB.hostSlice(inputTBB, 0, maskRange, 0, inputTBB.getWidth(), inputTBB.getHeight(), inputTBB.getDepth()) ;
-							outputTBB.hostSlice(outputTBB, 0, maskRange, 0, outputTBB.getWidth(), outputTBB.getHeight(), outputTBB.getDepth()) ;
+							//inputTBB.hostSlice(inputTBB, 0, maskRange, 0, inputTBB.getWidth(), inputTBB.getHeight(), inputTBB.getDepth()) ;
+							//outputTBB.hostSlice(outputTBB, 0, maskRange, 0, outputTBB.getWidth(), outputTBB.getHeight(), outputTBB.getDepth()) ;
 							//outputTBB.heightOffset += maskRange;
 							#endif
 						}//end for subiterations
-
-
+						
 						// Semaphore waiting for GPU to finish
 						{
 						std::lock_guard<std::mutex> lk(mtx);
 						cpu_ready = true;
 						std::cout << "CPU Signal for GPU Ready\n";
 						}
-						cv.notify_one();
+						cv.notify_all();
 						
+						std::cout << "CPU is waiting for GPU\n";	
 						// wait for the worker
 						{
 						std::unique_lock<std::mutex> lk(mtx);
@@ -1991,7 +1993,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 						}
 											
 						std::cout << "CPU thread received GPU signal for halo copy\n";
-
+						
 						//inputTBB.updateHalo(outputGPU, gpuTiling.height  -  cpuTiling.heightOffset, cpuTiling.coreHeightOffset, 0);
 						/*
  						cudaHostRegister(inputTBB.hostArray + (cpuTiling.coreHeightOffset * inputGPU.getWidth() * inputGPU.getDepth()),
@@ -2004,7 +2006,7 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
                                                 cudaHostUnregister(inputTBB.hostArray);
 						*/
 						//std::cout << "CPU thread done with halo copy\n";
-						{
+						/*{
 						std::lock_guard<std::mutex> lk(mtx);
 						cpu_ready = false;
 						std::cout << "CPU Signal for GPU Next iteration\n";
@@ -2018,9 +2020,11 @@ void StencilBase<Array, Mask,Args>::runIterativePartitionStaged(size_t iteration
 						}
 						
 						std::cout << "CPU is ready for Next iteration\n";
-
+						*/
 						}//end outer
-						/*
+						
+
+/*
 					#ifdef PSKEL_TBB
 					//inputTBB.hostSlice(inputTBB, 0, 1, 0, tbbWidth, tbbHeight-iterations, tbbDepth);
 					//outputCPU.hostSlice(outputCPU,0, cpuTiling.coreHeightOffset, 0, tbbWidth,tbbHeight-iterations-1 ,tbbDepth);	
