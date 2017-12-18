@@ -410,5 +410,6 @@ public:
 }
 
 #include "PSkelStencil.hpp"
+#include "Toast.hpp"
 
 #endif
