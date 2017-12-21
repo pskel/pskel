@@ -349,6 +349,78 @@ void StencilBase<Array, Mask,Args>::runIterativeTilingGPU(size_t iterations, siz
 	inputCopy.hostFree();
 }
 #endif
+
+
+template<class Array, class Mask, class Args>
+void StencilBase<Array, Mask,Args>::runIterativeAutoPartitioned(size_t iterations, 
+																float gpuFactor, 
+																size_t numThreads, 
+																size_t GPUBlockSizeX, 
+																size_t GPUBlockSizeY){
+	Array inputGPU;
+	Array outputGPU;																
+	
+	
+	size_t gpuMemFree, gpuMemTotal;
+	size_t gpuHeight = ceil(this->input.getHeight() * gpuFactor);
+	size_t cpuHeight = this->input.getHeight()- gpuHeight;
+	
+	
+	
+	StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
+	
+	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	/*Core Area*/
+	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	
+
+	//gpuErrchk( cudaDeviceSynchronize() );
+	cudaMemGetInfo(&gpuMemFree, &gpuMemTotal);
+	
+	//Solve to get the number of subiterations for the GPU Tiles
+	tilingGPUEvaluator.typeSize = this->inputGPU.typeSize();
+	tilingGPUEvaluator.iterations = iterations;
+	tilingGPUEvaluator.width = this->inputGPU.getWidth();
+	tilingGPUEvaluator.height = gpuHeight;
+	tilingGPUEvaluator.depth = 1;
+	tilingGPUEvaluator.range = this->mask.getRange();
+	tilingGPUEvaluator.memFree = (gpuMemFree-this->mask.memSize())*0.999;//gpuMemFree*0.998;
+
+	tilingGPUEvaluator.popsize = 100;
+	tilingGPUEvaluator.ngen = 2500;
+
+	unsigned int seed = time(NULL);
+	solve2D(seed);
+	
+	size_t subIterations = tilingGPUEvaluator.dt;
+	size_t height = tilingGPUEvaluator.dh;
+		
+	tilingGPUEvaluator.typeSize = this->inputGPU.typeSize();
+	tilingGPUEvaluator.iterations = iterations;
+	tilingGPUEvaluator.width = inputGPU.getWidth(); //'transposed matrix'
+	tilingGPUEvaluator.height = gpuHeight //'transposed matrix'
+	tilingGPUEvaluator.depth = inputGPU.getDepth();
+	tilingGPUEvaluator.range = this->mask.getRange();
+	tilingGPUEvaluator.memFree = (gpuMemFree-this->mask.memSize())*0.999;//gpuMemFree*0.998;
+
+	tilingGPUEvaluator.popsize = 100;
+	tilingGPUEvaluator.ngen = 2500;
+
+	unsigned int seed = time(NULL);
+	solve2D(seed);
+
+	size_t subIterations = tilingGPUEvaluator.dt;
+	size_t height = tilingGPUEvaluator.dh;	
+	
+	cout << "Iterations" << iterations << endl;
+	cout << "Subiterations" << subIterations << endl;
+	cout << "Input height" << this->input.getHeight();
+	cout << "Tiling Height" << height << endl;
+	
+	//runIterativeTilingPartitioned(iterations, subIterations, inputGPU.getWidth(), height, this->inputGPU.getDepth(), , GPUBlockSize);
+}
+
 	
 #endif
 }//end namespace
