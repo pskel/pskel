@@ -357,44 +357,13 @@ void StencilBase<Array, Mask,Args>::runIterativeAutoPartitioned(size_t iteration
 																size_t numThreads, 
 																size_t GPUBlockSizeX, 
 																size_t GPUBlockSizeY){
-	Array inputGPU;
-	Array outputGPU;																
-	
-	
+													
 	size_t gpuMemFree, gpuMemTotal;
 	size_t gpuHeight = ceil(this->input.getHeight() * gpuFactor);
 	size_t cpuHeight = this->input.getHeight()- gpuHeight;
 	
-	
-	
-	StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
-	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
-	
-	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-	/*Core Area*/
-	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
-	
-
 	//gpuErrchk( cudaDeviceSynchronize() );
 	cudaMemGetInfo(&gpuMemFree, &gpuMemTotal);
-	
-	//Solve to get the number of subiterations for the GPU Tiles
-	tilingGPUEvaluator.typeSize = this->inputGPU.typeSize();
-	tilingGPUEvaluator.iterations = iterations;
-	tilingGPUEvaluator.width = this->inputGPU.getWidth();
-	tilingGPUEvaluator.height = gpuHeight;
-	tilingGPUEvaluator.depth = 1;
-	tilingGPUEvaluator.range = this->mask.getRange();
-	tilingGPUEvaluator.memFree = (gpuMemFree-this->mask.memSize())*0.999;//gpuMemFree*0.998;
-
-	tilingGPUEvaluator.popsize = 100;
-	tilingGPUEvaluator.ngen = 2500;
-
-	unsigned int seed = time(NULL);
-	solve2D(seed);
-	
-	size_t subIterations = tilingGPUEvaluator.dt;
-	size_t height = tilingGPUEvaluator.dh;
 		
 	tilingGPUEvaluator.typeSize = this->inputGPU.typeSize();
 	tilingGPUEvaluator.iterations = iterations;
@@ -411,17 +380,179 @@ void StencilBase<Array, Mask,Args>::runIterativeAutoPartitioned(size_t iteration
 	solve2D(seed);
 
 	size_t subIterations = tilingGPUEvaluator.dt;
-	size_t height = tilingGPUEvaluator.dh;	
+	size_t tilingHeight = tilingGPUEvaluator.dh;	
+    size_t tilingWidth = tilingGPUEvaluator.dw;
+    size_t tilingDepth = tilingGPUEvaluatior.depth;
+
+    cout << "GPU mem free: " << gpuMemFree << endl;
+    cout << "Iterations: " << iterations << endl;
+    cout << "Subiterations: " << subIterations << endl;
+    cout << "Input height: " << this->input.getHeight() << endl;
+    cout << "GPU Height: " << gpuHeight << endl;
+    cout << "Tiling Height: " << height << endl;
+    cout << "Tiling width: " << width << endl;
+    
+    
+    /* Tiling based on subiterations */
+    
+    StencilTiling<Array, Mask> gpuTiling(this->input, this->output, this->mask);
+	StencilTiling<Array, Mask> cpuTiling(this->input, this->output, this->mask);
 	
-	cout << "Iterations" << iterations << endl;
-	cout << "Subiterations" << subIterations << endl;
-	cout << "Input height" << this->input.getHeight();
-	cout << "Tiling Height" << height << endl;
+	Array inputCPU;
+	Array outputCPU;
+	Array inputGPU;
+	Array outputGPU;
+	Array tmp;
+	Array inputTile;
+	Array outputTile;
 	
-	//runIterativeTilingPartitioned(iterations, subIterations, inputGPU.getWidth(), height, this->inputGPU.getDepth(), , GPUBlockSize);
+	/* CPU is first tile */
+	cpuTiling.tile(subIterations, 0, 0, 0, this->input.getWidth(), cpuHeight, this->input.getDepth());
+	
+	/* Ghost + Core Area */
+	inputCPU.hostSlice(cpuTiling.input, cpuTiling.widthOffset, cpuTiling.heightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height, cpuTiling.depth);
+	/* Core Area */
+	outputCPU.hostSlice(cpuTiling.output, cpuTiling.widthOffset, cpuTiling.coreHeightOffset, cpuTiling.depthOffset, cpuTiling.width, cpuTiling.height-cpuTiling.coreHeightOffset, cpuTiling.depth);
+	
+	size_t cpuHeight = outpuCPU.getHeight();
+	size_t maskRange = this->mask.getRange();
+	
+	/* GPU large tiling */
+	gpuTiling.tile(subIterations, 0, cpuHeight, 0, this->input.getWidth(), gpuHeight, this->input.getDepth());
+	
+	inputGPU.hostSlice(gpuTiling.input, gpuTiling.widthOffset, gpuTiling.heightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+	/*Core Area*/
+	outputGPU.hostSlice(gpuTiling.output, gpuTiling.widthOffset, gpuTiling.heightOffset + gpuTiling.coreHeightOffset, gpuTiling.depthOffset, gpuTiling.width, gpuTiling.height, gpuTiling.depth);
+    
+    /* GPU Tiling */
+    StencilTiling<Array, Mask> tiling(inputGPU, outputGPU, this->mask);
+    
+    
+    size_t wTiling = ceil(float(this->inputGPU.getWidth())/float(tilingWidth));
+    size_t hTiling = ceil(float(this->inputGPU.getHeight())/float(tilingHeight));
+    size_t dTiling = ceil(float(this->inputGPU.getDepth())/float(tilingDepth));
+      
+    int outerIterations = iterations/subiterations; //check division
+	bool cpuTileReady[100] = {0};
+	bool gpuTileReady[100] = {0};
+	
+
+	omp_set_num_threads(2);
+	omp_set_nested(1);	
+		
+    #pragma omp parallel sections
+	{
+		//CPU section
+		//Execute tile then wait for GPU data copy
+		#pragma omp section         
+		{
+			for(size_t it2 = 0; it2<outerIterations; it2++){
+				cpuHeight = inputCPU.getHeight();
+				cpuTileReady[it2] = true;
+				while(gpuTileReady[it2] == false){
+					//wait for gpu core copy
+					sleep(5);
+				}
+				
+				for(size_t it = 0; it<subiterations; it++){
+					if(it%2==0)
+						this->runOpenMP(inputCPU, outputCPU, inputCPU.getWidth(), cpuHeight, inputCPU.getDepth(), maskRange, numThreads-1);
+					else
+						this->runOpenMP(outputCPU, inputCPU, inputCPU.getWidth(), cpuHeight, inputCPU.getDepth(), maskRange, numThreads-1);
+						
+					cpuHeight -= maskRange;	
+				}
+				//indicates that cpu is ready for next outer iteration
+				
+				//Copy GPU Halo
+				//TODO
+			}
+		}
+		
+		//GPU section
+		#pragma omp section         
+		{
+			for(size_t it = 0; it<outterIterations; it++){
+				gpuTileReady[it] = true; // The first GPU tile will be processed
+				while(cpuTileReady[it2] == false){
+					//wait for cpu core copy
+					sleep(5);
+				}
+				
+				size_t subIterations = innerIterations;
+				if(((it+1)*innerIterations)>iterations){
+					subIterations = iterations-(it*innerIterations);
+				}
+				//cout << "Iteration: " << it << end
+				//cout << "#SubIterations: " << subIterations << endl;
+				for(size_t ht=0; ht<hTiling; ht++){
+				for(size_t wt=0; wt<wTiling; wt++){
+				for(size_t dt=0; dt<dTiling; dt++){
+					size_t heightOffset = ht*tilingHeight;
+					size_t widthOffset = wt*tilingWidth;
+					size_t depthOffset = dt*tilingDepth;
+
+					//CUDA input memory copy
+					tiling.tile(subIterations, widthOffset, heightOffset, depthOffset, tilingWidth, tilingHeight, tilingDepth);
+					inputTile.hostSlice(tiling.input, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+					outputTile.hostSlice(tiling.output, tiling.widthOffset, tiling.heightOffset, tiling.depthOffset, tiling.width, tiling.height, tiling.depth);
+					
+					inputTile.deviceAlloc();
+					outputTile.deviceAlloc();
+					tmp.hostAlloc(tiling.width, tiling.height, tiling.depth);
+					
+					//this->setGPUInputDataIterative(inputCopy, output, innerIterations, widthOffset, heightOffset, depthOffset, tilingWidth, tilingHeight, tilingDepth);
+					if(it%2==0){
+						inputTile.copyToDevice();
+						//CUDA kernel execution
+						this->runIterativeTilingCUDA(inputTile, outputTile, tiling, GPUBlockSizeX, GPUBlockSizeY);
+						if(subIterations%2==0){
+							tmp.copyFromDevice(inputTile);
+						}else{
+							tmp.copyFromDevice(outputTile);
+						}
+						Array coreTmp;
+						Array coreOutput;
+						coreTmp.hostSlice(tmp, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth);
+						coreOutput.hostSlice(outputTile, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth);
+						coreOutput.hostMemCopy(coreTmp);
+						//this->copyTilingOutput(output, innerIterations, widthOffset, heightOffset, depthOffset, tilingWidth, tilingHeight, tilingDepth);
+						tmp.hostFree();
+					}
+					else{
+						outputTile.copyToDevice();
+						//CUDA kernel execution
+						this->runIterativeTilingCUDA(outputTile, inputTile, tiling, GPUBlockSizeX, GPUBlockSizeY);
+						if(subIterations%2==0){
+							tmp.copyFromDevice(outputTile);
+						}else{
+							tmp.copyFromDevice(inputTile);
+						}
+						Array coreTmp;
+						Array coreInput;
+						//cout << "[Computing iteration: " << it << "]" << endl;
+						coreTmp.hostSlice(tmp, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth);
+						coreInput.hostSlice(inputTile, tiling.coreWidthOffset, tiling.coreHeightOffset, tiling.coreDepthOffset, tiling.coreWidth, tiling.coreHeight, tiling.coreDepth);
+						coreInput.hostMemCopy(coreTmp);
+						tmp.hostFree();
+					}
+				}}
+				if(ht == 0)
+					gpuTileReady = true; //The first GPU tile has been processed
+				}
+			}
+			inputTile.deviceFree();
+			outputTile.deviceFree();
+			mask.deviceFree();
+			cudaDeviceSynchronize();
+
+			if((outterIterations%2)==0) tiling.output.hostMemCopy(tiling.input);
+		}
+    }
+
+	//runIterativeTilingPartitioned(iterations, subIterations, width, height, this->input.getDepth(), GPUBlockSize, GPUBlockSize);
 }
 
-	
 #endif
 }//end namespace
 
